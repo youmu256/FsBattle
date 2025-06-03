@@ -4,7 +4,7 @@ namespace FrameSyncBattle
 {
     public class FsPlayerLogic : FsEntityLogic
     {
-        public float MoveSpeed { get; private set; } = 10;
+        public float MoveSpeed { get; private set; } = 20;
         
         public override void LogicFrame(FsBattleLogic battle, FsCmd cmd)
         {
@@ -24,7 +24,13 @@ namespace FrameSyncBattle
                 Debug.DrawRay(this.Position,Vector3.up,Color.red,battle.FrameLength);
                 Debug.DrawRay(this.Position,vel*10,Color.green,battle.FrameLength);
             }
-        }
 
+            if (cmd.ButtonContains(FsButton.Fire))
+            {
+                battle.AddEntity<FsBulletLogic>(this.Team,"",
+                    new FsBulletInitData()
+                        {Euler = this.Euler, Position = this.Position, FlySpeed = 50, LifeTime = 1f});
+            }
+        }
     }
 }

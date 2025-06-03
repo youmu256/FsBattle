@@ -9,55 +9,76 @@ namespace FrameSyncBattle
     /// </summary>
     public class FsBattleGame : FsBattleLogic
     {
-        public FsBattleGame(int fps) : base(fps)
+        public FsBattleGame(int fps, int seed) : base(fps, seed)
         {
         }
 
         public void StartBattle(BattleStartData startData)
         {
             //创建玩家
-            this.CreateEntity<FsPlayerLogic>("player",
-                new FsUnitInitData() { Euler = Vector3.zero, Position = Vector3.zero });
+            this.AddEntity<FsPlayerLogic>(PlayerTeam, "player",
+                new FsUnitInitData() {Euler = Vector3.zero, Position = Vector3.zero});
         }
 
         #region 渲染相关
 
-        public override T CreateEntity<T>(string entityTypeId, object initData)
+        public override T AddEntity<T>(int team,string entityTypeId, object initData)
         {
-            var logic = base.CreateEntity<T>(entityTypeId, initData);
+            var logic = base.AddEntity<T>(team,entityTypeId, initData);
             var view = FsEntityView.Create(logic);
             EntityViews.Add(view);
             return logic;
+        }
+
+        public override void RemoveEntity(FsEntityLogic entityLogic)
+        {
+            base.RemoveEntity(entityLogic);
+            var v = EntityViews.Find((view => view.Logic == entityLogic));
+            if (v != null)
+            {
+                v.OnRemove(this);
+                EntityViews.Remove(v);
+            }
         }
 
         #endregion
         
         public float ViewLerp { get; private set; }
         
+        public int ViewLerpStartFrame { get; private set; }
+        
         public List<FsEntityView> EntityViews = new();
 
         public void GameEngineUpdate(float deltaTime,FsCmd cmd)
         {
-            //准备渲染插值
-            int change = this.Update(deltaTime,cmd);
-            //计算表现插值 上一逻辑帧的位置插值到最新逻辑帧
+            //准备渲染插值进度增长
             ViewLerp += (deltaTime * 1f / this.FrameLength);
             if (ViewLerp > 1f)
                 ViewLerp = 1f;
+            
+            int change = this.Update(deltaTime,cmd);
+            
+            //最后再应用表现插值
             foreach (var view in EntityViews)
             {
                 view.ViewInterpolation(this,ViewLerp);
             }
+            //Debug.Log($"logic change {change}");
         }
 
         protected override void GameLogicFrame(FsCmd cmd)
         {
-            //立刻完成之前的插值表现
+            //逻辑帧更新之前重置插值进度 总是让上一逻辑帧状态往最新逻辑帧状态插值
+            ViewLerpStartFrame = FrameIndex;
+            //ViewLerp = 0;
+            //貌似会出现一些匀速移动上的不连贯 也可能是眼花
+            //让渲染进度直接保留逻辑模拟时间增量来尽量维持顺滑
+            ViewLerp = Accumulator / FrameLength;
             foreach (var view in EntityViews)
             {
-                view.PrepareLerp(this);
+                view.PrepareLerp(this,ViewLerp);
             }
-            ViewLerp = 0;
+            //所有逻辑对象更新
             base.GameLogicFrame(cmd);
         }
     }

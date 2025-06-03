@@ -1,11 +1,24 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace FrameSyncBattle
 {
     public class FsBattleUnity : MonoBehaviour
     {
+        private void Awake()
+        {
+            if (LimitRate)
+            {
+                QualitySettings.vSyncCount = 0;
+                Application.targetFrameRate = 60;
+            }
+        }
 
         public FsBattleGame Battle { get; private set; }
+
+        public int LogicFps = 20;
+        public bool LimitRate = false;
+        
         
         #region GameStart
 
@@ -19,11 +32,8 @@ namespace FrameSyncBattle
 
         public void StartGame()
         {
-            QualitySettings.vSyncCount = 0;
-            Application.targetFrameRate = 60;
-            Battle = new FsBattleGame(20);
+            Battle = new FsBattleGame(LogicFps,0);
             Battle.StartBattle(null);
-            
         }
 
         private void Update()

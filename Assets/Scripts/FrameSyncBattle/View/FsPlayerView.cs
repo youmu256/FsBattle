@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace FrameSyncBattle
 {
@@ -7,7 +8,11 @@ namespace FrameSyncBattle
         protected override void Init(FsEntityLogic entityLogic)
         {
             base.Init(entityLogic);
-            //GameObject.CreatePrimitive(PrimitiveType.Cube).transform.SetParent(this.transform);
+        }
+
+        public override void ViewInterpolation(FsBattleGame battleGame, float lerp)
+        {
+            base.ViewInterpolation(battleGame, lerp);
         }
     }
 }

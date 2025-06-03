@@ -12,6 +12,7 @@ namespace FrameSyncBattle
         {
             //后面考虑反射绑定
             { typeof(FsPlayerLogic),typeof(FsPlayerView) },
+            { typeof(FsBulletLogic),typeof(FsBulletView) },
         };
 
         public FsEntityView Create(FsEntityLogic logic)
@@ -53,6 +54,7 @@ namespace FrameSyncBattle
             this.Logic = entityLogic;
             StartPosition = entityLogic.Position;
             StartEuler = entityLogic.Euler;
+            Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
         }
         
         
@@ -67,11 +69,41 @@ namespace FrameSyncBattle
             transform.eulerAngles = euler;
         }
 
-        public virtual void PrepareLerp(FsBattleGame battleGame)
+        public virtual void PrepareLerp(FsBattleGame battleGame,float lerp)
         {
+            //在逻辑帧执行之前 设置旧的逻辑状态作为插值起点
             StartPosition = Logic.Position;
             StartEuler = Logic.Euler;
-            ViewInterpolation(battleGame,0f);
+            //ViewInterpolation(battleGame,lerp);
         }
+
+        /// <summary>
+        /// view对象被战斗逻辑移除时调用
+        /// 清空渲染对象
+        /// </summary>
+        /// <param name="battleGame"></param>
+        public virtual void OnRemove(FsBattleGame battleGame)
+        {
+            GameObject.Destroy(this.gameObject);
+        }
+
+        #region 模型相关
+        
+        public AnimModel Model { get; private set; }
+        public void SetModel(GameObject prefab,Transform root)
+        {
+            if (Model != null)
+            {
+                GameObject.Destroy(Model.gameObject);
+                Model = null;
+            }
+            var inst = GameObject.Instantiate(prefab, root, false);
+            inst.transform.localScale = Vector3.one;
+            inst.transform.localEulerAngles = Vector3.zero;
+            inst.transform.localPosition = Vector3.zero;
+
+            Model = inst.GetComponent<AnimModel>();
+        }
+        #endregion
     }
 }

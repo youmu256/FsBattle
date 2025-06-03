@@ -21,20 +21,32 @@ namespace FrameSyncBattle
     public partial class FsBattleLogic
     {
         //public GameEventHandler EventHandler { get; private set; } = new GameEventHandler();
-        public virtual T CreateEntity<T>(string entityTypeId, object initData) where T : FsEntityLogic, new()
+        protected List<FsEntityLogic> ToAddEntities = new();
+        public virtual T AddEntity<T>(int team,string entityTypeId, object initData) where T : FsEntityLogic, new()
         {
             var entity = new T();
-            entity.Init(entityTypeId, initData);
-            Entities.Add(entity);
+            entity.Init(team,entityTypeId, initData);
+            ToAddEntities.Add(entity);
             return entity;
+        }
+
+        protected List<FsEntityLogic> ToRemoveEntities = new();
+        public virtual void RemoveEntity(FsEntityLogic entityLogic)
+        {
+            ToRemoveEntities.Add(entityLogic);
         }
     }
 
     public partial class FsBattleLogic
     {
-        public FsBattleLogic(int fps)
+        public const int PlayerTeam = 0;
+        public const int EnemyTeam = 1;
+        
+        public Random Random { get; private set; }
+        public FsBattleLogic(int fps,int seed)
         {
             FrameRate = fps;
+            Random = new Random(seed);
         }
         protected List<FsEntityLogic> Entities = new ();
 
@@ -116,19 +128,29 @@ namespace FrameSyncBattle
             return logicFrames;
         }
 
-        public event Action<FsBattleLogic> PreLogicFrameEvent;
-        public event Action<FsBattleLogic> PostLogicFrameEvent;
-
+        public bool IsInEntityFrame { get; private set; }
+        
         protected virtual void GameLogicFrame(FsCmd cmd)
         {
             //因为逻辑帧数比渲染帧数低
             //一个游戏逻辑帧的时候可能已经有多个渲染帧操作了
-            PreLogicFrameEvent?.Invoke(this);
+            IsInEntityFrame = true;
             foreach (var fsEntity in Entities)
             {
                 fsEntity.LogicFrame(this,cmd);
             }
-            PostLogicFrameEvent?.Invoke(this);
+            IsInEntityFrame = false;
+
+            foreach (var entityLogic in ToAddEntities)
+            {
+                Entities.Add(entityLogic);
+            }
+            ToAddEntities.Clear();
+            foreach (var entityLogic in ToRemoveEntities)
+            {
+                Entities.Remove(entityLogic);
+            }
+            ToRemoveEntities.Clear();
         }
     }
 }
