@@ -26,6 +26,7 @@ namespace FrameSyncBattle
         {
             var logic = base.AddEntity<T>(team,entityTypeId, initData);
             var view = FsEntityView.Create(logic);
+            logic.BindView(view);
             EntityViews.Add(view);
             return logic;
         }

@@ -11,9 +11,20 @@ namespace FrameSyncBattle
             Animator = GetComponent<Animator>();
         }
 
-        public void Play(string anim, int layer, float normalizedTime)
+        public string LastAnim;
+
+        private void OnDisable()
         {
-            Animator.Play(anim,layer,normalizedTime);
+            LastAnim = null;
+        }
+
+        public void Play(PlayAnimParam animParam)
+        {
+            if (animParam.IgnoreRepeat && LastAnim == animParam.Animation)
+                return;
+            var hash = Animator.StringToHash(animParam.Animation);
+            Animator.Play(hash,animParam.Layer,animParam.NormalizedTime);
+            LastAnim = animParam.Animation;
         }
     }
 }

@@ -8,6 +8,7 @@ namespace FrameSyncBattle
         protected override void Init(FsEntityLogic entityLogic)
         {
             base.Init(entityLogic);
+            SetModel(FsBattleUnity.Instance.PlayerModel);
         }
 
         public override void ViewInterpolation(FsBattleGame battleGame, float lerp)

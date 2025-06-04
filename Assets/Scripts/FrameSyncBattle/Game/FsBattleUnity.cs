@@ -5,8 +5,19 @@ namespace FrameSyncBattle
 {
     public class FsBattleUnity : MonoBehaviour
     {
+        public static FsBattleUnity Instance { get; private set; }
+
+        #region PrefabRefs
+
+        public GameObject PlayerModel;
+
+        public GameObject BulletModel;
+
+        #endregion
+        
         private void Awake()
         {
+            Instance = this;
             if (LimitRate)
             {
                 QualitySettings.vSyncCount = 0;

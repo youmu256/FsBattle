@@ -11,8 +11,8 @@ namespace FrameSyncBattle
         public Dictionary<Type, Type> ViewMap = new Dictionary<Type, Type>()
         {
             //后面考虑反射绑定
-            { typeof(FsPlayerLogic),typeof(FsPlayerView) },
-            { typeof(FsBulletLogic),typeof(FsBulletView) },
+            {typeof(FsPlayerLogic), typeof(FsPlayerView)},
+            {typeof(FsBulletLogic), typeof(FsBulletView)},
         };
 
         public FsEntityView Create(FsEntityLogic logic)
@@ -30,18 +30,21 @@ namespace FrameSyncBattle
                 Debug.LogError($"Create View Error, logic:{logicType} not find match view");
                 view = go.AddComponent<FsEntityView>();
             }
+
             return view;
         }
-        
+
     }
-    
+
+
     /// <summary>
     /// Entity显示层基础类
     /// </summary>
-    public class FsEntityView : MonoBehaviour
+    public class FsEntityView : MonoBehaviour, IFsEntityView
     {
         private static readonly FsEntityViewCreator Creator = new();
         public FsEntityLogic Logic { get; private set; }
+
         public static FsEntityView Create<T>(T entityLogic) where T : FsEntityLogic, new()
         {
             var view = Creator.Create(entityLogic);
@@ -56,11 +59,12 @@ namespace FrameSyncBattle
             StartEuler = entityLogic.Euler;
             Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
         }
-        
-        
+
+
         //记录上一逻辑帧数据 用来插值 考虑用一个简单克隆对象来记录Logic对象?
         public Vector3 StartPosition;
         public Vector3 StartEuler;
+
         public virtual void ViewInterpolation(FsBattleGame battleGame, float lerp)
         {
             var position = Vector3.Lerp(StartPosition, Logic.Position, lerp);
@@ -69,7 +73,7 @@ namespace FrameSyncBattle
             transform.eulerAngles = euler;
         }
 
-        public virtual void PrepareLerp(FsBattleGame battleGame,float lerp)
+        public virtual void PrepareLerp(FsBattleGame battleGame, float lerp)
         {
             //在逻辑帧执行之前 设置旧的逻辑状态作为插值起点
             StartPosition = Logic.Position;
@@ -88,22 +92,35 @@ namespace FrameSyncBattle
         }
 
         #region 模型相关
-        
+
         public AnimModel Model { get; private set; }
-        public void SetModel(GameObject prefab,Transform root)
+
+        public void SetModel(GameObject prefab)
         {
             if (Model != null)
             {
                 GameObject.Destroy(Model.gameObject);
                 Model = null;
             }
-            var inst = GameObject.Instantiate(prefab, root, false);
+
+            var inst = GameObject.Instantiate(prefab, this.transform, false);
             inst.transform.localScale = Vector3.one;
             inst.transform.localEulerAngles = Vector3.zero;
             inst.transform.localPosition = Vector3.zero;
-
+            inst.gameObject.SetActive(true);
             Model = inst.GetComponent<AnimModel>();
         }
+
+        #endregion
+
+        #region IFsEntityView
+
+        public void Play(PlayAnimParam animParam)
+        {
+            if (Model == null) return;
+            Model.PlayAnimation(animParam);
+        }
+
         #endregion
     }
 }

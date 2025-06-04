@@ -26,6 +26,7 @@ namespace FrameSyncBattle
         {
             var entity = new T();
             entity.Init(team,entityTypeId, initData);
+            entity.OnCreate(this);
             ToAddEntities.Add(entity);
             return entity;
         }
@@ -33,6 +34,7 @@ namespace FrameSyncBattle
         protected List<FsEntityLogic> ToRemoveEntities = new();
         public virtual void RemoveEntity(FsEntityLogic entityLogic)
         {
+            entityLogic.OnRemove(this);
             ToRemoveEntities.Add(entityLogic);
         }
     }
