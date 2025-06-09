@@ -18,8 +18,33 @@ namespace FrameSyncBattle
         }
     }
 
+    public class FsEntityService
+    {
+        public List<FsUnitLogic> UnitEntitiesCache { get; set; } = new();
+        
+        public void UpdateEntityCache(FsEntityLogic entity,bool isAdd)
+        {
+            if (isAdd)
+            {
+                if (entity is FsUnitLogic unit)
+                {
+                    UnitEntitiesCache.Add(unit);
+                }
+            }
+            else
+            {
+                if (entity is FsUnitLogic unit)
+                {
+                    UnitEntitiesCache.Remove(unit);
+                }
+            }
+        }
+    }
+    
     public partial class FsBattleLogic
     {
+        public FsEntityService EntityService { get; private set; } = new();
+        
         //public GameEventHandler EventHandler { get; private set; } = new GameEventHandler();
         protected List<FsEntityLogic> ToAddEntities = new();
         public virtual T AddEntity<T>(int team,string entityTypeId, object initData) where T : FsEntityLogic, new()
@@ -28,6 +53,7 @@ namespace FrameSyncBattle
             entity.Init(team,entityTypeId, initData);
             entity.OnCreate(this);
             ToAddEntities.Add(entity);
+            EntityService.UpdateEntityCache(entity,true);
             return entity;
         }
 
@@ -36,7 +62,9 @@ namespace FrameSyncBattle
         {
             entityLogic.OnRemove(this);
             ToRemoveEntities.Add(entityLogic);
+            EntityService.UpdateEntityCache(entityLogic,false);
         }
+
     }
 
     public partial class FsBattleLogic
