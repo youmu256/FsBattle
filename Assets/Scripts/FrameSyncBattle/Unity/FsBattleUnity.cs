@@ -3,6 +3,22 @@ using UnityEngine;
 
 namespace FrameSyncBattle
 {
+    public class UnityLog : ILogger
+    {
+        public void LogError(object msg, object param)
+        {
+            Debug.LogError(msg,(UnityEngine.Object) param);
+        }
+        public void LogWarning(object msg, object param)
+        {
+            Debug.LogWarning(msg,(UnityEngine.Object) param);
+        }
+        public void Log(object msg, object param)
+        {
+            Debug.Log(msg,(UnityEngine.Object) param);
+        }
+    }
+
     public class FsBattleUnity : MonoBehaviour
     {
         public static FsBattleUnity Instance { get; private set; }
@@ -17,6 +33,7 @@ namespace FrameSyncBattle
         
         private void Awake()
         {
+            FsDebug.Set(new UnityLog());
             Instance = this;
             if (LimitRate)
             {

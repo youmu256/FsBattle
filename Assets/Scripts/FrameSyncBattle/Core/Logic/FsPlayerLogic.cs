@@ -24,8 +24,6 @@ namespace FrameSyncBattle
                 this.Position += vel;
                 this.Euler = Quaternion.LookRotation(vel).eulerAngles;
                 this.Play(new PlayAnimParam(){Animation = "Move",IgnoreRepeat = true});
-                Debug.DrawRay(this.Position,Vector3.up,Color.red,battle.FrameLength);
-                Debug.DrawRay(this.Position,vel*10,Color.green,battle.FrameLength);
             }
             else
             {

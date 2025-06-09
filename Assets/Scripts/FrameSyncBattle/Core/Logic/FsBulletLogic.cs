@@ -24,7 +24,10 @@ namespace FrameSyncBattle
             if (Timer >= Data.LifeTime)
             {
                 battle.RemoveEntity(this);
+                return;
             }
+            
+            
         }
     }
 }

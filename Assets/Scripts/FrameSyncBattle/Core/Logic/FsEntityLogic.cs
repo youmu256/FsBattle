@@ -3,15 +3,6 @@ using UnityEngine;
 
 namespace FrameSyncBattle
 {
-    /// <summary>
-    /// 逻辑层中需要能直接尝试调用一些View层行为
-    /// 比如播放动画
-    /// </summary>
-    public interface IFsEntityView : IAnimationPlayable
-    {
-
-    }
-
     public class FsEntityLogic : IAnimationPlayable
     {
         public static int IdGenerate { get; private set; }
