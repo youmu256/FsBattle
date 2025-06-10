@@ -17,7 +17,7 @@ namespace FrameSyncBattle
     {
         public int LogicFrameIndex;
         public FsButton Buttons = 0;
-
+        public float FireYaw;
         public bool ButtonContains(FsButton button)
         {
             return (Buttons & button) > 0;

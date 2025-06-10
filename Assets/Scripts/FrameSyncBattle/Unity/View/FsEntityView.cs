@@ -8,10 +8,10 @@ namespace FrameSyncBattle
 
     public class FsEntityViewCreator
     {
-        public Dictionary<Type, Type> ViewMap = new Dictionary<Type, Type>()
+        public Dictionary<Type, Type> ViewMap = new()
         {
-            //后面考虑反射绑定
-            {typeof(FsPlayerLogic), typeof(FsPlayerView)},
+            {typeof(FsPlayerLogic), typeof(FsUnitView)},
+            {typeof(FsUnitLogic), typeof(FsUnitView)},
             {typeof(FsBulletLogic), typeof(FsBulletView)},
         };
 
@@ -30,7 +30,6 @@ namespace FrameSyncBattle
                 Debug.LogError($"Create View Error, logic:{logicType} not find match view");
                 view = go.AddComponent<FsEntityView>();
             }
-
             return view;
         }
 
@@ -58,6 +57,16 @@ namespace FrameSyncBattle
             StartPosition = entityLogic.Position;
             StartEuler = entityLogic.Euler;
             Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
+            switch (entityLogic.TypeId)
+            {
+                case "player":
+                    SetModel(FsBattleUnity.Instance.PlayerModel);
+                    break;
+                case "enemy":
+                    SetModel(FsBattleUnity.Instance.PlayerModel);
+                    break;
+            }
+            ViewInterpolation(0);
         }
 
 
@@ -65,7 +74,7 @@ namespace FrameSyncBattle
         public Vector3 StartPosition;
         public Vector3 StartEuler;
 
-        public virtual void ViewInterpolation(FsBattleGame battleGame, float lerp)
+        public virtual void ViewInterpolation(float lerp)
         {
             var position = Vector3.Lerp(StartPosition, Logic.Position, lerp);
             transform.position = position;

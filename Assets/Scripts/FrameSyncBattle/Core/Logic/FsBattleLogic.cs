@@ -20,25 +20,25 @@ namespace FrameSyncBattle
 
     public class FsEntityService
     {
-        public List<FsUnitLogic> UnitEntitiesCache { get; set; } = new();
-        
+        public readonly List<FsUnitLogic> Units = new();
         public void UpdateEntityCache(FsEntityLogic entity,bool isAdd)
         {
             if (isAdd)
             {
                 if (entity is FsUnitLogic unit)
                 {
-                    UnitEntitiesCache.Add(unit);
+                    Units.Add(unit);
                 }
             }
             else
             {
                 if (entity is FsUnitLogic unit)
                 {
-                    UnitEntitiesCache.Remove(unit);
+                    Units.Remove(unit);
                 }
             }
         }
+        
     }
     
     public partial class FsBattleLogic
@@ -81,6 +81,7 @@ namespace FrameSyncBattle
         protected List<FsEntityLogic> Entities = new ();
 
         #region 逻辑帧相关
+        public float LogicTime { get; private set; }
         protected float Accumulator { get; private set; }
         public int FrameIndex { get; private set; }
         public int FrameRate { get; private set; }
@@ -124,6 +125,8 @@ namespace FrameSyncBattle
             foreach (var fsCmd in cmdList)
             {
                 cmd.Buttons |= fsCmd.Buttons;
+                if(fsCmd.ButtonContains(FsButton.Fire))
+                    cmd.FireYaw = fsCmd.FireYaw;
             }
             cmd.LogicFrameIndex = FrameIndex;
             return cmd;
@@ -152,6 +155,7 @@ namespace FrameSyncBattle
                 Accumulator -= FrameLength;
                 GameLogicFrame(cmd);
                 FrameIndex++;
+                LogicTime += FrameLength;
                 logicFrames++;
             }
             #endregion
@@ -165,6 +169,7 @@ namespace FrameSyncBattle
             //因为逻辑帧数比渲染帧数低
             //一个游戏逻辑帧的时候可能已经有多个渲染帧操作了
             IsInEntityFrame = true;
+            //考虑改成链表?这样新增和删除应该都能正常 而且能直接吃到走帧逻辑
             foreach (var fsEntity in Entities)
             {
                 fsEntity.LogicFrame(this,cmd);
@@ -174,6 +179,7 @@ namespace FrameSyncBattle
             foreach (var entityLogic in ToAddEntities)
             {
                 Entities.Add(entityLogic);
+                //entityLogic.LogicFrame(this,cmd);//新增的对象立刻补上一帧逻辑 但是如果里面又有新增就又破坏迭代器了
             }
             ToAddEntities.Clear();
             foreach (var entityLogic in ToRemoveEntities)

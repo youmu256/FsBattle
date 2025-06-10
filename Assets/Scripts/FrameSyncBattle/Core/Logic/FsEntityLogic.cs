@@ -13,6 +13,7 @@ namespace FrameSyncBattle
         public Vector3 Euler { get; protected set; }
 
         public int Team { get; protected set; }
+        private FsEntityInitData Data => InitData as FsEntityInitData;
 
         public FsEntityLogic()
         {
@@ -30,6 +31,8 @@ namespace FrameSyncBattle
             this.Team = team;
             this.InitData = initData;
             this.TypeId = entityTypeId;
+            this.Position = Data.Position;
+            this.Euler = Data.Euler;
         }
 
         public virtual void OnCreate(FsBattleLogic battle)

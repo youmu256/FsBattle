@@ -31,6 +31,8 @@ namespace FrameSyncBattle
 
         #endregion
         
+        public Camera GameCamera { get; private set; }
+        
         private void Awake()
         {
             FsDebug.Set(new UnityLog());
@@ -40,6 +42,7 @@ namespace FrameSyncBattle
                 QualitySettings.vSyncCount = 0;
                 Application.targetFrameRate = 60;
             }
+            GameCamera = Camera.main;
         }
 
         public FsBattleGame Battle { get; private set; }
@@ -61,17 +64,25 @@ namespace FrameSyncBattle
         public void StartGame()
         {
             Battle = new FsBattleGame(LogicFps,0);
-            Battle.StartBattle(null);
+            Battle.StartBattle(new BattleStartData());
+            Player = Battle.EntityService.Units.Find((unit => unit.Team == FsBattleLogic.PlayerTeam));
         }
+
+        public FsUnitLogic Player { get; private set; }
 
         private void Update()
         {
             if (Battle == null) return;
-            Battle.GameEngineUpdate(Time.deltaTime,GetInputCmd());
+            Battle.GameEngineUpdate(Time.deltaTime, GetInputCmd());
+            var view = Player.View as FsEntityView;
+            if (view != null)
+            {
+                var position = view.transform.position;
+                GameCamera.transform.position = new Vector3(position.x, 10, position.z);
+            }
         }
+
         #endregion
-        
-        
         
         public FsCmd GetInputCmd()
         {
@@ -89,8 +100,18 @@ namespace FrameSyncBattle
             if (Input.GetKey(KeyCode.D))
                 cmd.Buttons |= FsButton.D;
 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButton(0))
+            {
                 cmd.Buttons |= FsButton.Fire;
+                var ray = GameCamera.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out var hit))
+                {
+                    Vector3 dir = hit.point - Player.Position;
+                    dir.y = 0;
+                    dir.Normalize();
+                    cmd.FireYaw = Vector3.SignedAngle(Vector3.forward, dir, Vector3.up);
+                }
+            }
             return cmd;
         }
     }

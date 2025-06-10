@@ -9,6 +9,18 @@ namespace FrameSyncBattle
         bool DoFilter(FsUnitLogic unit);
     }
 
+    //将用到的匿名类都手动写出来 然后就可以用对象池管理起来
+    
+    public class UnitInRangeFilter : IUnitSelectorFilter
+    {
+        public float Range;
+        public Vector3 Position;
+        public bool DoFilter(FsUnitLogic unit)
+        {
+            var p = unit.Position - Position;
+            return p.magnitude <= Range;
+        }
+    }
     public class CustomFilter : IUnitSelectorFilter
     {
         public Func<FsUnitLogic, bool> Condition { get; private set; }
@@ -23,30 +35,39 @@ namespace FrameSyncBattle
             return Condition.Invoke(unit);
         }
     }
-
+    
     public class UnitSelector
     {
-        public List<IUnitSelectorFilter> Filters = new();
-
+        public List<Func<FsUnitLogic, bool>> Filters = new();
         public UnitSelector InRange(Vector3 position, float range)
         {
-            Filters.Add(new CustomFilter((unit =>
-            {
-                var p = unit.Position - position;
-                return p.magnitude <= range;
-            })));
+            Filters.Add(new UnitInRangeFilter(){Position = position,Range = range}.DoFilter);
             return this;
         }
 
-        public void Fill(FsBattleLogic battleLogic, List<FsUnitLogic> results)
+        public UnitSelector Condition(Func<FsUnitLogic, bool> condition)
         {
-            var units = battleLogic.EntityService.UnitEntitiesCache;
+            Filters.Add(condition);
+            return this;
+        }
+
+        public IComparer<FsUnitLogic> Comparer { get; private set; }
+        
+        public UnitSelector Sort(IComparer<FsUnitLogic> comparer)
+        {
+            this.Comparer = comparer;
+            return this;
+        }
+
+        public void SelectTo(FsBattleLogic battleLogic, List<FsUnitLogic> results)
+        {
+            var units = battleLogic.EntityService.Units;
             foreach (var unit in units)
             {
                 bool isValidUnit = true;
                 foreach (var filter in Filters)
                 {
-                    bool valid = filter.DoFilter(unit);
+                    bool valid = filter.Invoke(unit);
                     if (valid == false)
                     {
                         isValidUnit = false;
@@ -59,19 +80,15 @@ namespace FrameSyncBattle
                     results.Add(unit);
                 }
             }
+            if(Comparer!=null)
+                results.Sort(Comparer);
         }
-        public UnitSelector Custom(CustomFilter filter)
-        {
-            Filters.Add(filter);
-            return this;
-        }
-        public List<FsUnitLogic> Get(FsBattleLogic battleLogic)
+        public List<FsUnitLogic> Select(FsBattleLogic battleLogic)
         {
             List<FsUnitLogic> rets = new List<FsUnitLogic>();
-            Fill(battleLogic, rets);
+            SelectTo(battleLogic, rets);
             return rets;
         }
-
     }
 
     public class TestClass
@@ -79,7 +96,7 @@ namespace FrameSyncBattle
         public void T(FsBattleLogic battle)
         {
             List<FsUnitLogic> targets = new List<FsUnitLogic>();
-            new UnitSelector().InRange(Vector3.zero, 100).Fill(battle, targets);
+            new UnitSelector().InRange(Vector3.zero, 100).SelectTo(battle, targets);
             foreach (var target in targets)
             {
                 //do damage etc..

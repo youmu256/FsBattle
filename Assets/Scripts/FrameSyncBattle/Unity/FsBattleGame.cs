@@ -16,8 +16,11 @@ namespace FrameSyncBattle
         public void StartBattle(BattleStartData startData)
         {
             //创建玩家
-            this.AddEntity<FsPlayerLogic>(PlayerTeam, "player",
+            this.AddEntity<FsPlayerLogic>(FsBattleLogic.PlayerTeam, "player",
                 new FsUnitInitData() {Euler = Vector3.zero, Position = Vector3.zero});
+            //根据data创建敌人
+            this.AddEntity<FsUnitLogic>(FsBattleLogic.EnemyTeam, "enemy",
+                new FsUnitInitData() {Euler = Vector3.zero, Position = Vector3.forward});
         }
 
         #region 渲染相关
@@ -62,7 +65,7 @@ namespace FrameSyncBattle
             //最后再应用表现插值
             foreach (var view in EntityViews)
             {
-                view.ViewInterpolation(this,ViewLerp);
+                view.ViewInterpolation(ViewLerp);
             }
             //Debug.Log($"logic change {change}");
         }
