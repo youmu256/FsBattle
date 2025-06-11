@@ -34,10 +34,10 @@ namespace FrameSyncBattle
             return logic;
         }
 
-        public override void RemoveEntity(FsEntityLogic entityLogic)
+        public override void RemoveEntity(FsEntityLogic entity)
         {
-            base.RemoveEntity(entityLogic);
-            var v = EntityViews.Find((view => view.Logic == entityLogic));
+            base.RemoveEntity(entity);
+            var v = EntityViews.Find((view => view.Logic == entity));
             if (v != null)
             {
                 v.OnRemove(this);

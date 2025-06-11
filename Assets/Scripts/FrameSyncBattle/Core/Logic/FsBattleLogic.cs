@@ -46,23 +46,21 @@ namespace FrameSyncBattle
         public FsEntityService EntityService { get; private set; } = new();
         
         //public GameEventHandler EventHandler { get; private set; } = new GameEventHandler();
-        protected List<FsEntityLogic> ToAddEntities = new();
         public virtual T AddEntity<T>(int team,string entityTypeId, object initData) where T : FsEntityLogic, new()
         {
             var entity = new T();
             entity.Init(team,entityTypeId, initData);
             entity.OnCreate(this);
-            ToAddEntities.Add(entity);
+            Entities.Add(entity);
             EntityService.UpdateEntityCache(entity,true);
             return entity;
         }
 
-        protected List<FsEntityLogic> ToRemoveEntities = new();
-        public virtual void RemoveEntity(FsEntityLogic entityLogic)
+        public virtual void RemoveEntity(FsEntityLogic entity)
         {
-            entityLogic.OnRemove(this);
-            ToRemoveEntities.Add(entityLogic);
-            EntityService.UpdateEntityCache(entityLogic,false);
+            entity.OnRemove(this);
+            Entities.Remove(entity);
+            EntityService.UpdateEntityCache(entity,false);
         }
 
     }
@@ -78,8 +76,9 @@ namespace FrameSyncBattle
             FrameRate = fps;
             Random = new Random(seed);
         }
-        protected List<FsEntityLogic> Entities = new ();
 
+        protected FsLinkedList<FsEntityLogic> Entities = new();
+        
         #region 逻辑帧相关
         public float LogicTime { get; private set; }
         protected float Accumulator { get; private set; }
@@ -162,31 +161,16 @@ namespace FrameSyncBattle
             return logicFrames;
         }
 
-        public bool IsInEntityFrame { get; private set; }
-        
+        //因为逻辑帧数比渲染帧数低
+        //一个游戏逻辑帧的时候可能已经有多个渲染帧操作了
+
         protected virtual void GameLogicFrame(FsCmd cmd)
         {
-            //因为逻辑帧数比渲染帧数低
-            //一个游戏逻辑帧的时候可能已经有多个渲染帧操作了
-            IsInEntityFrame = true;
-            //考虑改成链表?这样新增和删除应该都能正常 而且能直接吃到走帧逻辑
-            foreach (var fsEntity in Entities)
+            var p = (this, cmd);
+            Entities.ForEach(ref p, ((logic, param) =>
             {
-                fsEntity.LogicFrame(this,cmd);
-            }
-            IsInEntityFrame = false;
-
-            foreach (var entityLogic in ToAddEntities)
-            {
-                Entities.Add(entityLogic);
-                //entityLogic.LogicFrame(this,cmd);//新增的对象立刻补上一帧逻辑 但是如果里面又有新增就又破坏迭代器了
-            }
-            ToAddEntities.Clear();
-            foreach (var entityLogic in ToRemoveEntities)
-            {
-                Entities.Remove(entityLogic);
-            }
-            ToRemoveEntities.Clear();
+                logic.LogicFrame(param.Item1, param.cmd);
+            }));
         }
     }
 }
