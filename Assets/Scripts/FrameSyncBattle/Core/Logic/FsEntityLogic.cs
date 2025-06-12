@@ -61,6 +61,13 @@ namespace FrameSyncBattle
 
         public void Play(PlayAnimParam animParam)
         {
+            /*
+             * TODO
+             * 目前存在一个问题
+             * 让表现层对象去播放动画目前存在的问题，因为View层要进行插值，所以实际上是晚一个逻辑帧的
+             * 比如逻辑帧里移动到指定为止后开始播放攻击动画，在表现层实际上会还没到位置就开始播放攻击动画
+             * 考虑是否表现层应该也严格遵守插值渲染的流程
+             */
             View?.Play(animParam);
         }
 

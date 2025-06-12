@@ -8,7 +8,7 @@ namespace FrameSyncBattle
         {
             base.Init(entityLogic);
             var model = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            model.transform.SetParent(this.transform,false);
+            model.transform.SetParent(CachedTransform,false);
             model.transform.localScale = Vector3.one * 0.2f;
         }
     }

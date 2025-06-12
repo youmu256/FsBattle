@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace FrameSyncBattle
 {
@@ -37,11 +38,11 @@ namespace FrameSyncBattle
         public override void RemoveEntity(FsEntityLogic entity)
         {
             base.RemoveEntity(entity);
-            var v = EntityViews.Find((view => view.Logic == entity));
-            if (v != null)
+            if (entity.View is FsEntityView view)
             {
-                v.OnRemove(this);
-                EntityViews.Remove(v);
+                entity.BindView(null);
+                view.OnRemove(this);
+                EntityViews.Remove(view);
             }
         }
 
@@ -51,7 +52,7 @@ namespace FrameSyncBattle
         
         public int ViewLerpStartFrame { get; private set; }
         
-        public List<FsEntityView> EntityViews = new();
+        public FsLinkedList<FsEntityView> EntityViews = new();
 
         public void GameEngineUpdate(float deltaTime,FsCmd cmd)
         {
@@ -78,10 +79,18 @@ namespace FrameSyncBattle
             //貌似会出现一些匀速移动上的不连贯 也可能是眼花
             //让渲染进度直接保留逻辑模拟时间增量来尽量维持顺滑
             ViewLerp = Accumulator / FrameLength;
+
+            var game = (this);
+            EntityViews.ForEach(ref game,((view, param) =>
+            {
+                view.PrepareLerp(param,param.ViewLerp);
+            }));
+            /*
             foreach (var view in EntityViews)
             {
                 view.PrepareLerp(this,ViewLerp);
             }
+            */
             //所有逻辑对象更新
             base.GameLogicFrame(cmd);
         }

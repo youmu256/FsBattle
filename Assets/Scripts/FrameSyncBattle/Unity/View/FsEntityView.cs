@@ -44,6 +44,8 @@ namespace FrameSyncBattle
         private static readonly FsEntityViewCreator Creator = new();
         public FsEntityLogic Logic { get; private set; }
 
+        public Transform CachedTransform { get; private set; }//调用this.transfrom会有gcalloc...
+        
         public static FsEntityView Create<T>(T entityLogic) where T : FsEntityLogic, new()
         {
             var view = Creator.Create(entityLogic);
@@ -53,10 +55,11 @@ namespace FrameSyncBattle
 
         protected virtual void Init(FsEntityLogic entityLogic)
         {
-            this.Logic = entityLogic;
+            CachedTransform = this.transform;
+            Logic = entityLogic;
             StartPosition = entityLogic.Position;
             StartEuler = entityLogic.Euler;
-            Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
+            //Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
             switch (entityLogic.TypeId)
             {
                 case "player":
@@ -77,9 +80,9 @@ namespace FrameSyncBattle
         public virtual void ViewInterpolation(float lerp)
         {
             var position = Vector3.Lerp(StartPosition, Logic.Position, lerp);
-            transform.position = position;
+            CachedTransform.position = position;
             var euler = Vector3.Lerp(StartEuler, Logic.Euler, lerp);
-            transform.eulerAngles = euler;
+            CachedTransform.eulerAngles = euler;
         }
 
         public virtual void PrepareLerp(FsBattleGame battleGame, float lerp)
