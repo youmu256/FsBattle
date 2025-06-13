@@ -166,11 +166,15 @@ namespace FrameSyncBattle
 
         protected virtual void GameLogicFrame(FsCmd cmd)
         {
+            RecordCmds.Add(cmd);
             var p = (this, cmd);
             Entities.ForEach(ref p, ((logic, param) =>
             {
                 logic.LogicFrame(param.Item1, param.cmd);
             }));
         }
+
+        public List<FsCmd> RecordCmds { get; private set; } = new();
+
     }
 }

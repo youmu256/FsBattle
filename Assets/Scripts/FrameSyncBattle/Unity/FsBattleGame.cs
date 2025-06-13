@@ -37,13 +37,13 @@ namespace FrameSyncBattle
 
         public override void RemoveEntity(FsEntityLogic entity)
         {
-            base.RemoveEntity(entity);
             if (entity.View is FsEntityView view)
             {
                 entity.BindView(null);
                 view.OnRemove(this);
                 EntityViews.Remove(view);
             }
+            base.RemoveEntity(entity);
         }
 
         #endregion
