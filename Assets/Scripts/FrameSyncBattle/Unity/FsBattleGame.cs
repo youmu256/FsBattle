@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Profiling;
-
+﻿
 namespace FrameSyncBattle
 {
     /// <summary>
@@ -10,20 +6,6 @@ namespace FrameSyncBattle
     /// </summary>
     public class FsBattleGame : FsBattleLogic
     {
-        public FsBattleGame(int fps, int seed) : base(fps, seed)
-        {
-        }
-
-        public void StartBattle(BattleStartData startData)
-        {
-            //创建玩家
-            this.AddEntity<FsPlayerLogic>(FsBattleLogic.PlayerTeam, "player",
-                new FsUnitInitData() {Euler = Vector3.zero, Position = Vector3.zero});
-            //根据data创建敌人
-            this.AddEntity<FsUnitLogic>(FsBattleLogic.EnemyTeam, "enemy",
-                new FsUnitInitData() {Euler = Vector3.zero, Position = Vector3.forward});
-        }
-
         #region 渲染相关
 
         public override T AddEntity<T>(int team,string entityTypeId, object initData)
@@ -60,9 +42,14 @@ namespace FrameSyncBattle
             ViewLerp += (deltaTime * 1f / this.FrameLength);
             if (ViewLerp > 1f)
                 ViewLerp = 1f;
-            
-            int change = this.Update(deltaTime,cmd);
-            
+            if (IsReplayMode)
+            {
+                this.ReplayUpdate(deltaTime);
+            }
+            else
+            {
+                this.Update(deltaTime,cmd);
+            }
             //最后再应用表现插值
             foreach (var view in EntityViews)
             {

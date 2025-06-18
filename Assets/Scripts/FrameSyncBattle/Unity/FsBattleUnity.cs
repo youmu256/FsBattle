@@ -49,22 +49,54 @@ namespace FrameSyncBattle
 
         public int LogicFps = 20;
         public bool LimitRate = false;
-        
-        
+
         #region GameStart
 
         private void OnGUI()
         {
             if (GUILayout.Button("StartGame"))
             {
+                EndGame();
+                InitTestBattle();
+                StartGame();
+            }
+            if (GUILayout.Button("EndGame&Replay"))
+            {
+                var save = Battle.ReplaySave;
+                EndGame();
+                if (save == null) return;
+                //replay
+                InitReplayBattle(save);
                 StartGame();
             }
         }
 
+        public void EndGame()
+        {
+            Battle?.CleanBattle();
+            Battle = null;
+            Player = null;
+        }
+
+        public void InitTestBattle()
+        {
+            Battle = new FsBattleGame();
+            var startData = new FsBattleStartData();
+            startData.PlayerTeamUnits.Add(new FsBattleStartUnitData(){TypeId = "player",UnitInitData = new FsUnitInitData()});
+            startData.EnemyTeamUnits.Add(new FsBattleStartUnitData(){TypeId = "enemy",UnitInitData = new FsUnitInitData(){Euler = Vector3.zero,Position = Vector3.forward}});
+            startData.EnemyTeamUnits.Add(new FsBattleStartUnitData(){TypeId = "enemy",UnitInitData = new FsUnitInitData(){Euler = Vector3.zero,Position = Vector3.back}});
+            Battle.Init(LogicFps, 0,startData);
+        }
+
+        public void InitReplayBattle(FsBattleReplay replay)
+        {
+            Battle = new FsBattleGame();
+            Battle.InitByReplay(replay);
+        }
+        
         public void StartGame()
         {
-            Battle = new FsBattleGame(LogicFps,0);
-            Battle.StartBattle(new BattleStartData());
+            Battle.StartBattle();
             Player = Battle.EntityService.Units.Find((unit => unit.Team == FsBattleLogic.PlayerTeam));
         }
 
@@ -73,7 +105,10 @@ namespace FrameSyncBattle
         private void Update()
         {
             if (Battle == null) return;
-            Battle.GameEngineUpdate(Time.deltaTime, GetInputCmd());
+            FsCmd cmd = null;
+            if (Battle.IsReplayMode == false)
+                cmd = GetInputCmd();
+            Battle.GameEngineUpdate(Time.deltaTime,cmd);
             var view = Player.View as FsEntityView;
             if (view != null)
             {

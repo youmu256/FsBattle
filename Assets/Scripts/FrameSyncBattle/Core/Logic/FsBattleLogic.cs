@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine;
+using Random = System.Random;
 
 namespace FrameSyncBattle
 {
@@ -69,12 +70,52 @@ namespace FrameSyncBattle
     {
         public const int PlayerTeam = 0;
         public const int EnemyTeam = 1;
-        
-        public Random Random { get; private set; }
-        public FsBattleLogic(int fps,int seed)
+        public bool IsReplayMode { get; private set; } = false;
+
+        public Random RandomGen { get; private set; }
+        public void Init(int fps,int seed,FsBattleStartData startData)
         {
-            FrameRate = fps;
-            Random = new Random(seed);
+            IsReplayMode = false;
+            Fps = fps;
+            RandomGen = new Random(seed);
+            //replay save init
+            ReplaySave = new FsBattleReplay();
+            ReplaySave.Init(fps,seed,startData);
+            InitBattleEntities(startData);
+        }
+
+        public void InitByReplay(FsBattleReplay replay)
+        {
+            IsReplayMode = true;
+            this.Fps = replay.Fps;
+            this.RandomGen = new Random(replay.Seed);
+            ReplaySave = null;
+            Replay = replay;
+            InitBattleEntities(replay.StartData);
+        }
+
+        private void InitBattleEntities(FsBattleStartData startData)
+        {
+            //battle unitss init
+            foreach (var unitData in startData.PlayerTeamUnits)
+            {
+                this.AddEntity<FsPlayerLogic>(PlayerTeam, unitData.TypeId, unitData.UnitInitData);
+            }
+            foreach (var unitData in startData.EnemyTeamUnits)
+            {
+                this.AddEntity<FsUnitLogic>(EnemyTeam, unitData.TypeId, unitData.UnitInitData);
+            }
+        }
+        
+
+        public void StartBattle()
+        {
+        }
+
+        public void CleanBattle()
+        {
+            var p = (this);
+            Entities.ForEach(ref p, ((logic, param) => { param.RemoveEntity(logic); }));
         }
 
         protected FsLinkedList<FsEntityLogic> Entities = new();
@@ -83,35 +124,18 @@ namespace FrameSyncBattle
         public float LogicTime { get; private set; }
         protected float Accumulator { get; private set; }
         public int FrameIndex { get; private set; }
-        public int FrameRate { get; private set; }
+        public int Fps { get; private set; }
         public float FrameLength
         {
             get
             {
-                return 1f / FrameRate;
+                return 1f / Fps;
             }
         }
 
         #endregion
         
-        #region 操作
-        /*
-        public List<FsCmd> PlayerLogicCmdList = new();
-        public int LogicCmdIndex = 0;
-        public FsCmd GetFrameLogicCmd(int logicFrame)
-        {
-            for (int i = LogicCmdIndex; i < PlayerLogicCmdList.Count; i++)
-            {
-                var cmd = PlayerLogicCmdList[i];
-                if (cmd.LogicFrameIndex == logicFrame)
-                {
-                    LogicCmdIndex = i + 1;
-                    return cmd;
-                }
-            }
-            return null;
-        }
-        */
+        #region 多操作合并
         protected List<FsCmd> SubmitCmdCache = new();
         /*从缓存操作中合并操作得到一个逻辑帧操作*/
         private FsCmd MergeCmdList(List<FsCmd> cmdList)
@@ -137,14 +161,14 @@ namespace FrameSyncBattle
         /// 驱动战斗逻辑更新
         /// </summary>
         /// <param name="deltaTime"></param>
-        /// <param name="frameCmd"></param>
+        /// <param name="inputCmd"></param>
         /// <returns></returns>
-        public int Update(float deltaTime,FsCmd frameCmd)
+        public int Update(float deltaTime,FsCmd inputCmd)
         {
             //float需要保证不同平台计算精准性
             int logicFrames = 0;
             var past = deltaTime;
-            SubmitCmdCache.Add(frameCmd);
+            SubmitCmdCache.Add(inputCmd);
             #region 推进游戏逻辑帧
             Accumulator += past;
             while (Accumulator >= FrameLength)
@@ -152,6 +176,7 @@ namespace FrameSyncBattle
                 var cmd = MergeCmdList(SubmitCmdCache);
                 SubmitCmdCache.Clear();
                 Accumulator -= FrameLength;
+                ReplaySave?.SaveCmd(cmd);
                 GameLogicFrame(cmd);
                 FrameIndex++;
                 LogicTime += FrameLength;
@@ -161,12 +186,50 @@ namespace FrameSyncBattle
             return logicFrames;
         }
 
-        //因为逻辑帧数比渲染帧数低
-        //一个游戏逻辑帧的时候可能已经有多个渲染帧操作了
-
+        #region 录像重播
+        
+        public int ReplayCmdIndex = 0;
+        public FsCmd GetFrameReplayCmd(int logicFrame)
+        {
+            for (int i = ReplayCmdIndex; i < Replay.Cmds.Count; i++)
+            {
+                var cmd = Replay.Cmds[i];
+                if (cmd.LogicFrameIndex == logicFrame)
+                {
+                    ReplayCmdIndex = i + 1;
+                    return cmd;
+                }
+            }
+            return null;
+        }
+        /// <summary>
+        /// 重播的方式驱动战斗逻辑更新
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        /// <returns></returns>
+        public int ReplayUpdate(float deltaTime)
+        {
+            //整体逻辑与Update相同 主要是操作是来自记录而不是输入提供
+            int logicFrames = 0;
+            var past = deltaTime;
+            #region 推进游戏逻辑帧
+            Accumulator += past;
+            while (Accumulator >= FrameLength)
+            {
+                FsCmd replayCmd = GetFrameReplayCmd(FrameIndex);
+                Accumulator -= FrameLength;
+                GameLogicFrame(replayCmd);
+                FrameIndex++;
+                LogicTime += FrameLength;
+                logicFrames++;
+            }
+            #endregion
+            return logicFrames;
+        }
+        #endregion
+        
         protected virtual void GameLogicFrame(FsCmd cmd)
         {
-            RecordCmds.Add(cmd);
             var p = (this, cmd);
             Entities.ForEach(ref p, ((logic, param) =>
             {
@@ -174,7 +237,38 @@ namespace FrameSyncBattle
             }));
         }
 
-        public List<FsCmd> RecordCmds { get; private set; } = new();
+        /// <summary>
+        /// 如果不为空 说明本次战斗开启了记录
+        /// </summary>
+        public FsBattleReplay ReplaySave { get; private set; }
+        
+        /// <summary>
+        /// 正在使用的录像数据
+        /// </summary>
+        public FsBattleReplay Replay { get; private set; }
+        
+    }
 
+    public class FsBattleReplay
+    {
+        public int Fps;
+        public int Seed;
+        public FsBattleStartData StartData;
+        public List<FsCmd> Cmds;
+
+        public void Init(int fps,int seed,FsBattleStartData startData)
+        {
+            this.Fps = fps;
+            this.Seed = seed;
+            this.StartData = startData;
+            this.Cmds = new List<FsCmd>();
+        }
+        
+        
+        public void SaveCmd(FsCmd cmd)
+        {
+            Cmds.Add(cmd);
+        }
+        
     }
 }
