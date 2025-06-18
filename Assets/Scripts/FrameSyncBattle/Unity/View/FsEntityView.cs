@@ -12,7 +12,7 @@ namespace FrameSyncBattle
         {
             {typeof(FsPlayerLogic), typeof(FsUnitView)},
             {typeof(FsUnitLogic), typeof(FsUnitView)},
-            {typeof(FsBulletLogic), typeof(FsBulletView)},
+            {typeof(FsBulletLogic), typeof(FsEntityView)},
         };
 
         public FsEntityView Create(FsEntityLogic logic)
@@ -32,7 +32,6 @@ namespace FrameSyncBattle
             }
             return view;
         }
-
     }
 
 
@@ -67,6 +66,9 @@ namespace FrameSyncBattle
                     break;
                 case "enemy":
                     SetModel(FsBattleUnity.Instance.PlayerModel);
+                    break;
+                case "bullet":
+                    SetModel(FsBattleUnity.Instance.BulletModel,0.2f);
                     break;
             }
             ViewInterpolation(0);
@@ -107,16 +109,15 @@ namespace FrameSyncBattle
 
         public AnimModel Model { get; private set; }
 
-        public void SetModel(GameObject prefab)
+        public void SetModel(GameObject prefab,float scale = 1f)
         {
             if (Model != null)
             {
                 GameObject.Destroy(Model.gameObject);
                 Model = null;
             }
-
             var inst = GameObject.Instantiate(prefab, this.transform, false);
-            inst.transform.localScale = Vector3.one;
+            inst.transform.localScale = Vector3.one * scale;
             inst.transform.localEulerAngles = Vector3.zero;
             inst.transform.localPosition = Vector3.zero;
             inst.gameObject.SetActive(true);

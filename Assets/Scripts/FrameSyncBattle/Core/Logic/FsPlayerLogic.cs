@@ -23,7 +23,7 @@ namespace FrameSyncBattle
                     //显示上会对不上 因为view层是落后一逻辑帧的...而且新增的逻辑对象 在下一帧才会执行到逻辑看起来会停在原地一会
                     Vector3 euler = new Vector3(0, cmd.FireYaw, 0);
                     Vector3 firePosition = this.Position;
-                    battle.AddEntity<FsBulletLogic>(this.Team, "",
+                    battle.AddEntity<FsBulletLogic>(this.Team, "bullet",
                         new FsBulletInitData()
                             {Euler = euler, Position = firePosition, FlySpeed = 50, LifeTime = 1f});
                 }
