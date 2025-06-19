@@ -3,6 +3,12 @@ using UnityEngine;
 
 namespace FrameSyncBattle
 {
+    public class FsEntityLogicViewSnapshot{
+        //有2个逻辑快照就能让渲染层进行插值显示了
+        public Vector3 Position;
+        public Vector3 Euler;
+    }
+    
     public class FsEntityLogic : IAnimationPlayable
     {
         public static int IdGenerate { get; private set; }
@@ -11,6 +17,16 @@ namespace FrameSyncBattle
         public string TypeId { get; protected set; }
         public Vector3 Position { get; protected set; }
         public Vector3 Euler { get; protected set; }
+        
+        //public string Animation { get; protected set; }
+
+        public FsEntityLogicViewSnapshot CreateViewSnapshot()
+        {
+            FsEntityLogicViewSnapshot shot = new FsEntityLogicViewSnapshot();
+            shot.Position = this.Position;
+            shot.Euler = this.Euler;
+            return shot;
+        }
 
         public int Team { get; protected set; }
         private FsEntityInitData Data => InitData as FsEntityInitData;

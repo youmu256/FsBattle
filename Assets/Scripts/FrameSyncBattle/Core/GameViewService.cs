@@ -14,6 +14,7 @@
         /// </summary>
         public bool IgnoreRepeat;
     }
+
     
     /// <summary>
     /// 可以播放动画的接口

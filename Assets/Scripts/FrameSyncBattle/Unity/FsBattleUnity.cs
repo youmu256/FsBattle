@@ -82,6 +82,7 @@ namespace FrameSyncBattle
         {
             Battle = new FsBattleGame();
             var startData = new FsBattleStartData();
+            //TODO 统一Entity类+逻辑组件化 
             startData.PlayerTeamUnits.Add(new FsBattleStartUnitData(){TypeId = "player",UnitInitData = new FsUnitInitData()});
             startData.EnemyTeamUnits.Add(new FsBattleStartUnitData(){TypeId = "enemy",UnitInitData = new FsUnitInitData(){Euler = Vector3.zero,Position = Vector3.forward}});
             startData.EnemyTeamUnits.Add(new FsBattleStartUnitData(){TypeId = "enemy",UnitInitData = new FsUnitInitData(){Euler = Vector3.zero,Position = Vector3.back}});
