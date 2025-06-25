@@ -10,25 +10,9 @@ namespace FrameSyncBattle
 
         public float NextFireTime = 0;
         
-        public override void LogicFrame(FsBattleLogic battle, FsCmd cmd)
+        protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
         {
-            base.LogicFrame(battle, cmd);
-
-            if (cmd != null && cmd.ButtonContains(FsButton.Fire))
-            {
-                //一次逻辑帧时间可能也会发射多次子弹
-                while (battle.LogicTime >= NextFireTime)
-                {
-                    NextFireTime = battle.LogicTime + FireInterval;
-                    //显示上会对不上 因为view层是落后一逻辑帧的...而且新增的逻辑对象 在下一帧才会执行到逻辑看起来会停在原地一会
-                    Vector3 euler = new Vector3(0, cmd.FireYaw, 0);
-                    Vector3 firePosition = this.Position;
-                    battle.AddEntity<FsBulletLogic>(this.Team, "bullet",
-                        new FsBulletInitData()
-                            {Euler = euler, Position = firePosition, FlySpeed = 50, LifeTime = 1f});
-                }
-            }
-
+            base.LogicUpdate(battle, cmd);
             int xInput = 0;
             int yInput = 0;
             if (cmd != null)
@@ -48,6 +32,23 @@ namespace FrameSyncBattle
             else
             {
                 this.Play(new PlayAnimParam(){Animation = "Idle",IgnoreRepeat = true});
+            }
+            
+            
+            //移动后再处理射击 让逻辑中的单位位置和发射位置对上
+            if (cmd != null && cmd.ButtonContains(FsButton.Fire))
+            {
+                //一次逻辑帧时间可能也会发射多次子弹
+                while (battle.LogicTime >= NextFireTime)
+                {
+                    NextFireTime = battle.LogicTime + FireInterval;
+                    //显示上会对不上 因为view层是落后一逻辑帧的...而且新增的逻辑对象 在下一帧才会执行到逻辑看起来会停在原地一会
+                    Vector3 euler = new Vector3(0, cmd.FireYaw, 0);
+                    Vector3 firePosition = this.Position;
+                    battle.AddEntity<FsBulletLogic>(this.Team, "bullet",
+                        new FsBulletInitData()
+                            {Euler = euler, Position = firePosition, FlySpeed = 50, LifeTime = 1f});
+                }
             }
         }
     }

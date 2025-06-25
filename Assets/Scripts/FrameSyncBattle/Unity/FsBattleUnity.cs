@@ -103,6 +103,8 @@ namespace FrameSyncBattle
 
         public FsUnitLogic Player { get; private set; }
 
+        public FsEntityView PlayerView => Player.View as FsEntityView;
+
         private void Update()
         {
             if (Battle == null) return;
@@ -110,7 +112,7 @@ namespace FrameSyncBattle
             if (Battle.IsReplayMode == false)
                 cmd = GetInputCmd();
             Battle.GameEngineUpdate(Time.deltaTime,cmd);
-            var view = Player.View as FsEntityView;
+            var view = PlayerView;
             if (view != null)
             {
                 var position = view.transform.position;
@@ -142,10 +144,13 @@ namespace FrameSyncBattle
                 var ray = GameCamera.ScreenPointToRay(Input.mousePosition);
                 if (Physics.Raycast(ray, out var hit))
                 {
-                    Vector3 dir = hit.point - Player.Position;
+                    //表现层存在滞后 玩家的操作基于表现层 如果与逻辑位置计算出方位就会存在误差
+                    Vector3 dir = hit.point - PlayerView.CachedTransform.position;
                     dir.y = 0;
                     dir.Normalize();
+                    //Debug.DrawRay(Player.Position,dir*100,Color.red);
                     cmd.FireYaw = Vector3.SignedAngle(Vector3.forward, dir, Vector3.up);
+                    cmd.FireYaw = 0;
                 }
             }
             return cmd;

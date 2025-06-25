@@ -8,6 +8,7 @@ namespace FrameSyncBattle
     {
         #region 渲染相关
 
+        /*
         public override T AddEntity<T>(int team,string entityTypeId, object initData)
         {
             var logic = base.AddEntity<T>(team,entityTypeId, initData);
@@ -27,7 +28,7 @@ namespace FrameSyncBattle
             }
             base.RemoveEntity(entity);
         }
-
+        */
         #endregion
         
         public float ViewLerp { get; private set; }
@@ -67,17 +68,39 @@ namespace FrameSyncBattle
             //让渲染进度直接保留逻辑模拟时间增量来尽量维持顺滑
             ViewLerp = Accumulator / FrameLength;
 
+            //渲染对象准备插值 得在逻辑对象更新之前 主要是记录上一逻辑状态
             var game = (this);
             EntityViews.ForEach(ref game,((view, param) =>
             {
                 view.PrepareLerp(param,param.ViewLerp);
             }));
-            /*
-            foreach (var view in EntityViews)
+            
+            //渲染对象的增删先处理 等于是延迟一个逻辑帧做处理 这样能对的上表现层的位置插值晚一帧
+            
+            //移除无对应逻辑对象的渲染对象
+            EntityViews.ForEach(view =>
             {
-                view.PrepareLerp(this,ViewLerp);
-            }
-            */
+                var bindLogic = this.Entities.Find(logic => logic.Id == view.Id);
+                if (bindLogic == null)
+                {
+                    view.OnRemove(this);
+                    EntityViews.Remove(view);
+                }
+            });
+
+            //新增渲染对象
+            this.Entities.ForEach(logic =>
+            {
+                var bindView = this.EntityViews.Find((view => view.Id == logic.Id));
+                if (bindView == null)
+                {
+                    var view = FsEntityView.Create(logic);
+                    view.OnCreate(this);
+                    logic.BindView(view);
+                    EntityViews.Add(view);
+                }
+            });
+            
             //所有逻辑对象更新
             base.GameLogicFrame(cmd);
         }

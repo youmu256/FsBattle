@@ -91,6 +91,19 @@ namespace FrameSyncBattle
             }
         }
 
+        public T Find(Func<T,bool> condition)
+        {
+            foreach (var element in List)
+            {
+                if (condition(element))
+                {
+                    return element;
+                }
+            }
+            return null;
+        }
+        
+        
         /// <summary>
         /// 返回循环访问集合的枚举数。
         /// </summary>

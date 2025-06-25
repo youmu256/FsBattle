@@ -13,9 +13,9 @@ namespace FrameSyncBattle
             base.Init(team, entityTypeId, initData);
         }
 
-        public override void LogicFrame(FsBattleLogic battle, FsCmd cmd)
+        protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
         {
-            base.LogicFrame(battle, cmd);
+            base.LogicUpdate(battle, cmd);
             bool remove = false;
 
 

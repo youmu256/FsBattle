@@ -41,6 +41,10 @@ namespace FrameSyncBattle
     public class FsEntityView : MonoBehaviour, IFsEntityView
     {
         private static readonly FsEntityViewCreator Creator = new();
+
+
+        public int Id { get; private set; }
+        
         public FsEntityLogic Logic { get; private set; }
 
         public Transform CachedTransform { get; private set; }//调用this.transfrom会有gcalloc...
@@ -54,6 +58,7 @@ namespace FrameSyncBattle
 
         protected virtual void Init(FsEntityLogic entityLogic)
         {
+            this.Id = entityLogic.Id;
             CachedTransform = this.transform;
             Logic = entityLogic;
             StartPosition = entityLogic.Position;
@@ -95,6 +100,11 @@ namespace FrameSyncBattle
             //ViewInterpolation(battleGame,lerp);
         }
 
+        public virtual void OnCreate(FsBattleGame battleGame)
+        {
+            
+        }
+        
         /// <summary>
         /// view对象被战斗逻辑移除时调用
         /// 清空渲染对象

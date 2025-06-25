@@ -4,7 +4,7 @@ using UnityEngine;
 namespace FrameSyncBattle
 {
     public class FsEntityLogicViewSnapshot{
-        //有2个逻辑快照就能让渲染层进行插值显示了
+        //有2个快照就能让渲染层进行插值显示了
         public Vector3 Position;
         public Vector3 Euler;
     }
@@ -13,11 +13,13 @@ namespace FrameSyncBattle
     {
         public static int IdGenerate { get; private set; }
         public object InitData { get; private set; }
+        
+        public bool HasStarted { get; private set; }
         public int Id { get; private set; }
         public string TypeId { get; protected set; }
         public Vector3 Position { get; protected set; }
         public Vector3 Euler { get; protected set; }
-        
+        public int Team { get; protected set; }
         //public string Animation { get; protected set; }
 
         public FsEntityLogicViewSnapshot CreateViewSnapshot()
@@ -28,7 +30,6 @@ namespace FrameSyncBattle
             return shot;
         }
 
-        public int Team { get; protected set; }
         private FsEntityInitData Data => InitData as FsEntityInitData;
 
         public FsEntityLogic()
@@ -61,11 +62,34 @@ namespace FrameSyncBattle
             this.View = null;
         }
         
-        public virtual void LogicFrame(FsBattleLogic battle, FsCmd cmd)
+        /// <summary>
+        /// 逻辑帧驱动 对象创建出来后也会立刻执行一次
+        /// </summary>
+        /// <param name="battle"></param>
+        /// <param name="cmd"></param>
+        public void LogicFrame(FsBattleLogic battle, FsCmd cmd)
+        {
+            if (HasStarted)
+            {
+                LogicUpdate(battle,cmd);
+            }
+            else
+            {
+                HasStarted = true;
+                LogicStart(battle,cmd);
+            }
+        }
+
+        protected virtual void LogicStart(FsBattleLogic battle, FsCmd cmd)
+        {
+            
+        }
+
+        protected virtual void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
         {
 
         }
-
+        
         #region View抽象绑定
         
         public IFsEntityView View { get; private set; }
