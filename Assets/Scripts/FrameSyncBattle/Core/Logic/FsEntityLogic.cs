@@ -11,6 +11,13 @@ namespace FrameSyncBattle
     
     //entity的自身表现控制需求有 播放动画
     //如果要对特效/音效进行控制 那特效对象应该也作为一个逻辑entity
+
+    public interface IFsEntityLogic
+    {
+        void Start();
+        void Update();
+        void Remove();
+    }
     
     
     public class FsEntityLogic : IAnimationPlayable
@@ -26,15 +33,6 @@ namespace FrameSyncBattle
         public int Team { get; protected set; }
         
         public PlayAnimParam Animation { get; protected set; }
-
-        public FsEntityLogicViewSnapshot CreateViewSnapshot()
-        {
-            FsEntityLogicViewSnapshot shot = new FsEntityLogicViewSnapshot();
-            shot.Position = this.Position;
-            shot.Euler = this.Euler;
-            return shot;
-        }
-
         private FsEntityInitData Data => InitData as FsEntityInitData;
 
         public FsEntityLogic()

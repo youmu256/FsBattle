@@ -22,10 +22,14 @@ namespace FrameSyncBattle
     public class FsEntityService
     {
         public readonly List<FsUnitLogic> Units = new();
+
+        public Dictionary<int, FsEntityLogic> EntitiesMap = new();
+        
         public void UpdateEntityCache(FsEntityLogic entity,bool isAdd)
         {
             if (isAdd)
             {
+                EntitiesMap.Add(entity.Id,entity);
                 if (entity is FsUnitLogic unit)
                 {
                     Units.Add(unit);
@@ -33,13 +37,25 @@ namespace FrameSyncBattle
             }
             else
             {
+                EntitiesMap.Remove(entity.Id);
                 if (entity is FsUnitLogic unit)
                 {
                     Units.Remove(unit);
                 }
             }
         }
-        
+    }
+
+    public partial class FsBattleLogic
+    {
+        /// <summary>
+        /// 处理伤害
+        /// </summary>
+        /// <param name="info"></param>
+        public void ProcessDamage(FsDamageInfo info)
+        {
+            
+        }
     }
     
     public partial class FsBattleLogic

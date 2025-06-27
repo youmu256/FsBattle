@@ -7,6 +7,8 @@ namespace FrameSyncBattle
         protected override void Init(FsEntityLogic entityLogic)
         {
             base.Init(entityLogic);
+            
+            
         }
         
     }
