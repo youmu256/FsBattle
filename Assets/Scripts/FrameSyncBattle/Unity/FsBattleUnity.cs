@@ -69,6 +69,7 @@ namespace FrameSyncBattle
                 InitReplayBattle(save);
                 StartGame();
             }
+            GUILayout.Button($"Lerp : {Battle?.ViewLerp}");
         }
 
         public void EndGame()
@@ -148,9 +149,8 @@ namespace FrameSyncBattle
                     Vector3 dir = hit.point - PlayerView.CachedTransform.position;
                     dir.y = 0;
                     dir.Normalize();
-                    //Debug.DrawRay(Player.Position,dir*100,Color.red);
                     cmd.FireYaw = Vector3.SignedAngle(Vector3.forward, dir, Vector3.up);
-                    cmd.FireYaw = 0;
+                    //cmd.FireYaw = 0;
                 }
             }
             return cmd;

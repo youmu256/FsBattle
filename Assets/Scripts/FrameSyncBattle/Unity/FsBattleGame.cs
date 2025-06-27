@@ -68,13 +68,6 @@ namespace FrameSyncBattle
             //让渲染进度直接保留逻辑模拟时间增量来尽量维持顺滑
             ViewLerp = Accumulator / FrameLength;
 
-            //渲染对象准备插值 得在逻辑对象更新之前 主要是记录上一逻辑状态
-            var game = (this);
-            EntityViews.ForEach(ref game,((view, param) =>
-            {
-                view.PrepareLerp(param,param.ViewLerp);
-            }));
-            
             //渲染对象的增删先处理 等于是延迟一个逻辑帧做处理 这样能对的上表现层的位置插值晚一帧
             
             //移除无对应逻辑对象的渲染对象
@@ -100,6 +93,15 @@ namespace FrameSyncBattle
                     EntityViews.Add(view);
                 }
             });
+            
+            
+            //渲染对象准备插值 得在逻辑对象更新之前 主要是记录上一逻辑状态
+            var game = (this);
+            EntityViews.ForEach(ref game,((view, param) =>
+            {
+                view.BeforeLogicFrame(param,param.ViewLerp);
+            }));
+
             
             //所有逻辑对象更新
             base.GameLogicFrame(cmd);

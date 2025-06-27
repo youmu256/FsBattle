@@ -9,6 +9,10 @@ namespace FrameSyncBattle
         public Vector3 Euler;
     }
     
+    //entity的自身表现控制需求有 播放动画
+    //如果要对特效/音效进行控制 那特效对象应该也作为一个逻辑entity
+    
+    
     public class FsEntityLogic : IAnimationPlayable
     {
         public static int IdGenerate { get; private set; }
@@ -20,7 +24,8 @@ namespace FrameSyncBattle
         public Vector3 Position { get; protected set; }
         public Vector3 Euler { get; protected set; }
         public int Team { get; protected set; }
-        //public string Animation { get; protected set; }
+        
+        public PlayAnimParam Animation { get; protected set; }
 
         public FsEntityLogicViewSnapshot CreateViewSnapshot()
         {
@@ -101,14 +106,7 @@ namespace FrameSyncBattle
 
         public void Play(PlayAnimParam animParam)
         {
-            /*
-             * TODO
-             * 目前存在一个问题
-             * 让表现层对象去播放动画目前存在的问题，因为View层要进行插值，所以实际上是晚一个逻辑帧的
-             * 比如逻辑帧里移动到指定为止后开始播放攻击动画，在表现层实际上会还没到位置就开始播放攻击动画
-             * 考虑是否表现层应该也严格遵守插值渲染的流程
-             */
-            View?.Play(animParam);
+            Animation = animParam;
         }
 
         #endregion

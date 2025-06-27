@@ -63,6 +63,7 @@ namespace FrameSyncBattle
             Logic = entityLogic;
             StartPosition = entityLogic.Position;
             StartEuler = entityLogic.Euler;
+            StartAnimation = Logic.Animation;
             //Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
             switch (entityLogic.TypeId)
             {
@@ -83,7 +84,8 @@ namespace FrameSyncBattle
         //记录上一逻辑帧数据 用来插值 考虑用一个简单克隆对象来记录Logic对象?
         public Vector3 StartPosition;
         public Vector3 StartEuler;
-
+        public PlayAnimParam StartAnimation;
+        
         public virtual void ViewInterpolation(float lerp)
         {
             var position = Vector3.Lerp(StartPosition, Logic.Position, lerp);
@@ -92,12 +94,15 @@ namespace FrameSyncBattle
             CachedTransform.eulerAngles = euler;
         }
 
-        public virtual void PrepareLerp(FsBattleGame battleGame, float lerp)
+        public virtual void BeforeLogicFrame(FsBattleGame battleGame, float lerp)
         {
             //在逻辑帧执行之前 设置旧的逻辑状态作为插值起点
             StartPosition = Logic.Position;
             StartEuler = Logic.Euler;
-            //ViewInterpolation(battleGame,lerp);
+            //此时该播放上一次逻辑帧的动画
+            if(StartAnimation.Animation!=null)
+                Play(StartAnimation);
+            StartAnimation = Logic.Animation;
         }
 
         public virtual void OnCreate(FsBattleGame battleGame)
