@@ -8,9 +8,12 @@ namespace FrameSyncBattle
 
         public float Timer = 0;
 
+        public FsUnitLogic Owner;
+        
         public override void Init(int team, string entityTypeId, object initData)
         {
             base.Init(team, entityTypeId, initData);
+            this.Owner = Data.Owner;
         }
 
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
@@ -37,6 +40,10 @@ namespace FrameSyncBattle
                 {
                     vel = point - start;
                     remove = true;
+                    
+                    //hit target
+                    FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(Owner,unit);
+                    battle.ProcessDamage(damageInfo);
                     break;
                 }
             }

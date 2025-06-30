@@ -4,8 +4,6 @@ namespace FrameSyncBattle
 {
     public class FsPlayerLogic : FsUnitLogic
     {
-        public float MoveSpeed { get; private set; } = 20;
-
         public float FireInterval = 0.1f;
 
         public float NextFireTime = 0;
@@ -24,7 +22,8 @@ namespace FrameSyncBattle
             }
             if (xInput != 0 || yInput != 0)
             {
-                Vector3 vel = new Vector3(xInput, 0, yInput).normalized * (MoveSpeed * battle.FrameLength);
+                var speed = Property.Get(FsUnitPropertyType.MoveSpeed);
+                Vector3 vel = new Vector3(xInput, 0, yInput).normalized * (speed * battle.FrameLength);
                 this.Position += vel;
                 this.Euler = Quaternion.LookRotation(vel).eulerAngles;
                 this.Play(new PlayAnimParam(){Animation = "Move",IgnoreRepeat = true});
@@ -47,7 +46,7 @@ namespace FrameSyncBattle
                     Vector3 firePosition = this.Position;
                     battle.AddEntity<FsBulletLogic>(this.Team, "bullet",
                         new FsBulletInitData()
-                            {Euler = euler, Position = firePosition, FlySpeed = 50, LifeTime = 1f});
+                            {Owner = this,Euler = euler, Position = firePosition, FlySpeed = 50, LifeTime = 1f});
                 }
             }
         }

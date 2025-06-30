@@ -26,6 +26,7 @@ namespace FrameSyncBattle
         public int Attack;
         public int Defend;
         public int MoveSpeed;
+
     }
 
     public delegate void OnPropertyChangeEvent(FsUnitPropertyType propertyType, int last, int value);

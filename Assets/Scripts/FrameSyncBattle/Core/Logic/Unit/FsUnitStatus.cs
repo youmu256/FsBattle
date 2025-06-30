@@ -4,12 +4,14 @@ using UnityEngine;
 
 namespace FrameSyncBattle
 {
-    public class FsUnitStatus
+    public partial class FsUnitLogic
     {
         public FsUnitStateFlags StateFlags { get; private set; }
         public FsUnitProperty Property { get; private set; }
 
-        public FsUnitStatus(FsUnitPropertyInitData basic)
+        public bool IsDead => HpCurrent <= 0;
+
+        public void InitStatus(FsUnitPropertyInitData basic)
         {
             StateFlags = new FsUnitStateFlags();
             
@@ -19,6 +21,8 @@ namespace FrameSyncBattle
             Property.SetPropertyBase(FsUnitPropertyType.Attack,basic.Attack);
             Property.SetPropertyBase(FsUnitPropertyType.Defend,basic.Defend);
             Property.SetPropertyBase(FsUnitPropertyType.MoveSpeed,basic.MoveSpeed);
+            HpPercent = 1f;
+            MpPercent = 1f;
         }
 
         private void PropertyChangeCallback(FsUnitPropertyType propertyType, int last, int value)

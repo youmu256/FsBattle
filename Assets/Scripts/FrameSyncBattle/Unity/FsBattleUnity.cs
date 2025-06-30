@@ -79,15 +79,48 @@ namespace FrameSyncBattle
             Player = null;
         }
 
+        #region TestData
+        public static FsUnitPropertyInitData TestPlayerData = new FsUnitPropertyInitData()
+        {
+            HpMax = 100,
+            MpMax = 100,
+            Attack = 1,
+            Defend = 0,
+            MoveSpeed = 20,
+        };
+        public static FsUnitPropertyInitData TestEnemyData = new FsUnitPropertyInitData()
+        {
+            HpMax = 10,
+            MpMax = 10,
+            Attack = 1,
+            Defend = 0,
+            MoveSpeed = 20,
+        };
+        #endregion
+
         public void InitTestBattle()
         {
             Battle = new FsBattleGame();
             var startData = new FsBattleStartData();
             //TODO 统一Entity类+逻辑组件化 
-            startData.PlayerTeamUnits.Add(new FsBattleStartUnitData(){TypeId = "player",UnitInitData = new FsUnitInitData()});
-            startData.EnemyTeamUnits.Add(new FsBattleStartUnitData(){TypeId = "enemy",UnitInitData = new FsUnitInitData(){Euler = Vector3.zero,Position = Vector3.forward}});
-            startData.EnemyTeamUnits.Add(new FsBattleStartUnitData(){TypeId = "enemy",UnitInitData = new FsUnitInitData(){Euler = Vector3.zero,Position = Vector3.back}});
-            Battle.Init(LogicFps, 0,startData);
+            startData.PlayerTeamUnits.Add(new FsBattleStartUnitData()
+                {TypeId = "player", UnitInitData = new FsUnitInitData() {PropertyInitData = TestPlayerData}});
+            startData.EnemyTeamUnits.Add(new FsBattleStartUnitData()
+            {
+                TypeId = "enemy",
+                UnitInitData = new FsUnitInitData()
+                    {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward}
+            });
+            startData.EnemyTeamUnits.Add(new FsBattleStartUnitData()
+            {
+                TypeId = "enemy", UnitInitData = new FsUnitInitData()
+                {
+                    PropertyInitData =
+                        TestEnemyData,
+                    Euler = Vector3.zero, Position = Vector3.back
+                }
+            });
+            Battle.Init(LogicFps, 0, startData);
         }
 
         public void InitReplayBattle(FsBattleReplay replay)

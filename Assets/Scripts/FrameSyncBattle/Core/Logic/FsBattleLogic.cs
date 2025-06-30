@@ -54,7 +54,7 @@ namespace FrameSyncBattle
         /// <param name="info"></param>
         public void ProcessDamage(FsDamageInfo info)
         {
-            
+            info.Target.HpCurrent -= info.Damage;
         }
     }
     
