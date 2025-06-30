@@ -62,7 +62,7 @@ namespace FrameSyncBattle
             }
             if (GUILayout.Button("EndGame&Replay"))
             {
-                var save = Battle.ReplaySave;
+                var save = Battle?.ReplaySave;
                 EndGame();
                 if (save == null) return;
                 //replay
