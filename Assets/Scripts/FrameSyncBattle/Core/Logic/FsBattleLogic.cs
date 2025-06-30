@@ -128,7 +128,7 @@ namespace FrameSyncBattle
         {
         }
 
-        public void CleanBattle()
+        public virtual void CleanBattle()
         {
             var p = (this);
             Entities.ForEach(ref p, ((logic, param) => { param.RemoveEntity(logic); }));
