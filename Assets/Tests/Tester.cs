@@ -24,6 +24,17 @@ public class Tester
         Assert.IsTrue(property.GetRaw(FsUnitPropertyType.HpMax)== -2000);
     }
 
+
+    [Test]
+    public void TestStateFlags()
+    {
+        FsUnitStateFlags stateFlags = new FsUnitStateFlags();
+        Assert.IsTrue(stateFlags.HasAnyState(FsUnitStateFlag.Attack));
+        stateFlags.Modify(FsUnitStateFlag.Attack,false);
+        Assert.IsTrue(stateFlags.HasAnyState(FsUnitStateFlag.Attack) == false);
+    }
+    
+    
     // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
     // `yield return null;` to skip a frame.
     [UnityTest]

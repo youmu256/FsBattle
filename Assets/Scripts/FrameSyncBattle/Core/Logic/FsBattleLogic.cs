@@ -54,11 +54,16 @@ namespace FrameSyncBattle
         /// <param name="info"></param>
         public void ProcessDamage(FsDamageInfo info)
         {
+            if (info.Target == null || info.Target.IsDead) return;
             //角色身上的技能&Buff需要响应受伤事件
             
             //攻防公式计算
-            
             info.Target.HpCurrent -= info.Damage;
+
+            //kill
+            if (info.Target.IsDead)
+            {
+            }
         }
     }
     

@@ -31,6 +31,7 @@ namespace FrameSyncBattle
                     StateEnumCacheList.Add(sft);
                 }
             }
+            //初始化所有标记为0 代表为可用状态
             foreach (var sft in StateEnumCacheList)
             {
                 SetCounter(sft,0);
@@ -48,7 +49,7 @@ namespace FrameSyncBattle
                 if ((it & 1) == 1)
                 {
                     long sub = 1 << index;
-                    ModifyCounter((FsUnitStateFlag)sub, addState);
+                    ModifySingle((FsUnitStateFlag)sub, addState);
                 }
                 it >>= 1;
                 index++;
@@ -66,8 +67,13 @@ namespace FrameSyncBattle
             return false;
         }
 
-        private void OnStateChanged(FsUnitStateFlag state,int oldCount,int newCount)
+        private Dictionary<FsUnitStateFlag, int> StateCountMap { get; set; }
+
+        private int ModifySingle(FsUnitStateFlag state, bool addOrRemove)
         {
+            var oldCount = GetCounter(state);
+            var newCount = oldCount + (addOrRemove ? 1 : -1);
+            SetCounter(state,newCount);
             if (newCount >= 0)
             {
                 StatesCache |= state;//add
@@ -76,16 +82,6 @@ namespace FrameSyncBattle
             {
                 StatesCache &= ~state;//remove
             }
-        }
-        
-        private Dictionary<FsUnitStateFlag, int> StateCountMap { get; set; }
-
-        private int ModifyCounter(FsUnitStateFlag state, bool addOrRemove)
-        {
-            var oldCount = GetCounter(state);
-            var newCount = oldCount + (addOrRemove ? 1 : -1);
-            SetCounter(state,newCount);
-            OnStateChanged(state,oldCount,newCount);
             return newCount;
         }
         private void SetCounter(FsUnitStateFlag state,int count)
