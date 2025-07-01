@@ -65,6 +65,8 @@ namespace FrameSyncBattle
             StartEuler = entityLogic.Euler;
             StartAnimation = Logic.Animation;
             //Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
+            ModelRoot = new GameObject("model").transform;
+            ModelRoot.SetParent(CachedTransform,false);
             switch (entityLogic.TypeId)
             {
                 case "player":
@@ -122,6 +124,8 @@ namespace FrameSyncBattle
 
         #region 模型相关
 
+        public Transform ModelRoot { get; private set; }
+        
         public AnimModel Model { get; private set; }
 
         public void SetModel(GameObject prefab,float scale = 1f)
@@ -131,12 +135,13 @@ namespace FrameSyncBattle
                 GameObject.Destroy(Model.gameObject);
                 Model = null;
             }
-            var inst = GameObject.Instantiate(prefab, this.transform, false);
-            inst.transform.localScale = Vector3.one * scale;
+            var inst = GameObject.Instantiate(prefab, this.ModelRoot, false);
+            inst.transform.localScale = Vector3.one;
             inst.transform.localEulerAngles = Vector3.zero;
             inst.transform.localPosition = Vector3.zero;
             inst.gameObject.SetActive(true);
             Model = inst.GetComponent<AnimModel>();
+            ModelRoot.localScale = Vector3.one * scale;
         }
 
         #endregion

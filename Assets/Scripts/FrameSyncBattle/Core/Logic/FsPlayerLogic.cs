@@ -11,6 +11,7 @@ namespace FrameSyncBattle
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
         {
             base.LogicUpdate(battle, cmd);
+            if (IsDead) return;
             int xInput = 0;
             int yInput = 0;
             if (cmd != null)

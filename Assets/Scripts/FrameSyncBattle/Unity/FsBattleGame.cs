@@ -70,7 +70,6 @@ namespace FrameSyncBattle
 
             //渲染对象的增删先处理 等于是延迟一个逻辑帧做处理 这样能对的上表现层的位置插值晚一帧
             SyncViewToLogic();
-            
             //渲染对象准备插值 得在逻辑对象更新之前 主要是记录上一逻辑状态
             var game = (this);
             EntityViews.ForEach(ref game,((view, param) =>
@@ -82,7 +81,6 @@ namespace FrameSyncBattle
             //所有逻辑对象更新
             base.GameLogicFrame(cmd);
         }
-
 
         private void SyncViewToLogic()
         {

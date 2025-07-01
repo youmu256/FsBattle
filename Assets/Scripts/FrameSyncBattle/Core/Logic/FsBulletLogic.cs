@@ -36,6 +36,7 @@ namespace FrameSyncBattle
             foreach (var unit in battle.EntityService.Units)
             {
                 if (unit.Team == this.Team) continue;
+                if (unit.IsDead) continue;
                 if (CollisionUtil.RaySphereIntersect(start, vel, unit.Position, 0.5f, out var point))
                 {
                     vel = point - start;

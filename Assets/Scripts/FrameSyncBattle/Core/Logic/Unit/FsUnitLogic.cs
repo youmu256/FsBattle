@@ -4,6 +4,8 @@
     {
         private FsUnitInitData Data => InitData as FsUnitInitData;
 
+        public float DeadTimer { get; private set; }
+        
         public override void Init(int team, string entityTypeId, object initData)
         {
             base.Init(team, entityTypeId, initData);
@@ -15,7 +17,14 @@
             base.LogicUpdate(battle, cmd);
             if (IsDead)
             {
-                battle.RemoveEntity(this);
+                if(DeadTimer<=0)
+                    Play(new PlayAnimParam(){Animation = "Death",IgnoreRepeat = true});
+                DeadTimer += battle.FrameLength;
+                //2s后移除单位
+                if (DeadTimer >= 2)
+                {
+                    battle.RemoveEntity(this);
+                }
             }
             else
             {
