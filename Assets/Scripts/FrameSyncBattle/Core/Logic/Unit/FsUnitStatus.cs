@@ -8,8 +8,7 @@ namespace FrameSyncBattle
     {
         public FsUnitStateFlags StateFlags { get; private set; }
         public FsUnitProperty Property { get; private set; }
-
-        public bool IsDead => HpCurrent <= 0;
+        
 
         public void InitStatus(FsUnitPropertyInitData basic)
         {

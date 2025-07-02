@@ -57,13 +57,9 @@ namespace FrameSyncBattle
             if (info.Target == null || info.Target.IsDead) return;
             //角色身上的技能&Buff需要响应受伤事件
             
-            //攻防公式计算
+            //按照游戏公式等修正伤害
             info.Target.HpCurrent -= info.Damage;
-
-            //kill
-            if (info.Target.IsDead)
-            {
-            }
+            info.Target.OnDamagedPost(this,info);
         }
     }
     
