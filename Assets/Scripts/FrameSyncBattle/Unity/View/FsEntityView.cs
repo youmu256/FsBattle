@@ -13,6 +13,7 @@ namespace FrameSyncBattle
             {typeof(FsPlayerLogic), typeof(FsUnitView)},
             {typeof(FsUnitLogic), typeof(FsUnitView)},
             {typeof(FsBulletLogic), typeof(FsEntityView)},
+            {typeof(FsMissileLogic), typeof(FsEntityView)},
         };
 
         public FsEntityView Create(FsEntityLogic logic)
@@ -76,6 +77,9 @@ namespace FrameSyncBattle
                     SetModel(FsBattleUnity.Instance.PlayerModel);
                     break;
                 case "bullet":
+                    SetModel(FsBattleUnity.Instance.BulletModel,0.2f);
+                    break;
+                case "missile":
                     SetModel(FsBattleUnity.Instance.BulletModel,0.2f);
                     break;
             }

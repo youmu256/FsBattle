@@ -29,6 +29,7 @@ namespace FrameSyncBattle
         public int Id { get; private set; }
         public string TypeId { get; protected set; }
         public Vector3 Position { get; protected set; }
+        //euler存在万向锁问题 考虑换成四元数?
         public Vector3 Euler { get; protected set; }
         public int Team { get; protected set; }
         

@@ -82,7 +82,7 @@ namespace FrameSyncBattle
         public override void Enter(UnitAIContent content)
         {
             //STOP OTHER ACTION
-            content.Me.Play(new PlayAnimParam(){Animation = "Idle"});
+            content.Me.Play(new PlayAnimParam("Idle",0,0,true));
         }
         public override void Update(UnitAIContent content, float deltaTime)
         {
@@ -94,6 +94,8 @@ namespace FrameSyncBattle
             
         }
     }
+    
+    
     
     public class BState_Attack : FsUnitAIStateBase
     {

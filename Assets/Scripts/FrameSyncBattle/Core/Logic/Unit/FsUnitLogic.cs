@@ -1,9 +1,33 @@
-﻿namespace FrameSyncBattle
+﻿using UnityEngine;
+
+namespace FrameSyncBattle
 {
     public partial class FsUnitLogic : FsEntityLogic
     {
         private FsUnitInitData Data => InitData as FsUnitInitData;
 
+        #region Property
+
+        public float GetAttackRange()
+        {
+            return Property.Get(FsUnitPropertyType.AttackRange);
+        }
+
+        //受击体积半径
+        public float Radius = 0.25f;
+        
+        public bool BeHitCheck(Vector3 hitPoint, float radius)
+        {
+            return DistanceUtils.DistanceBetween(this.GetBeHitPosition(),hitPoint) <= this.Radius + radius;
+        }
+
+        public Vector3 GetBeHitPosition()
+        {
+            return Position;
+        }
+        
+        #endregion
+        
         public bool IsRemoved { get; private set; }
         
         public float DeadTimer { get; private set; }
@@ -32,8 +56,12 @@
             else
             {
                 //AI SKILL ETC...
+                NormalAttack?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
             }
         }
+
+        protected IAttackHandler NormalAttack{ get; set; }
+        
 
         /// <summary>
         /// 伤害结算后 响应死亡等行为
@@ -77,7 +105,7 @@
             HpCurrent = 0;
             DeadRemoveTime = 2f;//移除延迟时间
             //Death View
-            Play(new PlayAnimParam(){Animation = "Death",IgnoreRepeat = true});
+            Play(new PlayAnimParam("Death",0,1f,true));
         }
         #endregion
         

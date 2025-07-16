@@ -136,7 +136,7 @@ namespace FrameSyncBattle
         public virtual void CleanBattle()
         {
             var p = (this);
-            Entities.ForEach(ref p, ((logic, param) => { param.RemoveEntity(logic); }));
+            Entities.RefForEach(ref p, ((logic, param) => { param.RemoveEntity(logic); }));
         }
 
         protected FsLinkedList<FsEntityLogic> Entities = new();
@@ -252,7 +252,7 @@ namespace FrameSyncBattle
         protected virtual void GameLogicFrame(FsCmd cmd)
         {
             var p = (this, cmd);
-            Entities.ForEach(ref p, ((logic, param) =>
+            Entities.RefForEach(ref p, ((logic, param) =>
             {
                 logic.LogicFrame(param.Item1, param.cmd);
             }));

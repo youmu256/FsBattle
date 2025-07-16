@@ -18,6 +18,8 @@ namespace FrameSyncBattle
             Property.SetPropertyBase(FsUnitPropertyType.HpMax,basic.HpMax);
             Property.SetPropertyBase(FsUnitPropertyType.MpMax,basic.MpMax);
             Property.SetPropertyBase(FsUnitPropertyType.Attack,basic.Attack);
+            Property.SetPropertyBase(FsUnitPropertyType.AttackSpdPct,100);
+            Property.SetPropertyBase(FsUnitPropertyType.AttackRange,basic.AttackRange);
             Property.SetPropertyBase(FsUnitPropertyType.Defend,basic.Defend);
             Property.SetPropertyBase(FsUnitPropertyType.MoveSpeed,basic.MoveSpeed);
             HpPercent = 1f;

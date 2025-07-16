@@ -72,7 +72,7 @@ namespace FrameSyncBattle
             SyncViewToLogic();
             //渲染对象准备插值 得在逻辑对象更新之前 主要是记录上一逻辑状态
             var game = (this);
-            EntityViews.ForEach(ref game,((view, param) =>
+            EntityViews.RefForEach(ref game,((view, param) =>
             {
                 view.BeforeLogicFrame(param,param.ViewLerp);
             }));

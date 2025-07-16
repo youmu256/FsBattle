@@ -13,13 +13,18 @@ namespace FrameSyncBattle
         public int Damage;
         public int CriticalPct;
         public FsDamageInfoTag Tags;
-
-        public static FsDamageInfo CreateAttackDamage(FsUnitLogic source, FsUnitLogic target)
+        public int SourceAttackIndex;//攻击index
+        public FsDamageInfo BindAttackIndex(int data)
+        {
+            this.SourceAttackIndex = data;
+            return this;
+        }
+        public static FsDamageInfo CreateAttackDamage(FsUnitLogic source, FsUnitLogic target,float pct)
         {
             FsDamageInfo info = new FsDamageInfo();
             info.Source = target;
             info.Target = target;
-            info.Damage = source.Property.Get(FsUnitPropertyType.Attack);
+            info.Damage = (int) (source.Property.Get(FsUnitPropertyType.Attack) * pct);
             info.DamageType = FsDamageType.Physics;
             info.CriticalPct = 0;
             info.Tags |= FsDamageInfoTag.NormalAttack;

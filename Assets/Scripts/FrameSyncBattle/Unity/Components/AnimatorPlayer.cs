@@ -23,7 +23,8 @@ namespace FrameSyncBattle
             if (animParam.IgnoreRepeat && LastAnim == animParam.Animation)
                 return;
             var hash = Animator.StringToHash(animParam.Animation);
-            Animator.Play(hash,animParam.Layer,animParam.NormalizedTime);
+            Animator.speed = animParam.Speed;
+            Animator.Play(hash,0,animParam.NormalizedTime);
             LastAnim = animParam.Animation;
         }
     }

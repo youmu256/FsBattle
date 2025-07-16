@@ -78,7 +78,7 @@ namespace FrameSyncBattle
         /// <param name="param"></param>
         /// <param name="action"></param>
         /// <typeparam name="V"></typeparam>
-        public void ForEach<V>(ref V param,Action<T, V> action)
+        public void RefForEach<V>(ref V param,Action<T, V> action)
         {
             //ref 防止结构体传参时导致的引用复制带来的性能问题
             var current = List.First;

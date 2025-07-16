@@ -85,6 +85,7 @@ namespace FrameSyncBattle
             HpMax = 100,
             MpMax = 100,
             Attack = 1,
+            AttackRange = 10,
             Defend = 0,
             MoveSpeed = 20,
         };
@@ -93,6 +94,7 @@ namespace FrameSyncBattle
             HpMax = 10,
             MpMax = 10,
             Attack = 1,
+            AttackRange = 10,
             Defend = 0,
             MoveSpeed = 20,
         };

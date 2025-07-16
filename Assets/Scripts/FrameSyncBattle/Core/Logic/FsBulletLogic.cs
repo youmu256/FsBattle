@@ -43,7 +43,7 @@ namespace FrameSyncBattle
                     remove = true;
                     
                     //hit target
-                    FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(Owner,unit);
+                    FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(Owner,unit,1f);
                     battle.ProcessDamage(damageInfo);
                     break;
                 }

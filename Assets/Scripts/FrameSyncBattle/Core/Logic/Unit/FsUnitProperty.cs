@@ -9,6 +9,8 @@ namespace FrameSyncBattle
         HpMax = 1,
         MpMax,
         Attack,
+        AttackSpdPct,
+        AttackRange,
         Defend,
         MoveSpeed,
     }
@@ -24,9 +26,9 @@ namespace FrameSyncBattle
         public int HpMax;
         public int MpMax;
         public int Attack;
+        public int AttackRange;
         public int Defend;
         public int MoveSpeed;
-
     }
 
     public delegate void OnPropertyChangeEvent(FsUnitPropertyType propertyType, int last, int value);
@@ -58,6 +60,8 @@ namespace FrameSyncBattle
 
             return p;
         }
+        
+        public float CurrentAttackTimeScaler { get; private set; } = 1f;
 
         private void OnPropertyChange(int numericType, int last, int value)
         {

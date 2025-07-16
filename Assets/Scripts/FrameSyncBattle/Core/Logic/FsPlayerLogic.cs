@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace FrameSyncBattle
 {
@@ -27,11 +28,11 @@ namespace FrameSyncBattle
                 Vector3 vel = new Vector3(xInput, 0, yInput).normalized * (speed * battle.FrameLength);
                 this.Position += vel;
                 this.Euler = Quaternion.LookRotation(vel).eulerAngles;
-                this.Play(new PlayAnimParam(){Animation = "Move",IgnoreRepeat = true});
+                this.Play(new PlayAnimParam("Move",0,1f,true));
             }
             else
             {
-                this.Play(new PlayAnimParam(){Animation = "Idle",IgnoreRepeat = true});
+                this.Play(new PlayAnimParam("Idle",0,1f,true));
             }
             
             
@@ -42,14 +43,48 @@ namespace FrameSyncBattle
                 while (battle.LogicTime >= NextFireTime)
                 {
                     NextFireTime = battle.LogicTime + FireInterval;
-                    //显示上会对不上 因为view层是落后一逻辑帧的...而且新增的逻辑对象 在下一帧才会执行到逻辑看起来会停在原地一会
-                    Vector3 euler = new Vector3(0, cmd.FireYaw, 0);
-                    Vector3 firePosition = this.Position;
-                    battle.AddEntity<FsBulletLogic>(this.Team, "bullet",
-                        new FsBulletInitData()
-                            {Owner = this,Euler = euler, Position = firePosition, FlySpeed = 50, LifeTime = 1f});
+                    
+                    TestMissile(battle,cmd);
+                    //TestBullet(battle,cmd);
                 }
             }
         }
+
+        private void TestBullet(FsBattleLogic battle,FsCmd cmd)
+        {
+            //显示上会对不上 因为view层是落后一逻辑帧的...而且新增的逻辑对象 在下一帧才会执行到逻辑看起来会停在原地一会
+            Vector3 euler = new Vector3(0, cmd.FireYaw, 0);
+            Vector3 firePosition = this.Position;
+            battle.AddEntity<FsBulletLogic>(this.Team, "bullet",
+                new FsBulletInitData()
+                    {Owner = this,Euler = euler, Position = firePosition, FlySpeed = 50, LifeTime = 1f});
+
+        }
+        
+        private void TestMissile(FsBattleLogic battle,FsCmd cmd)
+        {
+            Vector3 start = this.Position + Quaternion.Euler(this.Euler) * Vector3.up;
+            /*
+            var missile = battle.AddEntity<FsMissileLogic>(this.Team,"missile",new FsEntityInitData(){Euler = this.Euler,Position = start});
+            missile.SetBase("cube",10,0.5f, 45)
+                .AimTarget(start,Vector3.zero)
+                .Fire(null,null);
+            */
+            var targets = battle.EntityService.Units.FindAll(logic => logic.Team != this.Team && logic.IsDead == false);
+            if (targets.Count <= 0) return;
+            var target = targets[battle.RandomGen.Next(targets.Count)];
+            var lockMissile = battle.AddEntity<FsMissileLogic>(this.Team,"missile",new FsEntityInitData(){Euler = this.Euler,Position = start});
+            lockMissile.SetBase("cube", 10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(null, (
+                (logic, missileLogic, valid) =>
+                {
+                    if (valid)
+                    {
+                        FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(this,missileLogic.Target,1f);
+                        logic.ProcessDamage(damageInfo);
+                    }
+                }));
+
+        }
+        
     }
 }
