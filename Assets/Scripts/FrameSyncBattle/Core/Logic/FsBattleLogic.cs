@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = System.Random;
 
@@ -43,6 +44,26 @@ namespace FrameSyncBattle
                     Units.Remove(unit);
                 }
             }
+        }
+        protected readonly List<FsUnitLogic> TempList = new();
+
+        public void CollectUnitsInPositionRange2D(ICollection<FsUnitLogic> container,Vector3 position,float range,Func<FsUnitLogic,bool> filter)
+        {
+            TempList.Clear();
+            var aoiList = TempList;
+            foreach (var unit in Units)
+            {
+                if (DistanceUtils.DistanceBetween2D(unit, position,true) <= range)
+                {
+                    aoiList.Add(unit);
+                }
+            }
+            foreach (var unit in aoiList)
+            {
+                if (filter.Invoke(unit) == false) continue;
+                container.Add(unit);
+            }
+            TempList.Clear();
         }
     }
 

@@ -9,7 +9,7 @@ namespace FrameSyncBattle
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
         {
             base.LogicUpdate(battle, cmd);
-            this.Frame(battle, battle.FrameLength);
+            this.MissileFrame(battle, battle.FrameLength);
         }
 
 
@@ -145,7 +145,7 @@ namespace FrameSyncBattle
         }
         
         
-        public void Frame(FsBattleLogic battle,float deltaTime)
+        private void MissileFrame(FsBattleLogic battle,float deltaTime)
         {
             if (Finished) return;
             //为了保证精准命中位置 要对step做限制

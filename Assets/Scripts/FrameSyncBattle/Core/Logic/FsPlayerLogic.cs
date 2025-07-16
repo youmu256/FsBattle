@@ -8,7 +8,36 @@ namespace FrameSyncBattle
         public float FireInterval = 0.1f;
 
         public float NextFireTime = 0;
-        
+
+        public override void Init(int team, string entityTypeId, object initData)
+        {
+            base.Init(team, entityTypeId, initData);
+            NormalAttack = new NormalAttackHandler(this, new AttackConfig[]
+            {
+                new AttackConfig()
+                {
+                    Anim = "Attack",
+                    AnimSuffix = null,
+                    AnimTime = 1f,
+                    NoFade = false,
+                    HitDatas = new []{new AttackHitData()
+                    {
+                        AttackFireOffset = Vector3.up,
+                        AttackFlyArc = 0.5f,
+                        AttackFlySideSpin = 0,
+                        AttackFlySpeed = 10,
+                        AttackModel = "cube",
+                        DamagePct = 1f,
+                        DamageRange = 10f,
+                        HitTime = 0.3f,
+                        IsMelee = false,
+                        LockTarget = true,
+                        MeleeHitFx = null,
+                    }},
+                }
+            });
+        }
+
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
         {
             base.LogicUpdate(battle, cmd);
@@ -43,13 +72,22 @@ namespace FrameSyncBattle
                 while (battle.LogicTime >= NextFireTime)
                 {
                     NextFireTime = battle.LogicTime + FireInterval;
-                    
-                    TestMissile(battle,cmd);
+                    TestAttack(battle,cmd);
+                    //TestMissile(battle,cmd);
                     //TestBullet(battle,cmd);
                 }
             }
         }
 
+        private void TestAttack(FsBattleLogic battle, FsCmd cmd)
+        {
+            var targets = battle.EntityService.Units.FindAll(logic => logic.Team != this.Team && logic.IsDead == false);
+            if (targets.Count <= 0) return;
+            var target = targets[battle.RandomGen.Next(targets.Count)];
+            NormalAttack.AttackTarget(target);
+        }
+
+        
         private void TestBullet(FsBattleLogic battle,FsCmd cmd)
         {
             //显示上会对不上 因为view层是落后一逻辑帧的...而且新增的逻辑对象 在下一帧才会执行到逻辑看起来会停在原地一会

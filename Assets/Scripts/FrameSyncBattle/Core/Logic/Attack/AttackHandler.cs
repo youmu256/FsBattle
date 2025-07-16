@@ -116,6 +116,7 @@ namespace FrameSyncBattle
             var length = NormalAttack.Length;
             var atk =  NormalAttack[UnityEngine.Random.Range(0,length)];
             
+            
             //--发起事件--
             var evt = GameEvent.New<GE_AnyUnitPrepareAttack>();
             evt.Source = Owner;
@@ -124,6 +125,7 @@ namespace FrameSyncBattle
             evt.RaiseToGlobal();
             evt.Recycle();
             //--
+            
             if (CommittedAttack != null)
             {
                 atk = CommittedAttack;
@@ -211,28 +213,21 @@ namespace FrameSyncBattle
             {
                 if (HitFilter(target) && target.BeHitCheck(position, baseRange+ExtraAttackRangeBuffer))
                 {
-                    
                     FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(Owner,target,attackHitData.DamagePct).BindAttackIndex(data.AttackId);
                     battle.ProcessDamage(damageInfo);
-                    
-                    //DamageInfo.CreateNormalAttack(Owner, target, attack, DamageType.Physics).BindAttackIndex(data.AttackId).Execute();
                     hit = true;
                 }
             }
             else
             {
-                //todo 造成AOE伤害
-                
-                /*
                 List<FsUnitLogic> list = new List<FsUnitLogic>();
-                EntityService.CollectEntitiesInCapsule(list,position,damageRange,attackHitData.DamageHeight,0f,HitFilter);
-                foreach (var entity in list)
+                battle.EntityService.CollectUnitsInPositionRange2D(list,position,damageRange,HitFilter);
+                foreach (var aoeTarget in list)
                 {
-                    int attack = (int) (Owner.Property.Get(FsUnitPropertyType.Attack) * attackHitData.DamagePct);
-                    DamageInfo.CreateNormalAttack(Owner, entity, attack, DamageType.Physics).BindAttackIndex(data.AttackId).Execute();
+                    FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(Owner,aoeTarget,attackHitData.DamagePct).BindAttackIndex(data.AttackId);
+                    battle.ProcessDamage(damageInfo);
                     hit = true;
                 }
-                */
             }
             return hit;
         }

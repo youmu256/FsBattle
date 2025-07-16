@@ -12,7 +12,6 @@ namespace FrameSyncBattle
         public float HitTime;
         public float DamagePct;
         public float DamageRange;//伤害范围 >0 AOE半径
-        public float DamageHeight;//伤害范围 >0 高度判定
         public bool IsMelee;//是否为近战攻击
         public string MeleeHitFx;
         //下面是远程攻击的配置数据

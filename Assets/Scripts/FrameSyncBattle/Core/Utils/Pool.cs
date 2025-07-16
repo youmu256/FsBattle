@@ -90,7 +90,7 @@ namespace FrameSyncBattle
     /// 有继承的池
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class MultiExtendObjectPool<T> 
+    public class MultiExtendObjectPool<T> where T:class
     {
         public Action<T> PoolObjectResetMethod { get; private set; }
         public MultiExtendObjectPool(Action<T> resetMethod = null, bool initPools = false)
@@ -133,7 +133,7 @@ namespace FrameSyncBattle
             SimplePool<T> pool = null;
             if (!PoolMap.ContainsKey(type))
             {
-                pool = new SimplePool<T>(Activator.CreateInstance<T>, PoolObjectResetMethod);
+                pool = new SimplePool<T>((() => type.GetConstructor(Type.EmptyTypes)?.Invoke(null) as T), PoolObjectResetMethod);
                 PoolMap.Add(type, pool);
             }
             pool = PoolMap[type];
