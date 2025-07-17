@@ -74,13 +74,15 @@ namespace FrameSyncBattle
         //攻击速度归一到统一攻击间隔 如果动画时间大于攻击间隔，则要带默认速度修正
         public const float ExtraAttackRangeBuffer = 1.5f;
         public AttackConfig[] NormalAttack { get; private set; }
+
         public float GetAttackRangeBuffer()
         {
             float attackRange = Owner.GetAttackRange();
             if (FlowState == AttackFlowState.Start || FlowState == AttackFlowState.FirstFired)
-                return ExtraAttackRangeBuffer+attackRange;
+                return ExtraAttackRangeBuffer + attackRange;
             return attackRange;
         }
+
         public AttackFlowState GetCurrentState()
         {
             return FlowState;
@@ -195,7 +197,7 @@ namespace FrameSyncBattle
 
         private void MeleeHitEnd(FsBattleLogic battle,AttackTempData data)
         {
-            bool hit = DoAttackDamage(battle,Owner.GetAttackRange(),data,Owner.Position,CurrentTarget);
+            bool hit = DoAttackDamage(battle,Owner.GetAttackRange() + ExtraAttackRangeBuffer,data,Owner.Position,CurrentTarget);
             if (hit)
             {
                 //todo create fx

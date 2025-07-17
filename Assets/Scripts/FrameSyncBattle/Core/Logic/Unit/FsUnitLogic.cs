@@ -60,9 +60,23 @@ namespace FrameSyncBattle
             }
         }
 
-        protected IAttackHandler NormalAttack{ get; set; }
-        
+        public IAttackHandler NormalAttack{ get; set; }
 
+
+        #region GetSomeThing
+        
+        public bool CanAttack()
+        {
+            return NormalAttack!=null && StateFlags.HasAnyState(FsUnitStateFlag.Attack);
+        }
+
+        public bool CanMove()
+        {
+            return StateFlags.HasAnyState(FsUnitStateFlag.Move);
+        }
+        
+        #endregion
+        
         /// <summary>
         /// 伤害结算后 响应死亡等行为
         /// </summary>

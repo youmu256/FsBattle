@@ -65,6 +65,21 @@ namespace FrameSyncBattle
             }
             TempList.Clear();
         }
+        
+        
+        /// <summary>
+        /// 目标是否失效了 AI考虑要切换一个目标
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public bool IsEntityValidTobeTargeted(FsUnitLogic source,FsUnitLogic target)
+        {
+            if (source == null) return false;
+            if (target == null) return false;
+            if (target.IsDead) return false;
+            return true;
+        }
     }
 
     public partial class FsBattleLogic
