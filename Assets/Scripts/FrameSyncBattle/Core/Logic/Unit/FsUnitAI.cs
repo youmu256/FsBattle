@@ -35,25 +35,6 @@ namespace FrameSyncBattle
             Current?.Update(Context,deltaTime);
         }
     }
-    public class UnitAIContent : IFsmContent
-    {
-        public FsBattleLogic Battle;
-        public FsUnitLogic Me;
-        public FsUnitAI UnitAi;
-        public UnitAIFsm BaseAIFsm;
-        public UnitAIFsm MiddleAIFsm;
-        //---这里是临时参数--用来在Command M-AI B-AI中传递参数而已 接收的状态Enter时就要自己记录参数 并且ResetParam
-        public float MoveReachDistance { get; set; }
-        public FsUnitLogic TargetEntity { get; set; }
-        public Vector3 TargetPosition { get; set; }
-        public void ResetParam()
-        {
-            TargetPosition = Vector3.zero;
-            TargetEntity = null;
-            MoveReachDistance = 0;
-        }
-        
-    }
     public class AIMiddleState
     {
         public const string AttackMove = "AttackMove";//等于A地板
@@ -126,7 +107,7 @@ namespace FrameSyncBattle
         public FsUnitLogic Target;
         public override void Enter(UnitAIContent content)
         {
-            Target = content.TargetEntity;
+            Target = content.PB_TargetEntity;
             //停止移动 看向目标 发起攻击
             content.Me.NormalAttack.AttackTarget(Target);
         }
@@ -148,44 +129,27 @@ namespace FrameSyncBattle
     }
     public class BState_Move : FsUnitAIStateBase
     {
-        public float ReachRange;
+        public float ReachDistance;
         public FsUnitLogic TargetEntity;
         public Vector3 TargetPosition;
         public override void Enter(UnitAIContent content)
         {
-            ReachRange = content.MoveReachDistance;
-            TargetEntity = content.TargetEntity;
-            TargetPosition = content.TargetPosition;
+            ReachDistance = content.PB_MoveReachDistance;
+            TargetEntity = content.PB_TargetEntity;
+            TargetPosition = content.PB_TargetPosition;
             content.Me.Play(new PlayAnimParam("Move",0,0,true));
         }
         public override void Update(UnitAIContent content, float deltaTime)
         {
-            //如果抵达目的地就切换成B-Idle
             var goal = TargetEntity?.Position ?? TargetPosition;
-            if (DistanceUtils.IsReachPosition2D(content.Me, true, goal, ReachRange))
+            var goalRadius = TargetEntity?.Radius ?? 0;
+            var reachCheck = ReachDistance + goalRadius;
+            if (DistanceUtils.IsReachPosition2D(content.Me, true, goal, reachCheck))
             {
-                //change to idle
+                content.BaseAIFsm.ChangeState(AIBaseState.Idle);
             }
         }
 
-        public override void Exit(UnitAIContent content)
-        {
-            
-        }
-    }
-    public class HState_Complex : FsUnitAIStateBase
-    {
-        public override void Enter(UnitAIContent content)
-        {
-            
-        }
-        public override void Update(UnitAIContent content, float deltaTime)
-        {
-            /*
-             * 1.按照索敌逻辑(仇恨距离等因素) 分配一次仇恨目标 并让M进入目标攻击逻辑AI
-             * 2.检查技能状态，并且检测技能AI前置，如果能释放技能则让M进入施法AI
-             */
-        }
         public override void Exit(UnitAIContent content)
         {
             
@@ -232,6 +196,7 @@ namespace FrameSyncBattle
                 if (dis <= attackRange)
                 {
                     //attack
+                    content.BaseAIFsm.ChangeState(AIBaseState.Attack);
                 }
                 else if(content.Me.CanMove())
                 {
@@ -251,33 +216,71 @@ namespace FrameSyncBattle
     #endregion
     
     
-    public class FsUnitAI : IFsEntityFrame
+    public class UnitAIContent : IFsEntityFrame,IFsmContent
     {
         //基础行为AI 待机 死亡 攻击 施法 移动(静态目标) 移动(动态目标)
         //上层策略AI 判断技能释放时机 仇恨目标管理
 
-        public UnitAIFsm BaseFsm;
-        public UnitAIFsm MiddleFsm;
-        public UnitAIContent AiContent;
-        public FsUnitAI(FsUnitLogic owner)
+        public UnitAIContent(FsBattleLogic battle,FsUnitLogic owner)
         {
-            BaseFsm = new UnitAIFsm();
-            
-            AiContent = new UnitAIContent();
-            AiContent.Me = owner;
-            AiContent.BaseAIFsm = BaseFsm;
-
-            BaseFsm.Context = AiContent;
+            BaseAIFsm = new UnitAIFsm();
+            MiddleAIFsm = new UnitAIFsm();
+            Me = owner;
+            Battle = battle;
         }
         
         public void OnEntityFrame(FsBattleLogic battle, FsUnitLogic entity, float deltaTime, FsCmd cmd)
         {
             if (entity.IsDead)
             {
-                BaseFsm.ChangeState(AIBaseState.Death);
+                BaseAIFsm.ChangeState(AIBaseState.Death);
             }
-            BaseFsm.UpdateFsm(battle.FrameLength);
+            BaseAIFsm.UpdateFsm(battle.FrameLength);
             //顶层AI需求 找最近的人进攻 如果可以释放技能则释放技能 
+        }
+        
+        
+        public FsBattleLogic Battle;
+        public FsUnitLogic Me;
+        public UnitAIFsm BaseAIFsm;
+        public UnitAIFsm MiddleAIFsm;
+
+        #region 状态机切换时的参数 接收的状态Enter时就要自己记录参数 并且ResetParam
+
+        public float PM_MoveReachDistance { get; set; }
+        public FsUnitLogic PM_TargetEntity { get; set; }
+        public Vector3 PM_TargetPosition { get; set; }
+        
+        public float PB_MoveReachDistance { get; set; }
+        public FsUnitLogic PB_TargetEntity { get; set; }
+        public Vector3 PB_TargetPosition { get; set; }
+
+        #endregion
+        public void ResetParam()
+        {
+            PB_TargetPosition = Vector3.zero;
+            PB_TargetEntity = null;
+            PB_MoveReachDistance = 0;
+        }
+    }
+    
+    
+    public class HState_Complex : FsUnitAIStateBase
+    {
+        public override void Enter(UnitAIContent content)
+        {
+            
+        }
+        public override void Update(UnitAIContent content, float deltaTime)
+        {
+            /*
+             * 1.按照索敌逻辑(仇恨距离等因素) 分配一次仇恨目标 并让M进入目标攻击逻辑AI
+             * 2.检查技能状态，并且检测技能AI前置，如果能释放技能则让M进入施法AI
+             */
+        }
+        public override void Exit(UnitAIContent content)
+        {
+            
         }
     }
 }

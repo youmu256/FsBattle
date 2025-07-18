@@ -68,7 +68,7 @@ namespace FrameSyncBattle
         
         
         /// <summary>
-        /// 目标是否失效了 AI考虑要切换一个目标
+        /// 目标对象是否能被作为AI目标
         /// </summary>
         /// <param name="source"></param>
         /// <param name="target"></param>
@@ -77,7 +77,7 @@ namespace FrameSyncBattle
         {
             if (source == null) return false;
             if (target == null) return false;
-            if (target.IsDead) return false;
+            if (target.IsDead || target.IsRemoved) return false;
             return true;
         }
     }
