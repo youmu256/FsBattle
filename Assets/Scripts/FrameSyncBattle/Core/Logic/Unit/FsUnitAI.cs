@@ -116,7 +116,7 @@ namespace FrameSyncBattle
         {
             if (content.Me.StateFlags.HasAnyState(FsUnitStateFlag.Attack) == false)
             {
-                content.BaseAIFsm.ChangeState(AIBaseState.Idle);
+                content.RequestChangeBase(AIBaseState.Idle);
                 return;
             }
         }
@@ -146,8 +146,32 @@ namespace FrameSyncBattle
             var reachCheck = ReachDistance + goalRadius;
             if (DistanceUtils.IsReachPosition2D(content.Me, true, goal, reachCheck))
             {
-                content.BaseAIFsm.ChangeState(AIBaseState.Idle);
+                content.RequestChangeBase(AIBaseState.Idle);
             }
+            else
+            {
+                //move
+            }
+        }
+
+        public override void Exit(UnitAIContent content)
+        {
+            ReachDistance = 0;
+            TargetEntity = null;
+            TargetPosition = Vector3.zero;
+        }
+    }
+    #region MiddleAI
+    public class MState_Death : FsUnitAIStateBase
+    {
+        public override void Enter(UnitAIContent content)
+        {
+            
+        }
+
+        public override void Update(UnitAIContent content, float deltaTime)
+        {
+            
         }
 
         public override void Exit(UnitAIContent content)
@@ -155,8 +179,6 @@ namespace FrameSyncBattle
             
         }
     }
-    #region MiddleAI
-    
     public class MState_Hold : FsUnitAIStateBase
     {
         public override void Enter(UnitAIContent content)
@@ -180,7 +202,7 @@ namespace FrameSyncBattle
 
         public override void Enter(UnitAIContent content)
         {
-            
+            TargetEntity = content.PM_TargetEntity;
         }
         public override void Update(UnitAIContent content, float deltaTime)
         {
@@ -191,26 +213,33 @@ namespace FrameSyncBattle
             }
             if (TargetEntity != null)
             {
-                //chase and attack
-                var dis = DistanceUtils.DistanceBetween2D(content.Me, TargetEntity, true);
-                if (dis <= attackRange)
+                //处于攻击行动中时 应该不能让AI切换成其他动作 比如切换进入移动等
+                if (content.Me.NormalAttack.GetCurrentState() == AttackFlowState.None)
                 {
-                    //attack
-                    content.BaseAIFsm.ChangeState(AIBaseState.Attack);
-                }
-                else if(content.Me.CanMove())
-                {
-                    //move close target
+                    //chase and attack
+                    var dis = DistanceUtils.DistanceBetween2D(content.Me, TargetEntity, true);
+                    if (dis <= attackRange)
+                    {
+                        content.PB_TargetEntity = TargetEntity;
+                        content.RequestChangeBase(AIBaseState.Attack);
+                    }
+                    else if(content.Me.CanMove())
+                    {
+                        //move close target
+                        content.PB_TargetEntity = TargetEntity;
+                        content.PB_MoveReachDistance = attackRange - 0.5f;//-0.5 保证处于攻击范围内，防止在攻击范围边缘反复鬼畜
+                        content.RequestChangeBase(AIBaseState.Move);
+                    }
                 }
             }
             else
             {
-                content.MiddleAIFsm.ChangeState(AIMiddleState.Stop);
+                content.RequestChangeMiddle(AIMiddleState.Hold);
             }
         }
         public override void Exit(UnitAIContent content)
         {
-            
+            TargetEntity = null;
         }
     }
     #endregion
@@ -223,10 +252,23 @@ namespace FrameSyncBattle
 
         public UnitAIContent(FsBattleLogic battle,FsUnitLogic owner)
         {
-            BaseAIFsm = new UnitAIFsm();
-            MiddleAIFsm = new UnitAIFsm();
             Me = owner;
             Battle = battle;
+            BaseAIFsm = new UnitAIFsm();
+            BaseAIFsm.AddState(AIBaseState.Idle,new BState_Idle());
+            BaseAIFsm.AddState(AIBaseState.Attack,new BState_Attack());
+            BaseAIFsm.AddState(AIBaseState.Move,new BState_Move());
+            BaseAIFsm.AddState(AIBaseState.Death,new BState_Death());
+            
+            MiddleAIFsm = new UnitAIFsm();
+            MiddleAIFsm.AddState(AIMiddleState.Death,new MState_Death());
+            MiddleAIFsm.AddState(AIMiddleState.Hold,new MState_Hold());
+            MiddleAIFsm.AddState(AIMiddleState.AttackEntity,new MState_AttackTarget());
+            
+            //start state
+            BaseAIFsm.ChangeState(AIBaseState.Idle);
+            MiddleAIFsm.ChangeState(AIMiddleState.Hold);
+            
         }
         
         public void OnEntityFrame(FsBattleLogic battle, FsUnitLogic entity, float deltaTime, FsCmd cmd)
@@ -234,16 +276,48 @@ namespace FrameSyncBattle
             if (entity.IsDead)
             {
                 BaseAIFsm.ChangeState(AIBaseState.Death);
+                MiddleAIFsm.ChangeState(AIMiddleState.Death);
             }
+            else
+            {
+                //搜索最近的目标去攻击
+                if (Me.MpPercent >= 1)
+                {
+                    //try cast skill
+                    Me.MpPercent = 0;
+                    FsDebug.Log($"TODO AI CAST");
+                }
+                else
+                {
+                    //可以攻击的情况下 找到周围最近的敌人 转入M追击目标状态
+                    if (Me.CanAttack() && Me.NormalAttack.GetCurrentState() == AttackFlowState.None)
+                    {
+                        var targets = battle.EntityService.Units.FindAll(logic => logic.Team != Me.Team && logic.IsDead == false);
+                        if (targets.Count > 0)
+                        {
+                            targets.Sort(((a, b) =>
+                            {
+                                var disA = DistanceUtils.DistanceBetween2D(Me, a, true);
+                                var disB = DistanceUtils.DistanceBetween2D(Me, b, true);
+                                if (disA > disB)
+                                    return 1;
+                                return -1;
+                            }));
+                            PM_TargetEntity = targets[0];
+                            RequestChangeMiddle(AIMiddleState.AttackEntity);
+                        }
+                    }
+                }
+            }
+            MiddleAIFsm.UpdateFsm(battle.FrameLength);
             BaseAIFsm.UpdateFsm(battle.FrameLength);
-            //顶层AI需求 找最近的人进攻 如果可以释放技能则释放技能 
         }
         
         
         public FsBattleLogic Battle;
         public FsUnitLogic Me;
-        public UnitAIFsm BaseAIFsm;
-        public UnitAIFsm MiddleAIFsm;
+        protected UnitAIFsm BaseAIFsm;
+        protected UnitAIFsm MiddleAIFsm;
 
         #region 状态机切换时的参数 接收的状态Enter时就要自己记录参数 并且ResetParam
 
@@ -256,11 +330,28 @@ namespace FrameSyncBattle
         public Vector3 PB_TargetPosition { get; set; }
 
         #endregion
-        public void ResetParam()
+
+        public void RequestChangeBase(string stateName, bool sameChange = false)
+        {
+            this.BaseAIFsm.ChangeState(stateName, sameChange);
+            ResetBaseParam();
+        }
+        public void RequestChangeMiddle(string stateName, bool sameChange = false)
+        {
+            this.BaseAIFsm.ChangeState(stateName, sameChange);
+            ResetMiddleParam();
+        }
+        public void ResetBaseParam()
         {
             PB_TargetPosition = Vector3.zero;
             PB_TargetEntity = null;
             PB_MoveReachDistance = 0;
+        }
+        public void ResetMiddleParam()
+        {
+            PM_TargetPosition = Vector3.zero;
+            PM_TargetEntity = null;
+            PM_MoveReachDistance = 0;
         }
     }
     

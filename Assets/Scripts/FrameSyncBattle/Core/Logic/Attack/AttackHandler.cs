@@ -118,7 +118,6 @@ namespace FrameSyncBattle
             var length = NormalAttack.Length;
             var atk =  NormalAttack[UnityEngine.Random.Range(0,length)];
             
-            
             //--发起事件--
             var evt = GameEvent.New<GE_AnyUnitPrepareAttack>();
             evt.Source = Owner;
@@ -160,10 +159,7 @@ namespace FrameSyncBattle
         
         public void AttackTarget(FsUnitLogic target)
         {
-            AttackId++;
             CurrentTarget = target;
-            CurrentAttackTimeScale = Owner.Property.CurrentAttackTimeScaler;
-            CurrentAttack = GetOneAttack(target);
             AttackActive = true;
         }
 
@@ -242,8 +238,10 @@ namespace FrameSyncBattle
                 CurrentAttackCoolDown -= deltaTime * CurrentAttackTimeScale;
             
             //try to start
-            if(CurrentAttackCoolDown <=0 && FlowState == AttackFlowState.None && AttackActive)
+            if (CurrentAttackCoolDown <= 0 && FlowState == AttackFlowState.None && AttackActive)
+            {
                 ChangeState(battle,AttackFlowState.Start);
+            }
             
             if (FlowState == AttackFlowState.None) return;
             CurrentAttackTimer += deltaTime * CurrentAttackTimeScale;
@@ -277,6 +275,11 @@ namespace FrameSyncBattle
             if (FlowState == state && state!= AttackFlowState.FirstFired) return;
             if (state == AttackFlowState.Start)
             {
+                //真正开始攻击流程 
+                AttackId++;
+                CurrentAttackTimeScale = Owner.Property.CurrentAttackTimeScaler;
+                CurrentAttack = GetOneAttack(CurrentTarget);
+                
                 CurrentAttackHitIndex = 0;
                 Owner.Play(new PlayAnimParam(){Animation = CurrentAttack.Anim,IgnoreRepeat = false,Speed = CurrentAttackTimeScale,});
                 //Owner.PlayAnimation(CurrentAttack.Anim,CurrentAttack.AnimSuffix,CurrentAttackTimeScale,CurrentAttack.NoFade?0f:0.15f);
