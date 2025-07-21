@@ -1,25 +1,19 @@
 ﻿namespace FrameSyncBattle
 {
-    /*
-     * CopyRight By VimalaEric & Fox.Huang
-     * 2024.4.28
-     */
-
     using UnityEngine;
     using System;
     using System.Reflection;
     using System.Text.RegularExpressions;
 
-    /// <summary>
-    /// Unity Log重定向。编辑器下，点击log跳转到代码位置
-    /// </summary>
-    public class ConsolerRedirection
+    public class FsDebugReDirection
     {
 #if UNITY_EDITOR
         /// <summary>
         /// 最大匹配检索深度
         /// </summary>
         private const int MaxRegexMatch = 20;
+
+        private const string KeyWords = "FsDebug.cs";//让控制台定位文件的时候从KeyWords的下一行堆栈作为定位
 
         // 处理asset打开的callback函数
         [UnityEditor.Callbacks.OnOpenAssetAttribute(0)]
@@ -38,25 +32,36 @@
                     string pathline = "";
                     if (matches.Success)
                     {
-                        /* 找到跳转目标层：
-                         * 需要分别判断点击为首层还是其它层。
-                         * 首层时:跳过自定义Log层，向下一层跳转。
-                         * 其它层：直接跳转。
-                         */
-                        if (matches.Groups[1].Value.EndsWith(line.ToString())) //首层
+                        //先定位选择行
+                        for (int i = 0; i < MaxRegexMatch; i++)
                         {
+                            if (matches.Groups[1].Value.EndsWith(line.ToString()))
+                                break;
                             matches = matches.NextMatch();
+                        }
+
+                        //再从选择的行开始向下找到具体行
+                        Match debugMatch = null;
+                        var next = matches;
+                        while (next != next.NextMatch())
+                        {
+                            if (next.Groups[1].Value.Contains(KeyWords))
+                            {
+                                debugMatch = next.NextMatch();
+                                break;
+                            }
+                            next = next.NextMatch();
+                        }
+
+                        if (debugMatch != null)
+                        {
+                            matches = debugMatch;
                         }
                         else
                         {
-                            for (int i = 0; i < MaxRegexMatch; i++) //其他层
-                            {
-                                if (matches.Groups[1].Value.EndsWith(line.ToString()))
-                                    break;
-                                matches = matches.NextMatch();
-                            }
+                            return false;
                         }
-
+                        
                         //跳转逻辑
                         if (matches.Success)
                         {

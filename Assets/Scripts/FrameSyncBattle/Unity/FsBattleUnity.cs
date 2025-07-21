@@ -133,7 +133,8 @@ namespace FrameSyncBattle
         
         public void StartGame()
         {
-            FsDebug.Log("TestRediction");
+            FsDebug.Log("TestLogReDiction");
+            Debug.Log("TestLogNormal");
             Battle.StartBattle();
             Player = Battle.EntityService.Units.Find((unit => unit.Team == FsBattleLogic.PlayerTeam));
         }
