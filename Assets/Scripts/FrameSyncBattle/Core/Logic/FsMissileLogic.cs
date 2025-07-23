@@ -65,8 +65,7 @@ namespace FrameSyncBattle
             MissileResultPosition = MissileBasePosition;
             FlyEndCallBack = callback;
 
-            this.Position = MissileBasePosition;
-            this.Euler = Quaternion.LookRotation(MissileDirection).eulerAngles;
+            this.SetPosition(MissileBasePosition).SetEuler(Quaternion.LookRotation(MissileDirection).eulerAngles);
             return this;
         }
         
@@ -208,8 +207,7 @@ namespace FrameSyncBattle
             Vector3 nextGoal = MissileBasePosition + curveOffset;
             Vector3 nextStep = nextGoal - MissileResultPosition;
             MissileResultPosition = MissileResultPosition + nextStep;
-            Euler = Quaternion.LookRotation(nextStep).eulerAngles;
-            Position = MissileResultPosition;
+            this.SetPosition(MissileResultPosition).SetEuler(Quaternion.LookRotation(nextStep).eulerAngles);
             
             //时间到达 或者 移动到位
             if (ReachTime <= 0 || Timer >= ReachTime || targetPointHit)

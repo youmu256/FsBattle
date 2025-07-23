@@ -45,6 +45,9 @@ namespace FrameSyncBattle
                         MpPercent = mpPct;
                     }
                     break;
+                case FsUnitPropertyType.MoveSpeed:
+                    this.MoveService?.UpdateMoveSpeed(value);
+                    break;
             }
         }
 

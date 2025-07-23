@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace FrameSyncBattle
 {
@@ -10,9 +11,9 @@ namespace FrameSyncBattle
 
         public FsUnitLogic Owner;
         
-        public override void Init(int team, string entityTypeId, object initData)
+        public override void Init(FsBattleLogic battle, int team, string entityTypeId, object initData)
         {
-            base.Init(team, entityTypeId, initData);
+            base.Init(battle, team, entityTypeId, initData);
             this.Owner = Data.Owner;
         }
 
@@ -33,7 +34,10 @@ namespace FrameSyncBattle
             
             //check hit
             Vector3 start = this.Position;
-            foreach (var unit in battle.EntityService.Units)
+            
+            List<FsUnitLogic> targets = new List<FsUnitLogic>();
+            battle.EntityService.CollectUnits(targets);
+            foreach (var unit in targets)
             {
                 if (unit.Team == this.Team) continue;
                 if (unit.IsDead) continue;
@@ -48,8 +52,8 @@ namespace FrameSyncBattle
                     break;
                 }
             }
-            
-            this.Position += vel;
+
+            this.SetPosition(this.Position + vel);
             if (remove)
             {
                 battle.RemoveEntity(this);

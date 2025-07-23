@@ -2,19 +2,19 @@
 using UnityEngine;
 namespace FrameSyncBattle
 {
-    public class UnitAIFsm :IFsm<UnitAIContent>
+    public class UnitAIFsm :IFsm<FsUnitAI>
     {
-        public UnitAIContent Context;
-        public IFsmState<UnitAIContent> Current;
+        public FsUnitAI Context;
+        public IFsmState<FsUnitAI> Current;
         public string CurrentStateName { get; private set; }
         public Dictionary<string, FsUnitAIStateBase> StateMap = new();
 
-        public void AddState(string key,IFsmState<UnitAIContent> state)
+        public void AddState(string key,IFsmState<FsUnitAI> state)
         {
             if (StateMap.ContainsKey(key)) return;
             StateMap.Add(key,state as FsUnitAIStateBase);
         }
-        public IFsmState<UnitAIContent> GetState(string stateName)
+        public IFsmState<FsUnitAI> GetState(string stateName)
         {
             if (StateMap.ContainsKey(stateName)) return StateMap[stateName];
             return null;
@@ -56,45 +56,45 @@ namespace FrameSyncBattle
         public const string Death = "Death";
         public const string CastSkill = "CastSkill";
     }
-    public abstract class FsUnitAIStateBase: IFsmState<UnitAIContent>
+    public abstract class FsUnitAIStateBase: IFsmState<FsUnitAI>
     {
         //应该设计状态优先级来控制转换吗
         
-        public abstract void Enter(UnitAIContent content);
+        public abstract void Enter(FsUnitAI content);
 
-        public abstract void Update(UnitAIContent content, float deltaTime);
+        public abstract void Update(FsUnitAI content, float deltaTime);
 
-        public abstract void Exit(UnitAIContent content);
+        public abstract void Exit(FsUnitAI content);
     }
 
     public class BState_Death : FsUnitAIStateBase
     {
-        public override void Enter(UnitAIContent content)
+        public override void Enter(FsUnitAI content)
         {
             content.Me.Play(new PlayAnimParam("Death",0,0,true));
         }
-        public override void Update(UnitAIContent content, float deltaTime)
+        public override void Update(FsUnitAI content, float deltaTime)
         {
             
         }
 
-        public override void Exit(UnitAIContent content)
+        public override void Exit(FsUnitAI content)
         {
             
         }
     }
     public class BState_Idle : FsUnitAIStateBase
     {
-        public override void Enter(UnitAIContent content)
+        public override void Enter(FsUnitAI content)
         {
             content.Me.Play(new PlayAnimParam("Idle",0,0,true));
         }
-        public override void Update(UnitAIContent content, float deltaTime)
+        public override void Update(FsUnitAI content, float deltaTime)
         {
             
         }
 
-        public override void Exit(UnitAIContent content)
+        public override void Exit(FsUnitAI content)
         {
             
         }
@@ -105,22 +105,29 @@ namespace FrameSyncBattle
     public class BState_Attack : FsUnitAIStateBase
     {
         public FsUnitLogic Target;
-        public override void Enter(UnitAIContent content)
+        public override void Enter(FsUnitAI content)
         {
             Target = content.PB_TargetEntity;
             //停止移动 看向目标 发起攻击
             content.Me.NormalAttack.AttackTarget(Target);
         }
 
-        public override void Update(UnitAIContent content, float deltaTime)
+        public override void Update(FsUnitAI content, float deltaTime)
         {
             if (content.Me.StateFlags.HasAnyState(FsUnitStateFlag.Attack) == false)
             {
                 content.RequestChangeBase(AIBaseState.Idle);
                 return;
             }
+
+            if (content.Me.NormalAttack.GetCurrentState() == AttackFlowState.FireEnd)
+            {
+                content.RequestChangeBase(AIBaseState.Idle);
+                return;
+            }
+            
         }
-        public override void Exit(UnitAIContent content)
+        public override void Exit(FsUnitAI content)
         {
             //停止攻击
             content.Me.NormalAttack.StopAttack();
@@ -132,14 +139,18 @@ namespace FrameSyncBattle
         public float ReachDistance;
         public FsUnitLogic TargetEntity;
         public Vector3 TargetPosition;
-        public override void Enter(UnitAIContent content)
+        
+        private float nextUpdateRemainTime = 0;
+
+        public override void Enter(FsUnitAI content)
         {
             ReachDistance = content.PB_MoveReachDistance;
             TargetEntity = content.PB_TargetEntity;
             TargetPosition = content.PB_TargetPosition;
+            nextUpdateRemainTime = 0;
             content.Me.Play(new PlayAnimParam("Move",0,0,true));
         }
-        public override void Update(UnitAIContent content, float deltaTime)
+        public override void Update(FsUnitAI content, float deltaTime)
         {
             var goal = TargetEntity?.Position ?? TargetPosition;
             var goalRadius = TargetEntity?.Radius ?? 0;
@@ -150,48 +161,54 @@ namespace FrameSyncBattle
             }
             else
             {
-                //move
+                nextUpdateRemainTime -= deltaTime;
+                if (nextUpdateRemainTime <= 0)
+                {
+                    nextUpdateRemainTime = 0.2f;
+                    content.Me.MoveService.MoveToPosition(goal, ReachDistance);
+                }
             }
         }
 
-        public override void Exit(UnitAIContent content)
+        public override void Exit(FsUnitAI content)
         {
             ReachDistance = 0;
             TargetEntity = null;
             TargetPosition = Vector3.zero;
+            content.Me.MoveService.StopMove();
         }
     }
     #region MiddleAI
     public class MState_Death : FsUnitAIStateBase
     {
-        public override void Enter(UnitAIContent content)
+        public override void Enter(FsUnitAI content)
         {
             
         }
 
-        public override void Update(UnitAIContent content, float deltaTime)
+        public override void Update(FsUnitAI content, float deltaTime)
         {
             
         }
 
-        public override void Exit(UnitAIContent content)
+        public override void Exit(FsUnitAI content)
         {
             
         }
     }
     public class MState_Hold : FsUnitAIStateBase
     {
-        public override void Enter(UnitAIContent content)
+        public override void Enter(FsUnitAI content)
         {
             
         }
 
-        public override void Update(UnitAIContent content, float deltaTime)
+        public override void Update(FsUnitAI content, float deltaTime)
         {
             
         }
 
-        public override void Exit(UnitAIContent content)
+        public override void Exit(FsUnitAI content)
         {
             
         }
@@ -200,11 +217,11 @@ namespace FrameSyncBattle
     {
         public FsUnitLogic TargetEntity;
 
-        public override void Enter(UnitAIContent content)
+        public override void Enter(FsUnitAI content)
         {
             TargetEntity = content.PM_TargetEntity;
         }
-        public override void Update(UnitAIContent content, float deltaTime)
+        public override void Update(FsUnitAI content, float deltaTime)
         {
             float attackRange = content.Me.GetAttackRange();
             if (content.Battle.EntityService.IsEntityValidTobeTargeted(content.Me, TargetEntity) == false || content.Me.CanAttack() == false)
@@ -237,7 +254,7 @@ namespace FrameSyncBattle
                 content.RequestChangeMiddle(AIMiddleState.Hold);
             }
         }
-        public override void Exit(UnitAIContent content)
+        public override void Exit(FsUnitAI content)
         {
             TargetEntity = null;
         }
@@ -245,12 +262,12 @@ namespace FrameSyncBattle
     #endregion
     
     
-    public class UnitAIContent : IFsEntityFrame,IFsmContent
+    public class FsUnitAI : IFsEntityFrame,IFsmContent
     {
         //基础行为AI 待机 死亡 攻击 施法 移动(静态目标) 移动(动态目标)
         //上层策略AI 判断技能释放时机 仇恨目标管理
 
-        public UnitAIContent(FsBattleLogic battle,FsUnitLogic owner)
+        public FsUnitAI(FsBattleLogic battle,FsUnitLogic owner)
         {
             Me = owner;
             Battle = battle;
@@ -264,15 +281,23 @@ namespace FrameSyncBattle
             MiddleAIFsm.AddState(AIMiddleState.Death,new MState_Death());
             MiddleAIFsm.AddState(AIMiddleState.Hold,new MState_Hold());
             MiddleAIFsm.AddState(AIMiddleState.AttackEntity,new MState_AttackTarget());
-            
+
+            BaseAIFsm.Context = this;
+            MiddleAIFsm.Context = this;
             //start state
             BaseAIFsm.ChangeState(AIBaseState.Idle);
             MiddleAIFsm.ChangeState(AIMiddleState.Hold);
-            
         }
+
+        private bool StartFlag = false;
         
         public void OnEntityFrame(FsBattleLogic battle, FsUnitLogic entity, float deltaTime, FsCmd cmd)
         {
+            if (StartFlag == false)
+            {
+                StartFlag = true;
+            }
+            
             if (entity.IsDead)
             {
                 BaseAIFsm.ChangeState(AIBaseState.Death);
@@ -292,7 +317,8 @@ namespace FrameSyncBattle
                     //可以攻击的情况下 找到周围最近的敌人 转入M追击目标状态
                     if (Me.CanAttack() && Me.NormalAttack.GetCurrentState() == AttackFlowState.None)
                     {
-                        var targets = battle.EntityService.Units.FindAll(logic => logic.Team != Me.Team && logic.IsDead == false);
+                        List<FsUnitLogic> targets = new List<FsUnitLogic>();
+                        battle.EntityService.CollectUnits(targets, TargetFilter);
                         if (targets.Count > 0)
                         {
                             targets.Sort(((a, b) =>
@@ -312,8 +338,13 @@ namespace FrameSyncBattle
             MiddleAIFsm.UpdateFsm(battle.FrameLength);
             BaseAIFsm.UpdateFsm(battle.FrameLength);
         }
-        
-        
+
+        private bool TargetFilter(FsBattleLogic battle, FsUnitLogic target)
+        {
+            return battle.EntityService.IsEntityValidTobeTargeted(Me,target) && battle.EntityService.IsEnemy(Me,target);
+        }
+
+
         public FsBattleLogic Battle;
         public FsUnitLogic Me;
         protected UnitAIFsm BaseAIFsm;
@@ -338,7 +369,7 @@ namespace FrameSyncBattle
         }
         public void RequestChangeMiddle(string stateName, bool sameChange = false)
         {
-            this.BaseAIFsm.ChangeState(stateName, sameChange);
+            this.MiddleAIFsm.ChangeState(stateName, sameChange);
             ResetMiddleParam();
         }
         public void ResetBaseParam()
@@ -358,18 +389,18 @@ namespace FrameSyncBattle
     
     public class HState_Complex : FsUnitAIStateBase
     {
-        public override void Enter(UnitAIContent content)
+        public override void Enter(FsUnitAI content)
         {
             
         }
-        public override void Update(UnitAIContent content, float deltaTime)
+        public override void Update(FsUnitAI content, float deltaTime)
         {
             /*
              * 1.按照索敌逻辑(仇恨距离等因素) 分配一次仇恨目标 并让M进入目标攻击逻辑AI
              * 2.检查技能状态，并且检测技能AI前置，如果能释放技能则让M进入施法AI
              */
         }
-        public override void Exit(UnitAIContent content)
+        public override void Exit(FsUnitAI content)
         {
             
         }

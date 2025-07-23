@@ -34,10 +34,43 @@ namespace FrameSyncBattle
         
         public float DeadRemoveTime { get; private set; }
         
-        public override void Init(int team, string entityTypeId, object initData)
+        public override void Init(FsBattleLogic battle, int team, string entityTypeId, object initData)
         {
-            base.Init(team, entityTypeId, initData);
+            base.Init(battle, team, entityTypeId, initData);
             InitStatus(Data.PropertyInitData);
+            
+            //--attack
+            NormalAttack = new NormalAttackHandler(this, new AttackConfig[]
+            {
+                new AttackConfig()
+                {
+                    Anim = "Attack",
+                    AnimSuffix = null,
+                    AnimTime = 1f,
+                    NoFade = false,
+                    HitDatas = new []{new AttackHitData()
+                    {
+                        AttackFireOffset = Vector3.up,
+                        AttackFlyArc = 0.5f,
+                        AttackFlySideSpin = 0,
+                        AttackFlySpeed = 10,
+                        AttackModel = "cube",
+                        DamagePct = 1f,
+                        DamageRange = 10f,
+                        HitTime = 0.3f,
+                        IsMelee = false,
+                        LockTarget = true,
+                        MeleeHitFx = null,
+                    }},
+                }
+            });
+            //--move
+            MoveService = new FsSimpleMoveService(this);
+            MoveService.UpdateMoveSpeed(Property.Get(FsUnitPropertyType.MoveSpeed));
+            if (team == FsBattleLogic.EnemyTeam)
+            {
+                AI = new FsUnitAI(battle,this);
+            }
         }
 
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
@@ -56,12 +89,17 @@ namespace FrameSyncBattle
             else
             {
                 //AI SKILL ETC...
+                AI?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
+                MoveService.OnEntityFrame(battle, this, battle.FrameLength, cmd);
                 NormalAttack?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
             }
         }
 
+        public FsUnitAI AI { get; set; }
+        
         public IAttackHandler NormalAttack{ get; set; }
-
+        
+        public IMoveService MoveService { get; set; }
 
         #region GetSomeThing
         

@@ -27,10 +27,10 @@ namespace FrameSyncBattle
         
         public bool HasStarted { get; private set; }
         public int Id { get; private set; }
-        public string TypeId { get; protected set; }
-        public Vector3 Position { get; protected set; }
+        public string TypeId { get; private set; }
+        public Vector3 Position { get; private set; }
         //euler存在万向锁问题 考虑换成四元数?
-        public Vector3 Euler { get; protected set; }
+        public Vector3 Euler { get; private set; }
         public int Team { get; protected set; }
         
         public PlayAnimParam Animation { get; protected set; }
@@ -44,10 +44,11 @@ namespace FrameSyncBattle
         /// <summary>
         /// 创建时初始化
         /// </summary>
+        /// <param name="battle"></param>
         /// <param name="team"></param>
         /// <param name="entityTypeId"></param>
         /// <param name="initData"></param>
-        public virtual void Init(int team, string entityTypeId, object initData)
+        public virtual void Init(FsBattleLogic battle,int team, string entityTypeId, object initData)
         {
             this.Team = team;
             this.InitData = initData;
@@ -94,6 +95,24 @@ namespace FrameSyncBattle
 
         }
         
+        
+        public void Play(PlayAnimParam animParam)
+        {
+            Animation = animParam;
+        }
+
+        public FsEntityLogic SetPosition(Vector3 position)
+        {
+            Position = position;
+            return this;
+        }
+
+        public FsEntityLogic SetEuler(Vector3 euler)
+        {
+            Euler = euler;
+            return this;
+        }
+        
         #region View抽象绑定
         
         public IFsEntityView View { get; private set; }
@@ -103,10 +122,6 @@ namespace FrameSyncBattle
             this.View = view;
         }
 
-        public void Play(PlayAnimParam animParam)
-        {
-            Animation = animParam;
-        }
 
         #endregion
     }

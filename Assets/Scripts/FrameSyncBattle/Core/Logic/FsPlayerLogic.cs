@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FrameSyncBattle
@@ -9,33 +10,9 @@ namespace FrameSyncBattle
 
         public float NextFireTime = 0;
 
-        public override void Init(int team, string entityTypeId, object initData)
+        public override void Init(FsBattleLogic battle, int team, string entityTypeId, object initData)
         {
-            base.Init(team, entityTypeId, initData);
-            NormalAttack = new NormalAttackHandler(this, new AttackConfig[]
-            {
-                new AttackConfig()
-                {
-                    Anim = "Attack",
-                    AnimSuffix = null,
-                    AnimTime = 1f,
-                    NoFade = false,
-                    HitDatas = new []{new AttackHitData()
-                    {
-                        AttackFireOffset = Vector3.up,
-                        AttackFlyArc = 0.5f,
-                        AttackFlySideSpin = 0,
-                        AttackFlySpeed = 10,
-                        AttackModel = "cube",
-                        DamagePct = 1f,
-                        DamageRange = 10f,
-                        HitTime = 0.3f,
-                        IsMelee = false,
-                        LockTarget = true,
-                        MeleeHitFx = null,
-                    }},
-                }
-            });
+            base.Init(battle, team, entityTypeId, initData);
         }
 
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
@@ -55,8 +32,7 @@ namespace FrameSyncBattle
             {
                 var speed = Property.Get(FsUnitPropertyType.MoveSpeed);
                 Vector3 vel = new Vector3(xInput, 0, yInput).normalized * (speed * battle.FrameLength);
-                this.Position += vel;
-                this.Euler = Quaternion.LookRotation(vel).eulerAngles;
+                this.SetPosition(Position + vel).SetEuler(Quaternion.LookRotation(vel).eulerAngles);
                 this.Play(new PlayAnimParam("Move",0,1f,true));
             }
             else
@@ -81,7 +57,8 @@ namespace FrameSyncBattle
 
         private void TestAttack(FsBattleLogic battle, FsCmd cmd)
         {
-            var targets = battle.EntityService.Units.FindAll(logic => logic.Team != this.Team && logic.IsDead == false);
+            List<FsUnitLogic> targets = new List<FsUnitLogic>();
+            battle.EntityService.CollectUnits(targets, TargetFilter);
             if (targets.Count <= 0) return;
             var target = targets[battle.RandomGen.Next(targets.Count)];
             NormalAttack.AttackTarget(target);
@@ -108,7 +85,9 @@ namespace FrameSyncBattle
                 .AimTarget(start,Vector3.zero)
                 .Fire(null,null);
             */
-            var targets = battle.EntityService.Units.FindAll(logic => logic.Team != this.Team && logic.IsDead == false);
+            
+            List<FsUnitLogic> targets = new List<FsUnitLogic>();
+            battle.EntityService.CollectUnits(targets, TargetFilter);
             if (targets.Count <= 0) return;
             var target = targets[battle.RandomGen.Next(targets.Count)];
             var lockMissile = battle.AddEntity<FsMissileLogic>(this.Team,"missile",new FsEntityInitData(){Euler = this.Euler,Position = start});
@@ -123,6 +102,12 @@ namespace FrameSyncBattle
                 }));
 
         }
+        
+        private bool TargetFilter(FsBattleLogic battle, FsUnitLogic target)
+        {
+            return battle.EntityService.IsEntityValidTobeTargeted(this,target) && battle.EntityService.IsEnemy(this,target);
+        }
+
         
     }
 }

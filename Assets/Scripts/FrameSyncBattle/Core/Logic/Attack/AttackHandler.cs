@@ -185,9 +185,10 @@ namespace FrameSyncBattle
             DoAttackDamage(battle,0,data,position,target);
         }
         
-        private bool HitFilter(FsUnitLogic target)
+        private bool HitFilter(FsBattleLogic battle,FsUnitLogic target)
         {
             if (target.IsDead) return false;
+            if (battle.EntityService.IsEnemy(Owner, target) == false) return false;
             return true;
         }
 
@@ -209,7 +210,7 @@ namespace FrameSyncBattle
             var damageRange = attackHitData.DamageRange;
             if (damageRange <= 0)
             {
-                if (HitFilter(target) && target.BeHitCheck(position, baseRange+ExtraAttackRangeBuffer))
+                if (HitFilter(battle,target) && target.BeHitCheck(position, baseRange+ExtraAttackRangeBuffer))
                 {
                     FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(Owner,target,attackHitData.DamagePct).BindAttackIndex(data.AttackId);
                     battle.ProcessDamage(damageInfo);

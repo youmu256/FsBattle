@@ -20,17 +20,32 @@ namespace FrameSyncBattle
         }
     }
 
+    public enum RelationShip
+    {
+        Friend,
+        Enemy,
+        Neutral,
+    }
+
     public class FsEntityService
     {
-        public readonly List<FsUnitLogic> Units = new();
+        public FsEntityService(FsBattleLogic battle)
+        {
+            this.RefBattle = battle;
+        }
+        
+        public FsBattleLogic RefBattle { get; private set; }
+
+        //不要对外暴露 防止被错误操作
+        protected readonly List<FsUnitLogic> Units = new();
 
         public Dictionary<int, FsEntityLogic> EntitiesMap = new();
-        
-        public void UpdateEntityCache(FsEntityLogic entity,bool isAdd)
+
+        public void UpdateEntityCache(FsEntityLogic entity, bool isAdd)
         {
             if (isAdd)
             {
-                EntitiesMap.Add(entity.Id,entity);
+                EntitiesMap.Add(entity.Id, entity);
                 if (entity is FsUnitLogic unit)
                 {
                     Units.Add(unit);
@@ -45,41 +60,129 @@ namespace FrameSyncBattle
                 }
             }
         }
-        protected readonly List<FsUnitLogic> TempList = new();
 
-        public void CollectUnitsInPositionRange2D(ICollection<FsUnitLogic> container,Vector3 position,float range,Func<FsUnitLogic,bool> filter)
+        protected readonly List<FsUnitLogic> TempList = new();
+        
+        public ICollection<FsUnitLogic> CollectUnits(ICollection<FsUnitLogic> container, Func<FsBattleLogic, FsUnitLogic, bool> filter = null)
+        {
+            if (filter != null)
+            {
+                foreach (var unit in Units)
+                {
+                    if (filter.Invoke(RefBattle, unit) == false) continue;
+                    container.Add(unit);
+                }
+            }
+            else
+            {
+                foreach (var unit in Units)
+                {
+                    container.Add(unit);
+                }
+            }
+            return container;
+        }
+        
+        public ICollection<FsUnitLogic> CollectUnitsInPositionRange2D(ICollection<FsUnitLogic> container, Vector3 position, float range,
+            Func<FsBattleLogic, FsUnitLogic, bool> filter)
         {
             TempList.Clear();
             var aoiList = TempList;
             foreach (var unit in Units)
             {
-                if (DistanceUtils.DistanceBetween2D(unit, position,true) <= range)
+                if (DistanceUtils.DistanceBetween2D(unit, position, true) <= range)
                 {
                     aoiList.Add(unit);
                 }
             }
+
             foreach (var unit in aoiList)
             {
-                if (filter.Invoke(unit) == false) continue;
+                if (filter.Invoke(RefBattle, unit) == false) continue;
                 container.Add(unit);
             }
+
             TempList.Clear();
+            return container;
         }
-        
-        
+
+
         /// <summary>
         /// 目标对象是否能被作为AI目标
         /// </summary>
         /// <param name="source"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public bool IsEntityValidTobeTargeted(FsUnitLogic source,FsUnitLogic target)
+        public bool IsEntityValidTobeTargeted(FsUnitLogic source, FsUnitLogic target)
         {
             if (source == null) return false;
             if (target == null) return false;
             if (target.IsDead || target.IsRemoved) return false;
             return true;
         }
+
+        #region 获取敌对关系
+
+        public RelationShip GetRelationship(FsUnitLogic source, FsUnitLogic target)
+        {
+            return GetRelationship(source.Team, target.Team);
+        }
+
+        public RelationShip GetRelationship(int source, int target)
+        {
+            if (IsFriend(source, target)) return RelationShip.Friend;
+            if (IsEnemy(source, target)) return RelationShip.Enemy;
+            if (IsNeutral(source, target)) return RelationShip.Neutral;
+            return 0;
+        }
+
+        public bool IsFriend(int sourceTeam, int targetTeam)
+        {
+            return sourceTeam == targetTeam;
+        }
+
+        public bool IsEnemy(int sourceTeam, int targetTeam)
+        {
+            return sourceTeam != targetTeam;
+        }
+
+        public bool IsNeutral(int sourceTeam, int targetTeam)
+        {
+            return sourceTeam == -1 || targetTeam == -1;
+        }
+
+        public bool IsFriend(int sourceTeam, FsUnitLogic target)
+        {
+            return IsFriend(sourceTeam, target.Team);
+        }
+
+        public bool IsEnemy(int sourceTeam, FsUnitLogic target)
+        {
+            return IsEnemy(sourceTeam, target.Team);
+        }
+
+        public bool IsNeutral(int sourceTeam, FsUnitLogic target)
+        {
+            return IsNeutral(sourceTeam, target.Team);
+        }
+
+        public bool IsFriend(FsUnitLogic source, FsUnitLogic target)
+        {
+            return IsFriend(source.Team, target.Team);
+        }
+
+        public bool IsEnemy(FsUnitLogic source, FsUnitLogic target)
+        {
+            return IsEnemy(source.Team, target.Team);
+        }
+
+        public bool IsNeutral(FsUnitLogic source, FsUnitLogic target)
+        {
+            return IsNeutral(source.Team, target.Team);
+        }
+
+        #endregion
+
     }
 
     public partial class FsBattleLogic
@@ -101,13 +204,13 @@ namespace FrameSyncBattle
     
     public partial class FsBattleLogic
     {
-        public FsEntityService EntityService { get; private set; } = new();
+        public FsEntityService EntityService { get; private set; }
         
         //public GameEventHandler EventHandler { get; private set; } = new GameEventHandler();
         public virtual T AddEntity<T>(int team,string entityTypeId, object initData) where T : FsEntityLogic, new()
         {
             var entity = new T();
-            entity.Init(team,entityTypeId, initData);
+            entity.Init(this, team,entityTypeId, initData);
             entity.OnCreate(this);
             Entities.Add(entity);
             EntityService.UpdateEntityCache(entity,true);
@@ -125,13 +228,14 @@ namespace FrameSyncBattle
 
     public partial class FsBattleLogic
     {
-        public const int PlayerTeam = 0;
-        public const int EnemyTeam = 1;
+        public const int PlayerTeam = 1;
+        public const int EnemyTeam = 2;
         public bool IsReplayMode { get; private set; } = false;
 
         public Random RandomGen { get; private set; }
         public void Init(int fps,int seed,FsBattleStartData startData)
         {
+            EntityService = new FsEntityService(this);
             IsReplayMode = false;
             Fps = fps;
             RandomGen = new Random(seed);

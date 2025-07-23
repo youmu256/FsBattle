@@ -28,6 +28,7 @@ namespace FrameSyncBattle
         public int Attack;
         public int AttackRange;
         public int Defend;
+        /**cm/s*/
         public int MoveSpeed;
     }
 

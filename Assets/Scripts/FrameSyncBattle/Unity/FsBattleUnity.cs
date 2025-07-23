@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FrameSyncBattle
@@ -87,16 +88,16 @@ namespace FrameSyncBattle
             Attack = 1,
             AttackRange = 10,
             Defend = 0,
-            MoveSpeed = 20,
+            MoveSpeed = 5,
         };
         public static FsUnitPropertyInitData TestEnemyData = new FsUnitPropertyInitData()
         {
             HpMax = 10,
             MpMax = 10,
             Attack = 1,
-            AttackRange = 10,
+            AttackRange = 5,
             Defend = 0,
-            MoveSpeed = 20,
+            MoveSpeed = 2,
         };
         #endregion
 
@@ -113,6 +114,8 @@ namespace FrameSyncBattle
                 UnitInitData = new FsUnitInitData()
                     {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward}
             });
+            
+            /*
             startData.EnemyTeamUnits.Add(new FsBattleStartUnitData()
             {
                 TypeId = "enemy", UnitInitData = new FsUnitInitData()
@@ -122,6 +125,7 @@ namespace FrameSyncBattle
                     Euler = Vector3.zero, Position = Vector3.back
                 }
             });
+            */
             Battle.Init(LogicFps, 0, startData);
         }
 
@@ -136,7 +140,9 @@ namespace FrameSyncBattle
             FsDebug.Log("TestLogReDiction");
             Debug.Log("TestLogNormal");
             Battle.StartBattle();
-            Player = Battle.EntityService.Units.Find((unit => unit.Team == FsBattleLogic.PlayerTeam));
+            var list = new List<FsUnitLogic>();
+            Battle.EntityService.CollectUnits(list);
+            Player = list.Find((unit => unit.Team == FsBattleLogic.PlayerTeam));
         }
 
         public FsUnitLogic Player { get; private set; }

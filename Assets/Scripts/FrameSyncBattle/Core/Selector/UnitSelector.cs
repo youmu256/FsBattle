@@ -61,7 +61,8 @@ namespace FrameSyncBattle
 
         public void SelectTo(FsBattleLogic battleLogic, List<FsUnitLogic> results)
         {
-            var units = battleLogic.EntityService.Units;
+            List<FsUnitLogic> units = new List<FsUnitLogic>();
+            battleLogic.EntityService.CollectUnits(units);
             foreach (var unit in units)
             {
                 bool isValidUnit = true;
