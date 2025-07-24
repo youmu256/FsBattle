@@ -74,6 +74,7 @@ namespace FrameSyncBattle
         /// <param name="cmd"></param>
         public void LogicFrame(FsBattleLogic battle, FsCmd cmd)
         {
+            OnLogicFrameStart();
             if (HasStarted)
             {
                 LogicUpdate(battle,cmd);
@@ -92,9 +93,14 @@ namespace FrameSyncBattle
 
         protected virtual void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
         {
-
+            
         }
-        
+
+        protected void OnLogicFrameStart()
+        {
+            //因为Animation 在目前是在View层延迟处理的 更像是请求 这里相当于进行重置
+            Animation = PlayAnimParam.Null;
+        }
         
         public void Play(PlayAnimParam animParam)
         {

@@ -247,6 +247,7 @@ namespace FrameSyncBattle
 
         public void InitByReplay(FsBattleReplay replay)
         {
+            EntityService = new FsEntityService(this);
             IsReplayMode = true;
             this.Fps = replay.Fps;
             this.RandomGen = new Random(replay.Seed);

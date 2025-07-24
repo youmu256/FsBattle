@@ -21,7 +21,9 @@
             NormalizedTime = normalizedTime;
             IgnoreRepeat = ignoreRepeat;
         }
-        
+
+        public static PlayAnimParam Null = new PlayAnimParam();
+
     }
 
     
