@@ -43,7 +43,6 @@ namespace FrameSyncBattle
     {
         private static readonly FsEntityViewCreator Creator = new();
 
-
         public int Id { get; private set; }
         
         public FsEntityLogic Logic { get; private set; }

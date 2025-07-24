@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace FrameSyncBattle
 {
+    
     public class FsLinkedList<T> :ICollection<T> where T : class
     {
         protected LinkedList<T> List { get; private set; } = new();

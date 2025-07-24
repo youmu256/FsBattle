@@ -64,7 +64,7 @@ namespace FrameSyncBattle
 
         public virtual void OnRemove(FsBattleLogic battle)
         {
-            this.View = null;
+            
         }
         
         /// <summary>
@@ -120,16 +120,5 @@ namespace FrameSyncBattle
             return this;
         }
         
-        #region View抽象绑定
-        
-        public IFsEntityView View { get; private set; }
-
-        public void BindView(IFsEntityView view)
-        {
-            this.View = view;
-        }
-
-
-        #endregion
     }
 }

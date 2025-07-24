@@ -147,7 +147,15 @@ namespace FrameSyncBattle
 
         public FsUnitLogic Player { get; private set; }
 
-        public FsEntityView PlayerView => Player.View as FsEntityView;
+        public FsEntityView PlayerView
+        {
+            get
+            {
+                if(Battle.EntityViewsMap.ContainsKey(Player.Id))
+                    return Battle.EntityViewsMap[Player.Id];
+                return null;
+            }
+        }
 
         private void Update()
         {
@@ -185,15 +193,18 @@ namespace FrameSyncBattle
             if (Input.GetMouseButton(0))
             {
                 cmd.Buttons |= FsButton.Fire;
-                var ray = GameCamera.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out var hit))
+                if (PlayerView != null)
                 {
-                    //表现层存在滞后 玩家的操作基于表现层 如果与逻辑位置计算出方位就会存在误差
-                    Vector3 dir = hit.point - PlayerView.CachedTransform.position;
-                    dir.y = 0;
-                    dir.Normalize();
-                    cmd.FireYaw = Vector3.SignedAngle(Vector3.forward, dir, Vector3.up);
-                    //cmd.FireYaw = 0;
+                    var ray = GameCamera.ScreenPointToRay(Input.mousePosition);
+                    if (Physics.Raycast(ray, out var hit))
+                    {
+                        //表现层存在滞后 玩家的操作基于表现层 如果与逻辑位置计算出方位就会存在误差
+                        Vector3 dir = hit.point - PlayerView.CachedTransform.position;
+                        dir.y = 0;
+                        dir.Normalize();
+                        cmd.FireYaw = Vector3.SignedAngle(Vector3.forward, dir, Vector3.up);
+                    }
+
                 }
             }
             return cmd;

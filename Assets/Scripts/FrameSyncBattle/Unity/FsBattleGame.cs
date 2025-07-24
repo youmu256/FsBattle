@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+
 namespace FrameSyncBattle
 {
     /// <summary>
@@ -37,6 +39,8 @@ namespace FrameSyncBattle
         
         public FsLinkedList<FsEntityView> EntityViews = new();
 
+        public Dictionary<int, FsEntityView> EntityViewsMap = new();
+        
         public void GameEngineUpdate(float deltaTime,FsCmd cmd)
         {
             //准备渲染插值进度增长
@@ -87,29 +91,29 @@ namespace FrameSyncBattle
             //移除无对应逻辑对象的渲染对象
             EntityViews.ForEach(view =>
             {
-                var bindLogic = this.Entities.Find(logic => logic.Id == view.Id);
-                if (bindLogic == null)
+                var valid = this.EntityService.EntitiesMap.ContainsKey(view.Id);
+                if (valid == false)
                 {
                     view.OnRemove(this);
                     EntityViews.Remove(view);
+                    EntityViewsMap.Remove(view.Id);
                 }
             });
 
             //新增渲染对象
             this.Entities.ForEach(logic =>
             {
-                var bindView = this.EntityViews.Find((view => view.Id == logic.Id));
-                if (bindView == null)
+                var valid = this.EntityViewsMap.ContainsKey(logic.Id);
+                if (valid == false)
                 {
                     var view = FsEntityView.Create(logic);
                     view.OnCreate(this);
-                    logic.BindView(view);
                     EntityViews.Add(view);
+                    EntityViewsMap.Add(view.Id, view);
                 }
             });
-
         }
-        
+
         public override void CleanBattle()
         {
             base.CleanBattle();
