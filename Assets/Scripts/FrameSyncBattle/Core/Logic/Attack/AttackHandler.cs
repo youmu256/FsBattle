@@ -194,7 +194,7 @@ namespace FrameSyncBattle
 
         private void MeleeHitEnd(FsBattleLogic battle,AttackTempData data)
         {
-            bool hit = DoAttackDamage(battle,Owner.GetAttackRange() + ExtraAttackRangeBuffer,data,Owner.Position,CurrentTarget);
+            bool hit = DoAttackDamage(battle,Owner.GetAttackRange(),data,Owner.Position,CurrentTarget);
             if (hit)
             {
                 //todo create fx
@@ -282,7 +282,7 @@ namespace FrameSyncBattle
                 CurrentAttack = GetOneAttack(CurrentTarget);
                 
                 CurrentAttackHitIndex = 0;
-                Owner.Play(new PlayAnimParam(){Animation = CurrentAttack.Anim,IgnoreRepeat = false,Speed = CurrentAttackTimeScale,});
+                Owner.PlayAnimation(new PlayAnimParam(){Animation = CurrentAttack.Anim,IgnoreRepeat = false,Speed = CurrentAttackTimeScale,});
                 //Owner.PlayAnimation(CurrentAttack.Anim,CurrentAttack.AnimSuffix,CurrentAttackTimeScale,CurrentAttack.NoFade?0f:0.15f);
             }
             else if (state == AttackFlowState.FirstFired)

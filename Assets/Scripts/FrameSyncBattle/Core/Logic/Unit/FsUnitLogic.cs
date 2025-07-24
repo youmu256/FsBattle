@@ -142,7 +142,7 @@ namespace FrameSyncBattle
             IsDead = false;
             HpCurrent = 1;
             DeadRemoveTime = 0;
-            Play(new PlayAnimParam(){Animation = "Idle",IgnoreRepeat = true});
+            PlayAnimation(new PlayAnimParam(){Animation = "Idle",IgnoreRepeat = true});
         }
         
         /// <summary>
@@ -157,7 +157,7 @@ namespace FrameSyncBattle
             HpCurrent = 0;
             DeadRemoveTime = 2f;//移除延迟时间
             //Death View
-            Play(new PlayAnimParam("Death",0,1f,true));
+            PlayAnimation(new PlayAnimParam("Death",0,1f,true));
         }
         #endregion
         

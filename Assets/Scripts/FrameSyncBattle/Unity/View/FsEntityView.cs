@@ -64,7 +64,7 @@ namespace FrameSyncBattle
             Logic = entityLogic;
             StartPosition = entityLogic.Position;
             StartEuler = entityLogic.Euler;
-            StartAnimation = Logic.Animation;
+            StartAnimation = Logic.AnimationReq;
             //Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
             ModelRoot = new GameObject("model").transform;
             ModelRoot.SetParent(CachedTransform,false);
@@ -108,7 +108,7 @@ namespace FrameSyncBattle
             //此时该播放上一次逻辑帧的动画
             if(StartAnimation.Animation!=null)
                 Play(StartAnimation);
-            StartAnimation = Logic.Animation;
+            StartAnimation = Logic.AnimationReq;
         }
 
         public virtual void OnCreate(FsBattleGame battleGame)

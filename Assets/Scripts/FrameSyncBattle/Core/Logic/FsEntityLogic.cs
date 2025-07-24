@@ -20,7 +20,7 @@ namespace FrameSyncBattle
     }
     
     
-    public class FsEntityLogic : IAnimationPlayable
+    public class FsEntityLogic
     {
         public static int IdGenerate { get; private set; }
         public object InitData { get; private set; }
@@ -33,7 +33,7 @@ namespace FrameSyncBattle
         public Vector3 Euler { get; private set; }
         public int Team { get; protected set; }
         
-        public PlayAnimParam Animation { get; protected set; }
+        public PlayAnimParam AnimationReq { get; protected set; }
         private FsEntityInitData Data => InitData as FsEntityInitData;
 
         public FsEntityLogic()
@@ -99,12 +99,13 @@ namespace FrameSyncBattle
         protected void OnLogicFrameStart()
         {
             //因为Animation 在目前是在View层延迟处理的 更像是请求 这里相当于进行重置
-            Animation = PlayAnimParam.Null;
+            AnimationReq = PlayAnimParam.Null;
         }
         
-        public void Play(PlayAnimParam animParam)
+        public FsEntityLogic PlayAnimation(PlayAnimParam animParam)
         {
-            Animation = animParam;
+            AnimationReq = animParam;
+            return this;
         }
 
         public FsEntityLogic SetPosition(Vector3 position)

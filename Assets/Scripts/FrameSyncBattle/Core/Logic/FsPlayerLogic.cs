@@ -33,11 +33,11 @@ namespace FrameSyncBattle
                 var speed = Property.Get(FsUnitPropertyType.MoveSpeed);
                 Vector3 vel = new Vector3(xInput, 0, yInput).normalized * (speed * battle.FrameLength);
                 this.SetPosition(Position + vel).SetEuler(Quaternion.LookRotation(vel).eulerAngles);
-                this.Play(new PlayAnimParam("Move",0,1f,true));
+                this.PlayAnimation(new PlayAnimParam("Move",0,1f,true));
             }
             else
             {
-                this.Play(new PlayAnimParam("Idle",0,1f,true));
+                this.PlayAnimation(new PlayAnimParam("Idle",0,1f,true));
             }
             
             
