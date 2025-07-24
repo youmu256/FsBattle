@@ -44,7 +44,7 @@ namespace FrameSyncBattle
             {
                 new AttackConfig()
                 {
-                    Anim = "Attack",
+                    Anim = AnimationConstant.Attack,
                     AnimSuffix = null,
                     AnimTime = 1f,
                     NoFade = false,
@@ -142,7 +142,7 @@ namespace FrameSyncBattle
             IsDead = false;
             HpCurrent = 1;
             DeadRemoveTime = 0;
-            PlayAnimation(new PlayAnimParam(){Animation = "Idle",IgnoreRepeat = true});
+            PlayAnimation(new PlayAnimParam(){Animation = AnimationConstant.Idle,IgnoreRepeat = true});
         }
         
         /// <summary>
@@ -157,7 +157,7 @@ namespace FrameSyncBattle
             HpCurrent = 0;
             DeadRemoveTime = 2f;//移除延迟时间
             //Death View
-            PlayAnimation(new PlayAnimParam("Death",0,1f,true));
+            PlayAnimation(new PlayAnimParam(AnimationConstant.Death,0,1f,true));
         }
         #endregion
         

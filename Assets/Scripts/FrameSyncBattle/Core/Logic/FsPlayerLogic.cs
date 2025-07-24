@@ -33,13 +33,12 @@ namespace FrameSyncBattle
                 var speed = Property.Get(FsUnitPropertyType.MoveSpeed);
                 Vector3 vel = new Vector3(xInput, 0, yInput).normalized * (speed * battle.FrameLength);
                 this.SetPosition(Position + vel).SetEuler(Quaternion.LookRotation(vel).eulerAngles);
-                this.PlayAnimation(new PlayAnimParam("Move",0,1f,true));
+                this.PlayAnimation(new PlayAnimParam(AnimationConstant.Move,0,1f,true));
             }
             else
             {
-                this.PlayAnimation(new PlayAnimParam("Idle",0,1f,true));
+                this.PlayAnimation(new PlayAnimParam(AnimationConstant.Idle,0,1f,true));
             }
-            
             
             //移动后再处理射击 让逻辑中的单位位置和发射位置对上
             if (cmd != null && cmd.ButtonContains(FsButton.Fire))

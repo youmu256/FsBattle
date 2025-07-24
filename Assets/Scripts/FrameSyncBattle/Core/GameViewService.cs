@@ -38,12 +38,7 @@
 
     #endregion
     
-    
-    /// <summary>
-    /// 逻辑层中需要能直接尝试调用一些View层行为 这是统一接口
-    /// 比如播放动画 音效 特效 等等
-    /// </summary>
-    public interface IFsEntityView : IAnimationPlayable
+    public interface IFsEntityView
     {
         
     }

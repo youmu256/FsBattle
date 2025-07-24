@@ -71,7 +71,7 @@ namespace FrameSyncBattle
     {
         public override void Enter(FsUnitAI content)
         {
-            content.Me.PlayAnimation(new PlayAnimParam("Death",0,1,true));
+            content.Me.PlayAnimation(new PlayAnimParam(AnimationConstant.Death,0,1,true));
         }
         public override void Update(FsUnitAI content, float deltaTime)
         {
@@ -87,7 +87,7 @@ namespace FrameSyncBattle
     {
         public override void Enter(FsUnitAI content)
         {
-            content.Me.PlayAnimation(new PlayAnimParam("Idle",0,1,true));
+            content.Me.PlayAnimation(new PlayAnimParam(AnimationConstant.Idle,0,1,true));
         }
         public override void Update(FsUnitAI content, float deltaTime)
         {
@@ -148,7 +148,7 @@ namespace FrameSyncBattle
             TargetEntity = content.PB_TargetEntity;
             TargetPosition = content.PB_TargetPosition;
             nextUpdateRemainTime = 0;
-            content.Me.PlayAnimation(new PlayAnimParam("Move",0,1,true));
+            content.Me.PlayAnimation(new PlayAnimParam(AnimationConstant.Move,0,1,true));
         }
         public override void Update(FsUnitAI content, float deltaTime)
         {

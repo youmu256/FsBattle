@@ -19,7 +19,10 @@ namespace FrameSyncBattle
         void Remove();
     }
     
-    
+    /// <summary>
+    /// 基础的逻辑对象
+    /// 拥有模型和动画播放
+    /// </summary>
     public class FsEntityLogic
     {
         public static int IdGenerate { get; private set; }

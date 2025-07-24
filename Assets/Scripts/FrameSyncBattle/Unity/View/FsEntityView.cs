@@ -39,7 +39,7 @@ namespace FrameSyncBattle
     /// <summary>
     /// Entity显示层基础类
     /// </summary>
-    public class FsEntityView : MonoBehaviour, IFsEntityView
+    public class FsEntityView : MonoBehaviour,IFsEntityView
     {
         private static readonly FsEntityViewCreator Creator = new();
 
@@ -106,7 +106,7 @@ namespace FrameSyncBattle
             StartEuler = Logic.Euler;
             //此时该播放上一次逻辑帧的动画
             if(StartAnimation.Animation!=null)
-                Play(StartAnimation);
+                PlayAnimation(StartAnimation);
             StartAnimation = Logic.AnimationReq;
         }
 
@@ -151,7 +151,7 @@ namespace FrameSyncBattle
 
         #region IFsEntityView
 
-        public void Play(PlayAnimParam animParam)
+        public void PlayAnimation(PlayAnimParam animParam)
         {
             if (Model == null) return;
             if (Logic.Team == FsBattleLogic.EnemyTeam)
