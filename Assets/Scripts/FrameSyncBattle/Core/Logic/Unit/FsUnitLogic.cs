@@ -40,7 +40,7 @@ namespace FrameSyncBattle
             InitStatus(Data.PropertyInitData);
             
             //--attack
-            NormalAttack = new NormalAttackHandler(this, new AttackConfig[]
+            NormalAttack = new NormalAttackHandler(this, 5,new AttackConfig[]
             {
                 new AttackConfig()
                 {

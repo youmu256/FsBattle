@@ -27,48 +27,18 @@ namespace FrameSyncBattle
     {
         float GetAttackRangeBuffer();
         AttackFlowState GetCurrentState();
+        bool AttackReady();
         int CommitOverrideAttack(AttackConfig attackConfig, int priority);
         void AttackTarget(FsUnitLogic target);
+        /// <summary>
+        /// 打断攻击流程
+        /// </summary>
         void StopAttack();
     }
     public interface IAttackHandler: IAttackHandlerCaller,IFsEntityFrame
     {
         
     }
-
-    public class EmptyAttackHandler : IAttackHandler
-    {
-        public float GetAttackRangeBuffer()
-        {
-            return 0;
-        }
-
-        public AttackFlowState GetCurrentState()
-        {
-            return AttackFlowState.None;
-        }
-
-        public int CommitOverrideAttack(AttackConfig attackConfig, int priority)
-        {
-            return 0;
-        }
-
-        public void AttackTarget(FsUnitLogic target)
-        {
-            
-        }
-
-        public void StopAttack()
-        {
-            
-        }
-
-        public void OnEntityFrame(FsBattleLogic battle, FsUnitLogic entity, float deltaTime, FsCmd cmd)
-        {
-            
-        }
-    }
-    
     public class NormalAttackHandler : IAttackHandler
     {
         //攻击速度归一到统一攻击间隔 如果动画时间大于攻击间隔，则要带默认速度修正
@@ -89,9 +59,12 @@ namespace FrameSyncBattle
         }
         public FsUnitLogic Owner { get; private set; }
 
-        public NormalAttackHandler(FsUnitLogic owner,AttackConfig[] attackConfigs)
+        public float CoolDown { get; private set; }
+        
+        public NormalAttackHandler(FsUnitLogic owner,float cooldown,AttackConfig[] attackConfigs)
         {
-            this.Owner = owner;
+            Owner = owner;
+            CoolDown = cooldown;
             AttackId = 0;
             NormalAttack = attackConfigs;
         }
@@ -175,7 +148,11 @@ namespace FrameSyncBattle
             CurrentAttackTimeScale = 1f;
         }
 
-        
+        public bool AttackReady()
+        {
+            return CurrentAttackCoolDown <= 0 && FlowState == AttackFlowState.None;
+        }
+
         private void OnAttackObjectEnd(FsBattleLogic battle,FsMissileLogic missileObject,bool valid)
         {
             var target = missileObject.Target;
@@ -239,11 +216,11 @@ namespace FrameSyncBattle
                 CurrentAttackCoolDown -= deltaTime * CurrentAttackTimeScale;
             
             //try to start
-            if (CurrentAttackCoolDown <= 0 && FlowState == AttackFlowState.None && AttackActive)
+            if (AttackReady() && AttackActive)
             {
+                AttackActive = false;
                 ChangeState(battle,AttackFlowState.Start);
             }
-            
             if (FlowState == AttackFlowState.None) return;
             CurrentAttackTimer += deltaTime * CurrentAttackTimeScale;
             if (FlowState == AttackFlowState.Start)
@@ -265,9 +242,12 @@ namespace FrameSyncBattle
                     ChangeState(battle,AttackFlowState.FireEnd);
                 }
             }
-            if (FlowState == AttackFlowState.FireEnd && CurrentAttackTimer >= CurrentAttack.AnimTime)
+            if (FlowState == AttackFlowState.FireEnd )
             {
-                ChangeState(battle,AttackFlowState.None);
+                if (CurrentAttackTimer >= CurrentAttack.AnimTime)
+                {
+                    ChangeState(battle,AttackFlowState.None);
+                }
             }
         }
 
@@ -289,7 +269,7 @@ namespace FrameSyncBattle
             {
                 if (CurrentAttackHitIndex == 0)
                 {
-                    CurrentAttackCoolDown = CurrentAttack.AnimTime;
+                    CurrentAttackCoolDown = CoolDown / CurrentAttackTimeScale;
                 }
                 if (param is AttackHitData attack)
                 {

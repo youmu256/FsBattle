@@ -107,8 +107,12 @@ namespace FrameSyncBattle
         public FsUnitLogic Target;
         public override void Enter(FsUnitAI content)
         {
+            //进入Attack状态就代表已经满足所有前提要求 这些条件在转换状态时候判断
+            
             Target = content.PB_TargetEntity;
             //停止移动 看向目标 发起攻击
+            //不管如何先进入idle
+            content.Me.PlayAnimation(new PlayAnimParam(AnimationConstant.Idle,0,1,true));
             content.Me.NormalAttack.AttackTarget(Target);
         }
 
@@ -119,20 +123,14 @@ namespace FrameSyncBattle
                 content.RequestChangeBase(AIBaseState.Idle);
                 return;
             }
-
-            if (content.Me.NormalAttack.GetCurrentState() == AttackFlowState.FireEnd)
-            {
-                content.RequestChangeBase(AIBaseState.Idle);
-                return;
-            }
-            
         }
         public override void Exit(FsUnitAI content)
         {
-            //停止攻击
+            //强制停止攻击 攻击准备动画逻辑应该就在这个动作中实现
             content.Me.NormalAttack.StopAttack();
             Target = null;
         }
+
     }
     public class BState_Move : FsUnitAIStateBase
     {
@@ -155,6 +153,7 @@ namespace FrameSyncBattle
             var goal = TargetEntity?.Position ?? TargetPosition;
             var goalRadius = TargetEntity?.Radius ?? 0;
             var reachCheck = ReachDistance + goalRadius;
+            //FsDebug.Log($"AI CHECK REACH TARGET {DistanceUtils.DistanceBetween2D(content.Me,goal,true)} ? {reachCheck}");
             if (DistanceUtils.IsReachPosition2D(content.Me, true, goal, reachCheck))
             {
                 content.RequestChangeBase(AIBaseState.Idle);
@@ -224,6 +223,8 @@ namespace FrameSyncBattle
         public override void Update(FsUnitAI content, float deltaTime)
         {
             float attackRange = content.Me.GetAttackRange();
+            float chaseStopDistance = attackRange - 0.5f;
+            //-0.5 保证处于攻击范围内，防止在攻击范围边缘反复鬼畜
             if (content.Battle.EntityService.IsEntityValidTobeTargeted(content.Me, TargetEntity) == false || content.Me.CanAttack() == false)
             {
                 TargetEntity = null;
@@ -231,22 +232,25 @@ namespace FrameSyncBattle
             if (TargetEntity != null)
             {
                 //处于攻击行动中时 应该不能让AI切换成其他动作 比如切换进入移动等
-                if (content.Me.NormalAttack.GetCurrentState() == AttackFlowState.None)
+                //可以攻击的情况下 尝试转入攻击行动状态
+                if (content.Me.NormalAttack.AttackReady())
                 {
-                    //chase and attack
                     var dis = DistanceUtils.DistanceBetween2D(content.Me, TargetEntity, true);
                     if (dis <= attackRange)
                     {
                         content.PB_TargetEntity = TargetEntity;
                         content.RequestChangeBase(AIBaseState.Attack);
                     }
-                    else if(content.Me.CanMove())
+                    else
                     {
-                        //move close target
-                        content.PB_TargetEntity = TargetEntity;
-                        content.PB_MoveReachDistance = attackRange - 0.5f;//-0.5 保证处于攻击范围内，防止在攻击范围边缘反复鬼畜
-                        content.RequestChangeBase(AIBaseState.Move);
+                        ChaseTarget(content,chaseStopDistance);
                     }
+                }else
+                {
+                    var inAttacking = content.Me.NormalAttack.GetCurrentState() != AttackFlowState.None;
+                    //FsDebug.Log($"ATTACK CHASE  attacking:{inAttacking} {content.Me.NormalAttack.GetCurrentState()}");
+                    if(inAttacking == false)
+                        ChaseTarget(content,chaseStopDistance);
                 }
             }
             else
@@ -258,6 +262,17 @@ namespace FrameSyncBattle
         {
             TargetEntity = null;
         }
+
+        private void ChaseTarget(FsUnitAI content,float stopDistance)
+        {
+            if(content.Me.CanMove())
+            {
+                content.PB_TargetEntity = TargetEntity;
+                content.PB_MoveReachDistance = stopDistance;
+                content.RequestChangeBase(AIBaseState.Move);
+            }
+        }
+        
     }
     #endregion
     
@@ -269,6 +284,15 @@ namespace FrameSyncBattle
 
         public FsUnitAI(FsBattleLogic battle,FsUnitLogic owner)
         {
+            
+            /*
+             * 总的来说
+             * Base层主要负责控制最基本的行动 比如攻击 移动 待机
+             * Middle层主要是按照情况去切换Base层来达成目的
+             * Base层自身只关注自身行动是否因为特殊原因打断 不应该考虑更多
+             * Middle层需要保证在进行Base层状态转换的时候 已经完善考虑了，不要把问题过多留给Base层
+             */
+            
             Me = owner;
             Battle = battle;
             BaseAIFsm = new UnitAIFsm();
@@ -315,7 +339,7 @@ namespace FrameSyncBattle
                 else
                 {
                     //可以攻击的情况下 找到周围最近的敌人 转入M追击目标状态
-                    if (Me.CanAttack() && Me.NormalAttack.GetCurrentState() == AttackFlowState.None)
+                    if (Me.CanAttack() && Me.NormalAttack.AttackReady())
                     {
                         List<FsUnitLogic> targets = new List<FsUnitLogic>();
                         battle.EntityService.CollectUnits(targets, TargetFilter);
