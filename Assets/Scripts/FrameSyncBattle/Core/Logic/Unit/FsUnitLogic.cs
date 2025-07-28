@@ -161,5 +161,10 @@ namespace FrameSyncBattle
         }
         #endregion
         
+        
+        public override string DebugMsg()
+        {
+            return $"id:{this.Id},pos:{this.Position},euler:{this.Euler},hp:{this.HpCurrent}";
+        }
     }
 }

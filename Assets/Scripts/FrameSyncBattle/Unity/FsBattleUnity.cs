@@ -75,7 +75,12 @@ namespace FrameSyncBattle
 
         public void EndGame()
         {
-            Battle?.CleanBattle();
+            if (Battle != null)
+            {
+                FsDebug.Log("PLAY END!");
+                FsDebug.Log(Battle.GetGameStateMsg());
+                Battle.EndBattle();
+            }
             Battle = null;
             Player = null;
         }
@@ -160,6 +165,7 @@ namespace FrameSyncBattle
         private void Update()
         {
             if (Battle == null) return;
+            if (Battle.IsPlayEnd) return;
             FsCmd cmd = null;
             if (Battle.IsReplayMode == false)
                 cmd = GetInputCmd();

@@ -114,9 +114,9 @@ namespace FrameSyncBattle
             });
         }
 
-        public override void CleanBattle()
+        public override void EndBattle()
         {
-            base.CleanBattle();
+            base.EndBattle();
             SyncViewToLogic();
         }
     }

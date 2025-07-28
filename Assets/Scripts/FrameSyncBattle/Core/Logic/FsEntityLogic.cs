@@ -25,9 +25,7 @@ namespace FrameSyncBattle
     /// </summary>
     public class FsEntityLogic
     {
-        public static int IdGenerate { get; private set; }
         public object InitData { get; private set; }
-        
         public bool HasStarted { get; private set; }
         public int Id { get; private set; }
         public string TypeId { get; private set; }
@@ -41,7 +39,6 @@ namespace FrameSyncBattle
 
         public FsEntityLogic()
         {
-            this.Id = ++IdGenerate;
         }
 
         /// <summary>
@@ -53,6 +50,7 @@ namespace FrameSyncBattle
         /// <param name="initData"></param>
         public virtual void Init(FsBattleLogic battle,int team, string entityTypeId, object initData)
         {
+            this.Id = battle.EntityIdGenerator;
             this.Team = team;
             this.InitData = initData;
             this.TypeId = entityTypeId;
@@ -122,6 +120,10 @@ namespace FrameSyncBattle
             Euler = euler;
             return this;
         }
-        
+
+        public virtual string DebugMsg()
+        {
+            return $"id:{this.Id},pos:{this.Position},euler:{this.Euler}";
+        }
     }
 }

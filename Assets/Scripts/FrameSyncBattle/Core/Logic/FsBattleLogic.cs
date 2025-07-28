@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using Random = System.Random;
 
@@ -185,6 +186,23 @@ namespace FrameSyncBattle
 
     }
 
+
+    public partial class FsBattleLogic
+    {
+        public string GetGameStateMsg()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($">>>>>>>>>>GameState  GameFrame:{FrameIndex}<<<<<<<<<<");
+            sb.AppendLine($"===Units===");
+            foreach (var entity in EntityService.CollectUnits(new List<FsUnitLogic>()))
+            {
+                sb.AppendLine(entity.DebugMsg());
+            }
+            sb.AppendLine($"===Units===");
+            return sb.ToString();
+        }
+    }
+
     public partial class FsBattleLogic
     {
         /// <summary>
@@ -205,10 +223,13 @@ namespace FrameSyncBattle
     public partial class FsBattleLogic
     {
         public FsEntityService EntityService { get; private set; }
+
+        public int EntityIdGenerator { get; private set; }
         
         //public GameEventHandler EventHandler { get; private set; } = new GameEventHandler();
         public virtual T AddEntity<T>(int team,string entityTypeId, object initData) where T : FsEntityLogic, new()
         {
+            EntityIdGenerator++;//ID增长
             var entity = new T();
             entity.Init(this, team,entityTypeId, initData);
             entity.OnCreate(this);
@@ -232,6 +253,8 @@ namespace FrameSyncBattle
         public const int EnemyTeam = 2;
         public bool IsReplayMode { get; private set; } = false;
 
+        public bool IsPlayEnd { get; private set; }
+        
         public Random RandomGen { get; private set; }
         public void Init(int fps,int seed,FsBattleStartData startData)
         {
@@ -272,10 +295,12 @@ namespace FrameSyncBattle
 
         public void StartBattle()
         {
+            IsPlayEnd = false;
         }
 
-        public virtual void CleanBattle()
+        public virtual void EndBattle()
         {
+            IsPlayEnd = true;
             var p = (this);
             Entities.RefForEach(ref p, ((logic, param) => { param.RemoveEntity(logic); }));
         }
@@ -379,6 +404,14 @@ namespace FrameSyncBattle
             while (Accumulator >= FrameLength)
             {
                 FsCmd replayCmd = GetFrameReplayCmd(FrameIndex);
+                bool isReplayEnd = replayCmd == null;
+                if (isReplayEnd)
+                {
+                    FsDebug.Log("REPLAY END!");
+                    FsDebug.Log(GetGameStateMsg());
+                    EndBattle();
+                    break;
+                }
                 Accumulator -= FrameLength;
                 GameLogicFrame(replayCmd);
                 FrameIndex++;
