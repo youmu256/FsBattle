@@ -126,10 +126,4 @@ namespace FrameSyncBattle
         
     }
 
-    public class AttackBase : SkillBase
-    {
-        //普通攻击技能不受沉默影响 受缴械影响
-        //冷却与技能不同 攻速加成会加快整个流程速度
-    }
-
 }

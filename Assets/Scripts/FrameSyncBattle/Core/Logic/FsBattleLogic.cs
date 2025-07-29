@@ -37,8 +37,8 @@ namespace FrameSyncBattle
         
         public FsBattleLogic RefBattle { get; private set; }
 
-        //不要对外暴露 防止被错误操作
-        protected readonly List<FsUnitLogic> Units = new();
+        //小心被错误操作
+        public List<FsUnitLogic> Units { get; private set; }= new();
 
         public Dictionary<int, FsEntityLogic> EntitiesMap = new();
 
@@ -422,6 +422,9 @@ namespace FrameSyncBattle
             return logicFrames;
         }
         #endregion
+
+        /**胜负裁判 后续考虑抽象OOP*/
+        public FsBattleWinLostJudge WinLostJudge { get; set; } = new FsBattleWinLostJudge();
         
         protected virtual void GameLogicFrame(FsCmd cmd)
         {
@@ -430,6 +433,15 @@ namespace FrameSyncBattle
             {
                 logic.LogicFrame(param.Item1, param.cmd);
             }));
+
+            if (WinLostJudge != null)
+            {
+                int winTeam = WinLostJudge.GameLogicFrame(this);
+                if (winTeam > 0)
+                {
+                    IsPlayEnd = true;
+                }
+            }
         }
 
         /// <summary>
@@ -464,6 +476,30 @@ namespace FrameSyncBattle
         {
             Cmds.Add(cmd);
         }
-        
+    }
+
+    public class FsBattleWinLostJudge
+    {
+        public int GameLogicFrame(FsBattleLogic battle)
+        {
+            int pcount = 0;
+            int ecount = 0;
+            foreach (var unit in battle.EntityService.Units)
+            {
+                if (unit.Team == FsBattleLogic.PlayerTeam)
+                    pcount++;
+                if (unit.Team == FsBattleLogic.EnemyTeam)
+                    ecount++;
+            }
+            if (pcount == 0)
+            {
+                return FsBattleLogic.EnemyTeam;
+            }
+            if (ecount == 0)
+            {
+                return FsBattleLogic.PlayerTeam;
+            }
+            return 0;
+        }
     }
 }

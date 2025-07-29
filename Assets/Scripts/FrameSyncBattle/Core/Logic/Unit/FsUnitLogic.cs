@@ -38,9 +38,8 @@ namespace FrameSyncBattle
         {
             base.Init(battle, team, entityTypeId, initData);
             InitStatus(Data.PropertyInitData);
-            
             //--attack
-            NormalAttack = new NormalAttackHandler(this, 5,new AttackConfig[]
+            NormalAttack = new NormalAttackHandler(this, Data.PropertyInitData.BaseAttackInterval,new AttackConfig[]
             {
                 new AttackConfig()
                 {
@@ -50,6 +49,7 @@ namespace FrameSyncBattle
                     NoFade = false,
                     HitDatas = new []{new AttackHitData()
                     {
+                        HitTime = 0.1f,
                         AttackFireOffset = Vector3.up,
                         AttackFlyArc = 0.5f,
                         AttackFlySideSpin = 0,
@@ -57,7 +57,6 @@ namespace FrameSyncBattle
                         AttackModel = "cube",
                         DamagePct = 1f,
                         DamageRange = 10f,
-                        HitTime = 0.3f,
                         IsMelee = false,
                         LockTarget = true,
                         MeleeHitFx = null,
@@ -132,6 +131,15 @@ namespace FrameSyncBattle
 
         public bool IsDead { get; private set; }
 
+        /// <summary>
+        /// 彻底死亡无法复活了
+        /// </summary>
+        /// <returns></returns>
+        public bool IsTotalDead()
+        {
+            return IsRemoved;
+        }
+        
         /// <summary>
         /// 设置复活
         /// </summary>

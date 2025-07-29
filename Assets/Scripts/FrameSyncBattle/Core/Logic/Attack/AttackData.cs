@@ -39,11 +39,11 @@ namespace FrameSyncBattle
         public string Anim;
         /**动画后缀名*/
         public string AnimSuffix;
-        /**动画完成时间 影响攻击状态回复时间 AI在动画时间内是无法移动的*/
+        /**动画恢复时间点 影响攻击状态回复时间 AI在该时间内是无法移动的 (这个参数一般大于HitData的所有时间点)*/
         public float AnimTime;
         /**是否忽略动画融合 无效*/
         public bool NoFade;
-        /**攻击数据 一次攻击行为可能会有多次打击*/
+        /**攻击数据 一次攻击行为可能会有多次打击 攻击要完成所有HitData才能进入下一轮攻击*/
         public AttackHitData[] HitDatas;
         public bool IsLastHitIndex(int index)
         {

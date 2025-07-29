@@ -233,13 +233,14 @@ namespace FrameSyncBattle
             {
                 //处于攻击行动中时 应该不能让AI切换成其他动作 比如切换进入移动等
                 //可以攻击的情况下 尝试转入攻击行动状态
-                if (content.Me.NormalAttack.AttackReady())
+                if (content.Me.NormalAttack.AttackReady(false))
                 {
                     var dis = DistanceUtils.DistanceBetween2D(content.Me, TargetEntity, true);
                     if (dis <= attackRange)
                     {
+                        //可以重复进入攻击状态 来发起新的攻击
                         content.PB_TargetEntity = TargetEntity;
-                        content.RequestChangeBase(AIBaseState.Attack);
+                        content.RequestChangeBase(AIBaseState.Attack,true);
                     }
                     else
                     {
@@ -339,7 +340,7 @@ namespace FrameSyncBattle
                 else
                 {
                     //可以攻击的情况下 找到周围最近的敌人 转入M追击目标状态
-                    if (Me.CanAttack() && Me.NormalAttack.AttackReady())
+                    if (Me.CanAttack() && Me.NormalAttack.AttackReady(false))
                     {
                         List<FsUnitLogic> targets = new List<FsUnitLogic>();
                         battle.EntityService.CollectUnits(targets, TargetFilter);

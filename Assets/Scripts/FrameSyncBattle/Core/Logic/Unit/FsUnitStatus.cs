@@ -23,7 +23,7 @@ namespace FrameSyncBattle
             Property.SetPropertyBase(FsUnitPropertyType.Defend,basic.Defend);
             Property.SetPropertyBase(FsUnitPropertyType.MoveSpeed,basic.MoveSpeed);
             HpPercent = 1f;
-            MpPercent = 1f;
+            MpPercent = 0f;
         }
 
         private void PropertyChangeCallback(FsUnitPropertyType propertyType, int last, int value)

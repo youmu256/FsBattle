@@ -92,6 +92,7 @@ namespace FrameSyncBattle
             MpMax = 100,
             Attack = 1,
             AttackRange = 10,
+            BaseAttackInterval = 0.1f,
             Defend = 0,
             MoveSpeed = 5,
         };
@@ -101,6 +102,7 @@ namespace FrameSyncBattle
             MpMax = 10,
             Attack = 1,
             AttackRange = 5,
+            BaseAttackInterval = 1f,
             Defend = 0,
             MoveSpeed = 2,
         };

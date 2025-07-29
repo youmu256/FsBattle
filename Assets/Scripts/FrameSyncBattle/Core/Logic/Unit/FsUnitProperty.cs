@@ -9,6 +9,7 @@ namespace FrameSyncBattle
         HpMax = 1,
         MpMax,
         Attack,
+        /**攻速加成 默认100*/
         AttackSpdPct,
         AttackRange,
         Defend,
@@ -21,11 +22,12 @@ namespace FrameSyncBattle
         Lv2,
     }
 
-    public struct FsUnitPropertyInitData
+    public class FsUnitPropertyInitData
     {
         public int HpMax;
         public int MpMax;
         public int Attack;
+        public float BaseAttackInterval;
         public int AttackRange;
         public int Defend;
         /**cm/s*/

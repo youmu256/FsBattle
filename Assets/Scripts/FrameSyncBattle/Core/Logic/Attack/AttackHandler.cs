@@ -27,7 +27,7 @@ namespace FrameSyncBattle
     {
         float GetAttackRangeBuffer();
         AttackFlowState GetCurrentState();
-        bool AttackReady();
+        bool AttackReady(bool ignoreBackSwing);
         int CommitOverrideAttack(AttackConfig attackConfig, int priority);
         void AttackTarget(FsUnitLogic target);
         /// <summary>
@@ -148,9 +148,11 @@ namespace FrameSyncBattle
             CurrentAttackTimeScale = 1f;
         }
 
-        public bool AttackReady()
+        public bool AttackReady(bool ignoreBackSwing)
         {
-            return CurrentAttackCoolDown <= 0 && FlowState == AttackFlowState.None;
+            //None说明完全就绪 FireEnd说明正处于后摇中
+            return CurrentAttackCoolDown <= 0 && (FlowState == AttackFlowState.None || (ignoreBackSwing && FlowState == AttackFlowState.FireEnd));
+            
         }
 
         private void OnAttackObjectEnd(FsBattleLogic battle,FsMissileLogic missileObject,bool valid)
@@ -216,7 +218,7 @@ namespace FrameSyncBattle
                 CurrentAttackCoolDown -= deltaTime * CurrentAttackTimeScale;
             
             //try to start
-            if (AttackReady() && AttackActive)
+            if (AttackReady(true) && AttackActive)
             {
                 AttackActive = false;
                 ChangeState(battle,AttackFlowState.Start);
