@@ -70,6 +70,8 @@ namespace FrameSyncBattle
             {
                 AI = new FsUnitAI(battle,this);
             }
+
+            SkillHandler = new SkillHandler();
         }
 
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
@@ -91,14 +93,14 @@ namespace FrameSyncBattle
                 AI?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
                 MoveService.OnEntityFrame(battle, this, battle.FrameLength, cmd);
                 NormalAttack?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
+                SkillHandler.OnEntityFrame(battle, this, battle.FrameLength, cmd);
             }
         }
 
-        public FsUnitAI AI { get; set; }
-        
-        public IAttackHandler NormalAttack{ get; set; }
-        
-        public IMoveService MoveService { get; set; }
+        public FsUnitAI AI { get; private set; }
+        public SkillHandler SkillHandler { get; private set; }
+        public IAttackHandler NormalAttack{ get; private set; }
+        public IMoveService MoveService { get; private set; }
 
         #region GetSomeThing
         

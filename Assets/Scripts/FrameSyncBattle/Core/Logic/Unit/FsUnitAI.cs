@@ -99,7 +99,31 @@ namespace FrameSyncBattle
             
         }
     }
-    
+    public class BState_Skill : FsUnitAIStateBase
+    {
+        
+        public FsUnitLogic TargetEntity;
+        public Vector3 TargetPosition;
+        public string SkillId;
+        public override void Enter(FsUnitAI content)
+        {
+            TargetEntity = content.PM_TargetEntity;
+            TargetPosition = content.PM_TargetPosition;
+            SkillId = content.PM_SkillId;
+            content.Me.PlayAnimation(new PlayAnimParam(AnimationConstant.Idle,0,1,true));
+        }
+        
+        public override void Update(FsUnitAI content, float deltaTime)
+        {
+            
+        }
+        
+        public override void Exit(FsUnitAI content)
+        {
+            SkillId = null;
+            TargetEntity = null;
+        }
+    }
     
     //基础攻击状态 只关心当前这一次攻击行为的控制
     public class BState_Attack : FsUnitAIStateBase
@@ -130,7 +154,6 @@ namespace FrameSyncBattle
             content.Me.NormalAttack.StopAttack();
             Target = null;
         }
-
     }
     public class BState_Move : FsUnitAIStateBase
     {
@@ -212,6 +235,36 @@ namespace FrameSyncBattle
             
         }
     }
+    
+    
+    public class MState_Skill : FsUnitAIStateBase
+    {
+        //靠近去释放技能 但是现在默认技能都无限距离
+        
+        public FsUnitLogic TargetEntity;
+        public Vector3 TargetPosition;
+        public string SkillId;
+
+
+        public override void Enter(FsUnitAI content)
+        {
+            TargetEntity = content.PM_TargetEntity;
+            TargetPosition = content.PM_TargetPosition;
+            SkillId = content.PM_SkillId;
+        }
+
+        public override void Update(FsUnitAI content, float deltaTime)
+        {
+            //move close and cast
+        }
+
+        public override void Exit(FsUnitAI content)
+        {
+            TargetEntity = null;
+            SkillId = null;
+        }
+    }
+    
     public class MState_AttackTarget : FsUnitAIStateBase
     {
         public FsUnitLogic TargetEntity;
@@ -330,12 +383,13 @@ namespace FrameSyncBattle
             }
             else
             {
-                //搜索最近的目标去攻击
-                if (Me.MpPercent >= 1)
+
+                var skillCastOrder = Me.SkillHandler.AIAutoCastCheck(battle);
+                if (skillCastOrder != null)
                 {
-                    //try cast skill
-                    Me.MpPercent = 0;
-                    FsDebug.Log($"TODO AI CAST");
+                    //释放技能
+                    //TODO USE SKILL ORDER
+                    RequestChangeMiddle(AIMiddleState.Skill);
                 }
                 else
                 {
@@ -380,6 +434,7 @@ namespace FrameSyncBattle
         public float PM_MoveReachDistance { get; set; }
         public FsUnitLogic PM_TargetEntity { get; set; }
         public Vector3 PM_TargetPosition { get; set; }
+        public string PM_SkillId { get; set; }
         
         public float PB_MoveReachDistance { get; set; }
         public FsUnitLogic PB_TargetEntity { get; set; }
@@ -408,6 +463,7 @@ namespace FrameSyncBattle
             PM_TargetPosition = Vector3.zero;
             PM_TargetEntity = null;
             PM_MoveReachDistance = 0;
+            PM_SkillId = null;
         }
     }
     

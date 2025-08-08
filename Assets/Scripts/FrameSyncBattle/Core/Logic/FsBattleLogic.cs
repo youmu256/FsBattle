@@ -202,7 +202,6 @@ namespace FrameSyncBattle
             return sb.ToString();
         }
     }
-
     public partial class FsBattleLogic
     {
         /// <summary>

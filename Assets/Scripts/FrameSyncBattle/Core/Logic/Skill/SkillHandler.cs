@@ -1,0 +1,65 @@
+﻿using System;
+
+namespace FrameSyncBattle
+{
+    
+    public class SkillHandler :IFsEntityFrame
+    {
+        protected FsLinkedList<SkillBase> SkillList = new();
+
+        public SkillAICastHelper AICastHelper = new SkillAICastHelper();
+
+        public SkillCastOrder AIAutoCastCheck(FsBattleLogic battleLogic)
+        {
+            foreach (var skillBase in SkillList)
+            {
+                var order = AICastHelper.TryCast(battleLogic, Owner, skillBase);
+                if (order!=null)
+                    return order;
+            }
+            return null;
+        }
+        
+
+        public void AddSkill(FsBattleLogic battleLogic, SkillBase skill)
+        {
+            SkillList.Add(skill);
+            skill.OnInit(battleLogic,this,null);
+            skill.OnAdd(battleLogic);
+        }
+
+        public void RemoveSkill(FsBattleLogic battleLogic, SkillBase skill)
+        {
+            bool rt = SkillList.Remove(skill);
+            if(rt)
+                skill.OnRemove(battleLogic);
+        }
+
+        public SkillBase Find(Func<SkillBase, bool> condition)
+        {
+            return SkillList.Find(condition);
+        }
+
+        public bool TryCast(FsBattleLogic battleLogic, string skillId)
+        {
+            if (string.IsNullOrEmpty(skillId)) return false;
+            var matchSkill = Find((skill => skill.Id == skillId));
+            return matchSkill != null && matchSkill.TryCastAuto(battleLogic);
+        }
+
+        public bool TryCast(FsBattleLogic battleLogic, SkillSubType type)
+        {
+            if (type == SkillSubType.Other) return false;
+            var matchSkill = Find((skill => skill.Data.SubType == type));
+            return matchSkill != null && matchSkill.TryCastAuto(battleLogic);
+        }
+        
+
+        public FsUnitLogic Owner;
+
+        public void OnEntityFrame(FsBattleLogic battle, FsUnitLogic entity, float deltaTime, FsCmd cmd)
+        {
+            SkillList.ForEach((skill => { skill.LogicFrame(battle, cmd); }));
+        }
+    }
+}

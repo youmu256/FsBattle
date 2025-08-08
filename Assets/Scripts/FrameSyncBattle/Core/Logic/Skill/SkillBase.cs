@@ -1,42 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace FrameSyncBattle
 {
 
-    public class SkillHandler
+    public enum SkillSubType
     {
-        protected FsLinkedList<SkillBase> SkillList = new();
+        Other,
+        HeroBaseSkill,
+        HeroFinalSkill,
+        HeroPassiveSkill,
+    }
 
-        public void AddSkill(FsBattleLogic battleLogic, SkillBase skill)
-        {
-            SkillList.Add(skill);
-            skill.OnAdd(battleLogic, this);
-        }
-
-        public void RemoveSkill(FsBattleLogic battleLogic, SkillBase skill)
-        {
-            bool rt = SkillList.Remove(skill);
-            if(rt)
-                skill.OnRemove(battleLogic, this);
-        }
-
-        public SkillBase Find(Func<SkillBase, bool> condition)
-        {
-            return SkillList.Find(condition);
-        }
-
-        public bool TryCast(FsBattleLogic battleLogic, string skillId)
-        {
-            var matchSkill = Find((skill => skill.Id == skillId));
-            return matchSkill != null && matchSkill.TryCast(battleLogic, this);
-        }
-
-        public FsUnitLogic Owner;
-
-        public void LogicFrame(FsBattleLogic battle, FsCmd cmd)
-        {
-            SkillList.ForEach((skill => { skill.LogicFrame(battle, this, cmd); }));
-        }
+    public enum SkillTargetType
+    {
+        None,
+        Point,
+        Unit,
     }
 
     public class SkillData
@@ -45,11 +26,21 @@ namespace FrameSyncBattle
         public string Name;
         public string Desc;
         public string Icon;
-        //public bool IsUnique;
         public bool IsPassive;
         public bool IsAttack;
+        public SkillTargetType TargetType;
+        public SkillSubType SubType;
+        public int CostMp = 0;
+        //技能数据分为 基础技能设置 和 技能参数设置
+        //通用技能参数 施法距离 冷却
+        //特殊参数 技能自身的特殊参数
+        
+        //AI
+        public SkillAITargetRx AIRx;
+        public SkillAITarget AITarget;
     }
 
+    
     public enum SkillFlow
     {
         None,
@@ -60,66 +51,150 @@ namespace FrameSyncBattle
         EndCast,
         Finish,
     }
+
+    public class SkillCastOrder
+    {
+        public string Id;
+        //public SkillTargetType Type;
+        public Vector3 CastPoint;
+        public FsUnitLogic CastTarget;
+    }
+    
+    public class SkillCastTarget
+    {
+        public Vector3 CastPoint;
+        public FsUnitLogic CastTarget;
+        public void CopyFrom(SkillCastTarget target)
+        {
+            this.CastPoint = target.CastPoint;
+            this.CastTarget = target.CastTarget;
+        }
+    }
     
     public class SkillBase
     {
         public string Id => Data.Id;
         public SkillData Data { get; private set; }
-
         public SkillFlow State { get; protected set; }
-
-        public virtual void OnInit(FsBattleLogic battle, SkillHandler handler)
+        public SkillHandler Handler{ get; protected set; }
+        public FsUnitLogic Owner => Handler.Owner;
+        public virtual void OnInit(FsBattleLogic battle, SkillHandler handler,SkillData data)
         {
-            
+            Data = data;
+            Handler = handler;
         }
         
-        public virtual void OnAdd(FsBattleLogic battle, SkillHandler handler)
+        public virtual void OnAdd(FsBattleLogic battle)
         {
 
         }
 
-        public virtual void OnRemove(FsBattleLogic battle, SkillHandler handler)
+        public virtual void OnRemove(FsBattleLogic battle)
         {
 
         }
 
-        public virtual void Stop(FsBattleLogic battle,SkillHandler handler)
+        public virtual void Stop(FsBattleLogic battle)
         {
             if (State == SkillFlow.None || State == SkillFlow.Finish) return;
             State = SkillFlow.None;
-            OnChangeFlowState(battle, handler, null);
+            OnChangeFlowState(battle, null);
+        }
+
+        #region 技能对象属性
+        public float CoolDown { get; protected set; }
+        public float CoolDownTimer { get; protected set; }
+        public float CoolDownPercent
+        {
+            get
+            {
+                if (CoolDownTimer <= 0 || CoolDown <= 0) return 0;
+                return CoolDownTimer / CoolDown;
+            }
+            set => CoolDownTimer = value * CoolDown;
+        }
+        #endregion
+        
+        #region 释放条件
+
+        public bool CheckCoolDown()
+        {
+            return CoolDownTimer <= 0;
+        }
+        public bool CheckResources()
+        {
+            return Owner.MpCurrent >=  Data.CostMp;
+        }
+
+        public SkillCastTarget OrderCastTarget { get; private set; } = new();
+        
+        /// <summary>
+        /// 是否能启动技能命令
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsReadyToCast()
+        {
+            if (Data.IsPassive) return false;
+            return CheckCoolDown() && CheckResources() && Owner.StateFlags.HasAnyState(FsUnitStateFlag.Cast);
+        }
+
+        /// <summary>
+        /// 命令是否有效 (目标是否匹配 距离是否满足等)
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsOrderValid()
+        {
+            return true;
         }
         
-        public virtual bool TryCast(FsBattleLogic battle, SkillHandler handler)
+        public virtual bool TryCastAuto(FsBattleLogic battle)
         {
-            bool result = false;
-            //检查有效目标 检查冷却等等
-
-            if (result)
-                State = SkillFlow.StartCast;
-            return result;
+            if (IsReadyToCast() == false) return false;
+            //auto set target
+            
+            return true;
+        }
+        public virtual bool TryCast(FsBattleLogic battle)
+        {
+            return false;
+        }
+        public virtual bool TryCast(FsBattleLogic battle,Vector3 target)
+        {
+            return false;
+        }
+        
+        public virtual bool TryCast(FsBattleLogic battle,FsUnitLogic target)
+        {
+            return false;
         }
 
-        public virtual void LogicFrame(FsBattleLogic battle, SkillHandler handler, FsCmd cmd)
+        #endregion
+        
+        public virtual void LogicFrame(FsBattleLogic battle, FsCmd cmd)
         {
+            //running cool down
+            if (CoolDownTimer > 0)
+            {
+                CoolDownTimer -= battle.FrameLength;
+            }
             //change state
             while (true)
             {
                 var pre = State;
-                var next = FlowStateFrame(battle, handler, cmd);
+                var next = FlowStateFrame(battle, cmd);
                 if (pre == next)
                     break;
                 State = next;
-                OnChangeFlowState(battle, handler, cmd);
+                OnChangeFlowState(battle, cmd);
             }
         }
 
-        protected virtual void OnChangeFlowState(FsBattleLogic battle, SkillHandler handler, FsCmd cmd)
+        protected virtual void OnChangeFlowState(FsBattleLogic battle, FsCmd cmd)
         {
             
         }
         
-        protected virtual SkillFlow FlowStateFrame(FsBattleLogic battle, SkillHandler handler, FsCmd cmd)
+        protected virtual SkillFlow FlowStateFrame(FsBattleLogic battle, FsCmd cmd)
         {
             return State;
         }
