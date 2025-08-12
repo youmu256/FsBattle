@@ -102,6 +102,13 @@ namespace FrameSyncBattle
             //因为Animation 在目前是在View层延迟处理的 更像是请求 这里相当于进行重置
             AnimationReq = PlayAnimParam.Null;
         }
+
+
+        public FsEntityLogic PlayAnimation(string animation)
+        {
+            AnimationReq = new PlayAnimParam(animation);
+            return this;
+        }
         
         public FsEntityLogic PlayAnimation(PlayAnimParam animParam)
         {

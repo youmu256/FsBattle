@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 namespace FrameSyncBattle
 {
@@ -54,7 +55,7 @@ namespace FrameSyncBattle
         public const string Attack = "Attack";
         public const string Idle = "Idle";
         public const string Death = "Death";
-        public const string CastSkill = "CastSkill";
+        public const string Skill = "Skill";
     }
     public abstract class FsUnitAIStateBase: IFsmState<FsUnitAI>
     {
@@ -105,6 +106,8 @@ namespace FrameSyncBattle
         public FsUnitLogic TargetEntity;
         public Vector3 TargetPosition;
         public string SkillId;
+        public SkillBase CastingSkill;
+        
         public override void Enter(FsUnitAI content)
         {
             TargetEntity = content.PM_TargetEntity;
@@ -115,11 +118,59 @@ namespace FrameSyncBattle
         
         public override void Update(FsUnitAI content, float deltaTime)
         {
+            if (CastingSkill != null)
+            {
+                //正在施法的话 等技能释放接受后进入普通状态
+                if (CastingSkill.State is SkillFlow.None or SkillFlow.Finish)
+                {
+                    content.RequestChangeBase(AIBaseState.Idle);
+                    return;
+                }
+                return;
+            }
             
+            
+            var skill = content.Me.SkillHandler.FindById(SkillId);
+            if (skill != null)
+            {
+                bool castResult = false;
+                if (skill.IsReadyToCast())
+                {
+                    switch (skill.Data.TargetType)
+                    {
+                        case SkillTargetType.None:
+                            castResult = skill.TryCast(content.Battle);
+                            break;
+                        case SkillTargetType.Point:
+                            castResult = skill.TryCast(content.Battle,TargetPosition);
+                            break;
+                        case SkillTargetType.Unit:
+                            castResult = skill.TryCast(content.Battle,TargetEntity);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    if (castResult == false)
+                    {
+                        content.RequestChangeBase(AIBaseState.Idle);
+                        return;
+                    }
+                    else
+                    {
+                        CastingSkill = skill;
+                    }
+                }
+            }
+            else
+            {
+                content.RequestChangeBase(AIBaseState.Idle);
+            }
         }
         
         public override void Exit(FsUnitAI content)
         {
+            CastingSkill = null;
             SkillId = null;
             TargetEntity = null;
         }
@@ -244,8 +295,9 @@ namespace FrameSyncBattle
         public FsUnitLogic TargetEntity;
         public Vector3 TargetPosition;
         public string SkillId;
-
-
+        public SkillBase CastingSkill;
+        
+        
         public override void Enter(FsUnitAI content)
         {
             TargetEntity = content.PM_TargetEntity;
@@ -255,11 +307,37 @@ namespace FrameSyncBattle
 
         public override void Update(FsUnitAI content, float deltaTime)
         {
-            //move close and cast
+            //本来要靠近在释放技能 现在先默认都无限距离
+            if (CastingSkill != null)
+            {
+                if (CastingSkill.State is SkillFlow.None or SkillFlow.Finish)
+                    content.RequestChangeMiddle(AIMiddleState.Hold);
+                return;
+            }
+
+            var skill = content.Me.SkillHandler.FindById(SkillId);
+            if (skill != null)
+            {
+                if (skill.IsReadyToCast())
+                {
+                    //交由基础状态机去实际释放技能
+                    content.PB_TargetEntity = TargetEntity;
+                    content.PB_TargetPosition = TargetPosition;
+                    content.PB_SkillId = SkillId;
+                    content.RequestChangeBase(AIBaseState.Skill,false);
+                    CastingSkill = skill;
+                }
+            }
+            else
+            {
+                //如果skill丢失 就直接停止
+                content.RequestChangeMiddle(AIMiddleState.Hold);
+            }
         }
 
         public override void Exit(FsUnitAI content)
         {
+            CastingSkill = null;
             TargetEntity = null;
             SkillId = null;
         }
@@ -352,6 +430,7 @@ namespace FrameSyncBattle
             BaseAIFsm = new UnitAIFsm();
             BaseAIFsm.AddState(AIBaseState.Idle,new BState_Idle());
             BaseAIFsm.AddState(AIBaseState.Attack,new BState_Attack());
+            BaseAIFsm.AddState(AIBaseState.Skill,new BState_Skill());
             BaseAIFsm.AddState(AIBaseState.Move,new BState_Move());
             BaseAIFsm.AddState(AIBaseState.Death,new BState_Death());
             
@@ -359,6 +438,7 @@ namespace FrameSyncBattle
             MiddleAIFsm.AddState(AIMiddleState.Death,new MState_Death());
             MiddleAIFsm.AddState(AIMiddleState.Hold,new MState_Hold());
             MiddleAIFsm.AddState(AIMiddleState.AttackEntity,new MState_AttackTarget());
+            MiddleAIFsm.AddState(AIMiddleState.Skill,new MState_Skill());
 
             BaseAIFsm.Context = this;
             MiddleAIFsm.Context = this;
@@ -389,6 +469,9 @@ namespace FrameSyncBattle
                 {
                     //释放技能
                     //TODO USE SKILL ORDER
+                    PM_SkillId = skillCastOrder.Id;
+                    PM_TargetEntity = skillCastOrder.CastTarget;
+                    PM_TargetPosition = skillCastOrder.CastPoint;
                     RequestChangeMiddle(AIMiddleState.Skill);
                 }
                 else
@@ -435,11 +518,11 @@ namespace FrameSyncBattle
         public FsUnitLogic PM_TargetEntity { get; set; }
         public Vector3 PM_TargetPosition { get; set; }
         public string PM_SkillId { get; set; }
-        
         public float PB_MoveReachDistance { get; set; }
         public FsUnitLogic PB_TargetEntity { get; set; }
         public Vector3 PB_TargetPosition { get; set; }
 
+        public string PB_SkillId { get; set; }
         #endregion
 
         public void RequestChangeBase(string stateName, bool sameChange = false)
@@ -457,6 +540,7 @@ namespace FrameSyncBattle
             PB_TargetPosition = Vector3.zero;
             PB_TargetEntity = null;
             PB_MoveReachDistance = 0;
+            PB_SkillId = null;
         }
         public void ResetMiddleParam()
         {

@@ -21,10 +21,10 @@ namespace FrameSyncBattle
         }
         
 
-        public void AddSkill(FsBattleLogic battleLogic, SkillBase skill)
+        public void AddSkill(FsBattleLogic battleLogic, SkillBase skill,SkillData data)
         {
             SkillList.Add(skill);
-            skill.OnInit(battleLogic,this,null);
+            skill.OnInit(battleLogic,this,data);
             skill.OnAdd(battleLogic);
         }
 
@@ -38,6 +38,10 @@ namespace FrameSyncBattle
         public SkillBase Find(Func<SkillBase, bool> condition)
         {
             return SkillList.Find(condition);
+        }
+        public SkillBase FindById(string id)
+        {
+            return SkillList.Find((skill => skill.Id == id));
         }
 
         public bool TryCast(FsBattleLogic battleLogic, string skillId)

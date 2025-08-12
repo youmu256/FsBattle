@@ -60,16 +60,6 @@ namespace FrameSyncBattle
         public FsUnitLogic CastTarget;
     }
     
-    public class SkillCastTarget
-    {
-        public Vector3 CastPoint;
-        public FsUnitLogic CastTarget;
-        public void CopyFrom(SkillCastTarget target)
-        {
-            this.CastPoint = target.CastPoint;
-            this.CastTarget = target.CastTarget;
-        }
-    }
     
     public class SkillBase
     {
@@ -98,7 +88,7 @@ namespace FrameSyncBattle
         {
             if (State == SkillFlow.None || State == SkillFlow.Finish) return;
             State = SkillFlow.None;
-            OnChangeFlowState(battle, null);
+            OnChangeFlowState(battle);
         }
 
         #region 技能对象属性
@@ -126,8 +116,6 @@ namespace FrameSyncBattle
             return Owner.MpCurrent >=  Data.CostMp;
         }
 
-        public SkillCastTarget OrderCastTarget { get; private set; } = new();
-        
         /// <summary>
         /// 是否能启动技能命令
         /// </summary>
@@ -146,6 +134,12 @@ namespace FrameSyncBattle
         {
             return true;
         }
+
+        #endregion
+        
+        #region Cast
+        public Vector3 CastPoint { get; protected set; }
+        public FsUnitLogic CastTarget { get; protected set; }
         
         public virtual bool TryCastAuto(FsBattleLogic battle)
         {
@@ -154,22 +148,28 @@ namespace FrameSyncBattle
             
             return true;
         }
+        
         public virtual bool TryCast(FsBattleLogic battle)
         {
-            return false;
+            ChangeFlowState(battle,SkillFlow.StartCast);
+            return true;
         }
         public virtual bool TryCast(FsBattleLogic battle,Vector3 target)
         {
-            return false;
+            CastPoint = target;
+            ChangeFlowState(battle,SkillFlow.StartCast);
+            return true;
         }
         
         public virtual bool TryCast(FsBattleLogic battle,FsUnitLogic target)
         {
-            return false;
+            CastTarget = target;
+            ChangeFlowState(battle,SkillFlow.StartCast);
+            return true;
         }
-
         #endregion
         
+        public float StateTimer { get; protected set; }
         public virtual void LogicFrame(FsBattleLogic battle, FsCmd cmd)
         {
             //running cool down
@@ -177,6 +177,7 @@ namespace FrameSyncBattle
             {
                 CoolDownTimer -= battle.FrameLength;
             }
+            StateTimer += battle.FrameLength;
             //change state
             while (true)
             {
@@ -184,12 +185,22 @@ namespace FrameSyncBattle
                 var next = FlowStateFrame(battle, cmd);
                 if (pre == next)
                     break;
-                State = next;
-                OnChangeFlowState(battle, cmd);
+                ChangeFlowState(battle,next);
             }
         }
 
-        protected virtual void OnChangeFlowState(FsBattleLogic battle, FsCmd cmd)
+
+        protected void ChangeFlowState(FsBattleLogic battle,SkillFlow state)
+        {
+            if (State != state)
+            {
+                State = state;
+                StateTimer = 0;
+                OnChangeFlowState(battle);
+            }
+        }
+
+        protected virtual void OnChangeFlowState(FsBattleLogic battle)
         {
             
         }

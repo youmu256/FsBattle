@@ -69,6 +69,14 @@ namespace FrameSyncBattle
                     filteredUnits.Sort(HpComparison);
                     target = filteredUnits[^1];
                     break;
+                case SkillAITarget.AttackLow:
+                    filteredUnits.Sort(AtkComparison);
+                    target = filteredUnits[0];
+                    break;
+                case SkillAITarget.AttackHigh:
+                    filteredUnits.Sort(AtkComparison);
+                    target = filteredUnits[^1];
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -108,6 +116,16 @@ namespace FrameSyncBattle
                 return -1;
             return 0;
         }
+        
+        private int AtkComparison(FsUnitLogic x, FsUnitLogic y)
+        {
+            var dd = x.Property.Get(FsUnitPropertyType.Attack) - y.Property.Get(FsUnitPropertyType.Attack);
+            if (dd > 0)
+                return 1;
+            if (dd < 0)
+                return -1;
+            return 0;
+        }
     }
 
     public enum SkillAITargetRx
@@ -125,6 +143,8 @@ namespace FrameSyncBattle
         Far,
         HpLow,
         HpHigh,
+        AttackLow,
+        AttackHigh
     }
 
 }
