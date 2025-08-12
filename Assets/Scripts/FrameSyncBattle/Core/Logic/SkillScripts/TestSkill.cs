@@ -24,10 +24,9 @@ namespace FrameSyncBattle
         }
 
 
-        protected override void OnChangeFlowState(FsBattleLogic battle, SkillFlow preState)
+        protected override void OnEnterFlowState(FsBattleLogic battle, SkillFlow preState)
         {
-            base.OnChangeFlowState(battle, preState);
-            FsDebug.Log($"{Data.Name} Skill {preState} -> {State}");
+            base.OnEnterFlowState(battle, preState);
             switch (State)
             {
                 case SkillFlow.None:
@@ -37,12 +36,11 @@ namespace FrameSyncBattle
                     break;
                 case SkillFlow.StartEffect:
                     SetCastCool();
+                    var target = CastTarget;
+                    var start = Owner.Position;
                     for (int i = 0; i < 5; i++)
                     {
-                        var target = CastTarget;
-                        var start = Owner.Position;
                         var lockMissile = battle.AddEntity<FsMissileLogic>(this.Owner.Team,"missile",new FsEntityInitData(){Euler = this.Owner.Euler,Position = start});
-
                         lockMissile.SetBase("cube", 10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(null, (
                             (logic, missileLogic, valid) =>
                             {
@@ -67,7 +65,7 @@ namespace FrameSyncBattle
             }
         }
 
-        protected override SkillFlow FlowStateFrame(FsBattleLogic battle, FsCmd cmd)
+        protected override SkillFlow OnFlowStateFrame(FsBattleLogic battle, FsCmd cmd)
         {
             switch (State)
             {

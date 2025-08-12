@@ -19,6 +19,13 @@ namespace FrameSyncBattle
             this.SourceAttackIndex = data;
             return this;
         }
+        /// <summary>
+        /// 创建基础攻击伤害
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <param name="pct"></param>
+        /// <returns></returns>
         public static FsDamageInfo CreateAttackDamage(FsUnitLogic source, FsUnitLogic target,float pct)
         {
             FsDamageInfo info = new FsDamageInfo();
@@ -30,7 +37,6 @@ namespace FrameSyncBattle
             info.Tags |= FsDamageInfoTag.NormalAttack;
             return info;
         }
-        
     }
 
     public enum FsDamageType

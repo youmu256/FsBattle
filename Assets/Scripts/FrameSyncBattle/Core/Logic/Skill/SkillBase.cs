@@ -192,7 +192,7 @@ namespace FrameSyncBattle
             while (true)
             {
                 var pre = State;
-                var next = FlowStateFrame(battle, cmd);
+                var next = OnFlowStateFrame(battle, cmd);
                 if (pre == next)
                     break;
                 ChangeFlowState(battle,next);
@@ -207,20 +207,18 @@ namespace FrameSyncBattle
                 var pre = State;
                 State = state;
                 StateTimer = 0;
-                OnChangeFlowState(battle,pre);
+                OnEnterFlowState(battle,pre);
             }
         }
 
-        protected virtual void OnChangeFlowState(FsBattleLogic battle,SkillFlow preState)
+        protected virtual void OnEnterFlowState(FsBattleLogic battle,SkillFlow preState)
         {
-            
+            //FsDebug.Log($"{Data.Name} Skill {preState} -> {State}");
         }
         
-        protected virtual SkillFlow FlowStateFrame(FsBattleLogic battle, FsCmd cmd)
+        protected virtual SkillFlow OnFlowStateFrame(FsBattleLogic battle, FsCmd cmd)
         {
             return State;
         }
-        
     }
-
 }
