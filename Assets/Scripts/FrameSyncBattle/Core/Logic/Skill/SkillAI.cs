@@ -85,11 +85,11 @@ namespace FrameSyncBattle
                 switch (skill.Data.TargetType)
                 {
                     case SkillTargetType.None:
-                        return new SkillCastOrder();
+                        return new SkillCastOrder(){Id = skill.Id};
                     case SkillTargetType.Point:
-                        return new SkillCastOrder(){CastPoint = target.Position};
+                        return new SkillCastOrder(){Id = skill.Id,CastPoint = target.Position};
                     case SkillTargetType.Unit:
-                        return new SkillCastOrder(){CastTarget = target};
+                        return new SkillCastOrder(){Id = skill.Id,CastTarget = target};
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

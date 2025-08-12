@@ -8,29 +8,41 @@ namespace FrameSyncBattle
         public static SkillData GetTestData()
         {
             var data =  new SkillData();
+            data.Id = "test1";
+            data.Icon = "test1_icon";
+            data.Desc = "test1_desc";
+            data.Name = "test1_name";
+            data.CastRange = 10f;
+            data.CoolDown = 5f;
+            data.CostMp = 0;
+            data.IsPassive = false;
+            data.SubType = SkillSubType.HeroBaseSkill;
+            data.TargetType = SkillTargetType.Unit;
+            data.AIRx = SkillAITargetRx.Enemy;
+            data.AITarget = SkillAITarget.HpLow;
             return data;
         }
-        
-        protected override SkillFlow FlowStateFrame(FsBattleLogic battle, FsCmd cmd)
+
+
+        protected override void OnChangeFlowState(FsBattleLogic battle, SkillFlow preState)
         {
+            base.OnChangeFlowState(battle, preState);
+            FsDebug.Log($"{Data.Name} Skill {preState} -> {State}");
             switch (State)
             {
                 case SkillFlow.None:
                     break;
                 case SkillFlow.StartCast:
                     Owner.PlayAnimation(AnimationConstant.Attack);
-                    if (StateTimer >= 0.5f)
-                    {
-                        ChangeFlowState(battle,SkillFlow.StartEffect);
-                    }
                     break;
                 case SkillFlow.StartEffect:
-                    var target = CastTarget;
-                    var start = Owner.Position;
-                    var lockMissile = battle.AddEntity<FsMissileLogic>(this.Owner.Team,"missile",new FsEntityInitData(){Euler = this.Owner.Euler,Position = start});
-
+                    SetCastCool();
                     for (int i = 0; i < 5; i++)
                     {
+                        var target = CastTarget;
+                        var start = Owner.Position;
+                        var lockMissile = battle.AddEntity<FsMissileLogic>(this.Owner.Team,"missile",new FsEntityInitData(){Euler = this.Owner.Euler,Position = start});
+
                         lockMissile.SetBase("cube", 10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(null, (
                             (logic, missileLogic, valid) =>
                             {
@@ -41,10 +53,37 @@ namespace FrameSyncBattle
                                 }
                             }));
                     }
-                    
+                    break;
+                case SkillFlow.Affecting:
+                    break;
+                case SkillFlow.EndEffect:
+                    break;
+                case SkillFlow.EndCast:
+                    break;
+                case SkillFlow.Finish:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        protected override SkillFlow FlowStateFrame(FsBattleLogic battle, FsCmd cmd)
+        {
+            switch (State)
+            {
+                case SkillFlow.None:
+                    break;
+                case SkillFlow.StartCast:
+                    if (StateTimer >= 0.3f)
+                    {
+                        ChangeFlowState(battle,SkillFlow.StartEffect);
+                    }
+                    break;
+                case SkillFlow.StartEffect:
                     ChangeFlowState(battle,SkillFlow.EndEffect);
                     break;
                 case SkillFlow.Affecting:
+                    //非持续性技能 不会进入该状态
                     break;
                 case SkillFlow.EndEffect:
                     ChangeFlowState(battle,SkillFlow.EndCast);

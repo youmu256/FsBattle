@@ -71,7 +71,8 @@ namespace FrameSyncBattle
                 AI = new FsUnitAI(battle,this);
             }
 
-            SkillHandler = new SkillHandler();
+            SkillHandler = new SkillHandler(this);
+            SkillHandler.AddSkill(battle,new TestSkill(),TestSkill.GetTestData());
         }
 
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)

@@ -13,7 +13,6 @@ namespace FrameSyncBattle
         public override void Init(FsBattleLogic battle, int team, string entityTypeId, object initData)
         {
             base.Init(battle, team, entityTypeId, initData);
-            SkillHandler.AddSkill(battle,new TestSkill(),TestSkill.GetTestData());
         }
 
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)

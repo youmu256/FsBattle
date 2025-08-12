@@ -31,6 +31,8 @@ namespace FrameSyncBattle
         public SkillTargetType TargetType;
         public SkillSubType SubType;
         public int CostMp = 0;
+        public float CastRange = 0;
+        public float CoolDown = 0;
         //技能数据分为 基础技能设置 和 技能参数设置
         //通用技能参数 施法距离 冷却
         //特殊参数 技能自身的特殊参数
@@ -72,6 +74,8 @@ namespace FrameSyncBattle
         {
             Data = data;
             Handler = handler;
+            CastRange = data.CastRange;
+            CoolDown = data.CoolDown;
         }
         
         public virtual void OnAdd(FsBattleLogic battle)
@@ -87,11 +91,12 @@ namespace FrameSyncBattle
         public virtual void Stop(FsBattleLogic battle)
         {
             if (State == SkillFlow.None || State == SkillFlow.Finish) return;
-            State = SkillFlow.None;
-            OnChangeFlowState(battle);
+            ChangeFlowState(battle,SkillFlow.None);
         }
 
-        #region 技能对象属性
+        #region 技能对象属性 基础属性来自Data 但是技能在游戏过程中属性还会变化
+        
+        public float CastRange { get; protected set; }
         public float CoolDown { get; protected set; }
         public float CoolDownTimer { get; protected set; }
         public float CoolDownPercent
@@ -140,6 +145,11 @@ namespace FrameSyncBattle
         #region Cast
         public Vector3 CastPoint { get; protected set; }
         public FsUnitLogic CastTarget { get; protected set; }
+
+        public void SetCastCool()
+        {
+            this.CoolDownTimer = this.CoolDown;
+        }
         
         public virtual bool TryCastAuto(FsBattleLogic battle)
         {
@@ -194,13 +204,14 @@ namespace FrameSyncBattle
         {
             if (State != state)
             {
+                var pre = State;
                 State = state;
                 StateTimer = 0;
-                OnChangeFlowState(battle);
+                OnChangeFlowState(battle,pre);
             }
         }
 
-        protected virtual void OnChangeFlowState(FsBattleLogic battle)
+        protected virtual void OnChangeFlowState(FsBattleLogic battle,SkillFlow preState)
         {
             
         }

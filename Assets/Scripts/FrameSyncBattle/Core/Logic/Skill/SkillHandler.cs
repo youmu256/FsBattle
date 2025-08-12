@@ -57,9 +57,14 @@ namespace FrameSyncBattle
             var matchSkill = Find((skill => skill.Data.SubType == type));
             return matchSkill != null && matchSkill.TryCastAuto(battleLogic);
         }
-        
 
-        public FsUnitLogic Owner;
+
+        public SkillHandler(FsUnitLogic owner)
+        {
+            this.Owner = owner;
+        }
+        
+        public FsUnitLogic Owner { get; private set; }
 
         public void OnEntityFrame(FsBattleLogic battle, FsUnitLogic entity, float deltaTime, FsCmd cmd)
         {

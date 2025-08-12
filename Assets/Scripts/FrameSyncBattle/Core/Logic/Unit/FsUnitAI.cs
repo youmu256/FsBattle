@@ -110,9 +110,9 @@ namespace FrameSyncBattle
         
         public override void Enter(FsUnitAI content)
         {
-            TargetEntity = content.PM_TargetEntity;
-            TargetPosition = content.PM_TargetPosition;
-            SkillId = content.PM_SkillId;
+            TargetEntity = content.PB_TargetEntity;
+            TargetPosition = content.PB_TargetPosition;
+            SkillId = content.PB_SkillId;
             content.Me.PlayAnimation(new PlayAnimParam(AnimationConstant.Idle,0,1,true));
         }
         
