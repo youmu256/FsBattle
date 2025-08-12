@@ -46,7 +46,6 @@ namespace FrameSyncBattle
         public const string Stop = "Stop";
         public const string Hold = "Hold";
         public const string Skill = "Skill";
-        public const string Death = "Death";
     }
     public class AIBaseState
     {
@@ -66,6 +65,7 @@ namespace FrameSyncBattle
         public abstract void Update(FsUnitAI content, float deltaTime);
 
         public abstract void Exit(FsUnitAI content);
+        
     }
 
     public class BState_Death : FsUnitAIStateBase
@@ -76,7 +76,10 @@ namespace FrameSyncBattle
         }
         public override void Update(FsUnitAI content, float deltaTime)
         {
-            
+            if (content.Me.IsDead == false)
+            {
+                content.RequestChangeBase(AIBaseState.Idle);
+            }
         }
 
         public override void Exit(FsUnitAI content)
@@ -107,7 +110,8 @@ namespace FrameSyncBattle
         public Vector3 TargetPosition;
         public string SkillId;
         public SkillBase CastingSkill;
-        
+        public SkillBase OrderSkill;
+
         public override void Enter(FsUnitAI content)
         {
             TargetEntity = content.PB_TargetEntity;
@@ -130,11 +134,12 @@ namespace FrameSyncBattle
             }
             
             
-            var skill = content.Me.SkillHandler.FindById(SkillId);
+            var skill = OrderSkill??content.Me.SkillHandler.FindById(SkillId);
             if (skill != null)
             {
+                OrderSkill = skill;
                 bool castResult = false;
-                if (skill.IsReadyToCast())
+                if (skill.IsReadyToStartCast())
                 {
                     switch (skill.Data.TargetType)
                     {
@@ -170,6 +175,8 @@ namespace FrameSyncBattle
         
         public override void Exit(FsUnitAI content)
         {
+            CastingSkill?.Stop(content.Battle);
+            OrderSkill = null;
             CastingSkill = null;
             SkillId = null;
             TargetEntity = null;
@@ -252,23 +259,6 @@ namespace FrameSyncBattle
         }
     }
     #region MiddleAI
-    public class MState_Death : FsUnitAIStateBase
-    {
-        public override void Enter(FsUnitAI content)
-        {
-            
-        }
-
-        public override void Update(FsUnitAI content, float deltaTime)
-        {
-            
-        }
-
-        public override void Exit(FsUnitAI content)
-        {
-            
-        }
-    }
     public class MState_Hold : FsUnitAIStateBase
     {
         public override void Enter(FsUnitAI content)
@@ -296,7 +286,7 @@ namespace FrameSyncBattle
         public Vector3 TargetPosition;
         public string SkillId;
         public SkillBase CastingSkill;
-        
+        public SkillBase OrderSkill;
         
         public override void Enter(FsUnitAI content)
         {
@@ -307,25 +297,38 @@ namespace FrameSyncBattle
 
         public override void Update(FsUnitAI content, float deltaTime)
         {
-            //本来要靠近在释放技能 现在先默认都无限距离
             if (CastingSkill != null)
             {
+                //没有正常发动技能 或者技能已经结束都退出该AI状态
                 if (CastingSkill.State is SkillFlow.None or SkillFlow.Finish)
                     content.RequestChangeMiddle(AIMiddleState.Hold);
                 return;
             }
 
-            var skill = content.Me.SkillHandler.FindById(SkillId);
+            var skill = OrderSkill??content.Me.SkillHandler.FindById(SkillId);
             if (skill != null)
             {
-                if (skill.IsReadyToCast())
+                OrderSkill = skill;
+                float castRange = skill.CastRange;
+                float chaseStopDistance = castRange - content.CasterRangeAdjust;
+                //-0.5 保证处于攻击范围内，防止在攻击范围边缘反复鬼畜
+                var dis = DistanceUtils.DistanceBetween2D(content.Me, TargetEntity, true);
+                if (dis <= castRange)
                 {
-                    //交由基础状态机去实际释放技能
-                    content.PB_TargetEntity = TargetEntity;
-                    content.PB_TargetPosition = TargetPosition;
-                    content.PB_SkillId = SkillId;
-                    content.RequestChangeBase(AIBaseState.Skill,false);
-                    CastingSkill = skill;
+                    //cast
+                    if (skill.IsReadyToStartCast())
+                    {
+                        //交由基础状态机去实际释放技能
+                        content.PB_TargetEntity = TargetEntity;
+                        content.PB_TargetPosition = TargetPosition;
+                        content.PB_SkillId = SkillId;
+                        content.RequestChangeBase(AIBaseState.Skill);
+                        CastingSkill = skill;
+                    }
+                }
+                else
+                {
+                    ChaseTarget(content,chaseStopDistance);
                 }
             }
             else
@@ -334,9 +337,21 @@ namespace FrameSyncBattle
                 content.RequestChangeMiddle(AIMiddleState.Hold);
             }
         }
+        
+        private void ChaseTarget(FsUnitAI content,float stopDistance)
+        {
+            if(content.Me.CanMove())
+            {
+                content.PB_TargetEntity = TargetEntity;
+                content.PB_TargetPosition = TargetPosition;
+                content.PB_MoveReachDistance = stopDistance;
+                content.RequestChangeBase(AIBaseState.Move);
+            }
+        }
 
         public override void Exit(FsUnitAI content)
         {
+            OrderSkill = null;
             CastingSkill = null;
             TargetEntity = null;
             SkillId = null;
@@ -354,7 +369,7 @@ namespace FrameSyncBattle
         public override void Update(FsUnitAI content, float deltaTime)
         {
             float attackRange = content.Me.GetAttackRange();
-            float chaseStopDistance = attackRange - 0.5f;
+            float chaseStopDistance = attackRange - content.AttackRangeAdjust;
             //-0.5 保证处于攻击范围内，防止在攻击范围边缘反复鬼畜
             if (content.Battle.EntityService.IsEntityValidTobeTargeted(content.Me, TargetEntity) == false || content.Me.CanAttack() == false)
             {
@@ -414,15 +429,24 @@ namespace FrameSyncBattle
         //基础行为AI 待机 死亡 攻击 施法 移动(静态目标) 移动(动态目标)
         //上层策略AI 判断技能释放时机 仇恨目标管理
 
+        public float CasterRangeAdjust = 0.5f;
+        public float AttackRangeAdjust = 0.5f;
+        
         public FsUnitAI(FsBattleLogic battle,FsUnitLogic owner)
         {
             
             /*
              * 总的来说
-             * Base层主要负责控制最基本的行动 比如攻击 移动 待机
-             * Middle层主要是按照情况去切换Base层来达成目的
+             * Base层主要负责控制最基本最具体的行动执行 比如攻击 移动 待机
+             * Middle层主要是按照情况去切换Base层来达成复杂目的 追着敌人施法 追着敌人攻击 巡逻移动 警戒周围敌人 等等
+             * 高层AI/玩家指令 控制Middle层的AI状态 比如一直尝试释放技能 按照仇恨优先级发布攻击目标等
+             * 
              * Base层自身只关注自身行动是否因为特殊原因打断 不应该考虑更多
-             * Middle层需要保证在进行Base层状态转换的时候 已经完善考虑了，不要把问题过多留给Base层
+             * 关于行动切换/打断
+             * 比如正在Base层攻击状态时 被上层控制要立刻进入Base层移动状态
+             * 比如在War3中，正在攻击的单位，会被玩家发布新的移动命令直接打断
+             * 但是在Middle层AI的实现中要避免出现随便打断的情况，比如Middle层攻击目标的状态中，只有攻击流程完成后才应该发布新的移动命令
+             * 
              */
             
             Me = owner;
@@ -435,7 +459,6 @@ namespace FrameSyncBattle
             BaseAIFsm.AddState(AIBaseState.Death,new BState_Death());
             
             MiddleAIFsm = new UnitAIFsm();
-            MiddleAIFsm.AddState(AIMiddleState.Death,new MState_Death());
             MiddleAIFsm.AddState(AIMiddleState.Hold,new MState_Hold());
             MiddleAIFsm.AddState(AIMiddleState.AttackEntity,new MState_AttackTarget());
             MiddleAIFsm.AddState(AIMiddleState.Skill,new MState_Skill());
@@ -459,53 +482,14 @@ namespace FrameSyncBattle
             if (entity.IsDead)
             {
                 BaseAIFsm.ChangeState(AIBaseState.Death);
-                MiddleAIFsm.ChangeState(AIMiddleState.Death);
             }
             else
             {
-
-                var skillCastOrder = Me.SkillHandler.AIAutoCastCheck(battle);
-                if (skillCastOrder != null)
-                {
-                    //释放技能
-                    //TODO USE SKILL ORDER
-                    PM_SkillId = skillCastOrder.Id;
-                    PM_TargetEntity = skillCastOrder.CastTarget;
-                    PM_TargetPosition = skillCastOrder.CastPoint;
-                    RequestChangeMiddle(AIMiddleState.Skill);
-                }
-                else
-                {
-                    //可以攻击的情况下 找到周围最近的敌人 转入M追击目标状态
-                    if (Me.CanAttack() && Me.NormalAttack.AttackReady(false))
-                    {
-                        List<FsUnitLogic> targets = new List<FsUnitLogic>();
-                        battle.EntityService.CollectUnits(targets, TargetFilter);
-                        if (targets.Count > 0)
-                        {
-                            targets.Sort(((a, b) =>
-                            {
-                                var disA = DistanceUtils.DistanceBetween2D(Me, a, true);
-                                var disB = DistanceUtils.DistanceBetween2D(Me, b, true);
-                                if (disA > disB)
-                                    return 1;
-                                return -1;
-                            }));
-                            PM_TargetEntity = targets[0];
-                            RequestChangeMiddle(AIMiddleState.AttackEntity);
-                        }
-                    }
-                }
+                //Order Process Or GameAI
             }
             MiddleAIFsm.UpdateFsm(battle.FrameLength);
             BaseAIFsm.UpdateFsm(battle.FrameLength);
         }
-
-        private bool TargetFilter(FsBattleLogic battle, FsUnitLogic target)
-        {
-            return battle.EntityService.IsEntityValidTobeTargeted(Me,target) && battle.EntityService.IsEnemy(Me,target);
-        }
-
 
         public FsBattleLogic Battle;
         public FsUnitLogic Me;
@@ -525,16 +509,24 @@ namespace FrameSyncBattle
         public string PB_SkillId { get; set; }
         #endregion
 
-        public void RequestChangeBase(string stateName, bool sameChange = false)
+        public bool RequestChangeBase(string stateName, bool sameChange = false)
         {
+            //Base状态的转换本身应该有限制 当前动作优先级以及转换优先级要进行比较才能考虑打断
+            //ExitCheck来检查能否被新的状态切入
             this.BaseAIFsm.ChangeState(stateName, sameChange);
             ResetBaseParam();
+            return true;
         }
-        public void RequestChangeMiddle(string stateName, bool sameChange = false)
+        public bool RequestChangeMiddle(string stateName, bool sameChange = false)
         {
             this.MiddleAIFsm.ChangeState(stateName, sameChange);
             ResetMiddleParam();
+            return true;
         }
+        
+        public string CurrentBaseState => BaseAIFsm.CurrentStateName;
+        public string CurrentMiddleState => MiddleAIFsm.CurrentStateName;
+
         public void ResetBaseParam()
         {
             PB_TargetPosition = Vector3.zero;
@@ -548,26 +540,6 @@ namespace FrameSyncBattle
             PM_TargetEntity = null;
             PM_MoveReachDistance = 0;
             PM_SkillId = null;
-        }
-    }
-    
-    
-    public class HState_Complex : FsUnitAIStateBase
-    {
-        public override void Enter(FsUnitAI content)
-        {
-            
-        }
-        public override void Update(FsUnitAI content, float deltaTime)
-        {
-            /*
-             * 1.按照索敌逻辑(仇恨距离等因素) 分配一次仇恨目标 并让M进入目标攻击逻辑AI
-             * 2.检查技能状态，并且检测技能AI前置，如果能释放技能则让M进入施法AI
-             */
-        }
-        public override void Exit(FsUnitAI content)
-        {
-            
         }
     }
 }

@@ -87,7 +87,9 @@ namespace FrameSyncBattle
                     ChangeFlowState(battle,SkillFlow.EndCast);
                     break;
                 case SkillFlow.EndCast:
-                    ChangeFlowState(battle,SkillFlow.Finish);
+                    //施法后摇1s 测试
+                    if(StateTimer >= 1f)
+                        ChangeFlowState(battle,SkillFlow.Finish);
                     break;
                 case SkillFlow.Finish:
                     break;

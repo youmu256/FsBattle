@@ -90,6 +90,7 @@ namespace FrameSyncBattle
 
         public virtual void Stop(FsBattleLogic battle)
         {
+            //TODO 需要考虑技能打断情况
             if (State == SkillFlow.None || State == SkillFlow.Finish) return;
             ChangeFlowState(battle,SkillFlow.None);
         }
@@ -125,7 +126,7 @@ namespace FrameSyncBattle
         /// 是否能启动技能命令
         /// </summary>
         /// <returns></returns>
-        public virtual bool IsReadyToCast()
+        public virtual bool IsReadyToStartCast()
         {
             if (Data.IsPassive) return false;
             return CheckCoolDown() && CheckResources() && Owner.StateFlags.HasAnyState(FsUnitStateFlag.Cast);
@@ -153,7 +154,7 @@ namespace FrameSyncBattle
         
         public virtual bool TryCastAuto(FsBattleLogic battle)
         {
-            if (IsReadyToCast() == false) return false;
+            if (IsReadyToStartCast() == false) return false;
             //auto set target
             
             return true;

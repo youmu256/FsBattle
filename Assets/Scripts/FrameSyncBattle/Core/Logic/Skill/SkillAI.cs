@@ -3,7 +3,12 @@ using System.Collections.Generic;
 
 namespace FrameSyncBattle
 {
-    public class SkillAICastHelper
+    public interface IAutoCasterAI
+    {
+        public SkillCastOrder TryCast(FsBattleLogic battleLogic, FsUnitLogic caster, SkillBase skill);
+    }
+    
+    public class SkillAICastHelper : IAutoCasterAI
     {
         protected SkillAITargetRx Rx { get; private set; }
         protected SkillAITarget Condition { get; private set; }
@@ -11,7 +16,7 @@ namespace FrameSyncBattle
 
         public SkillCastOrder TryCast(FsBattleLogic battleLogic, FsUnitLogic caster, SkillBase skill)
         {
-            if (skill.IsReadyToCast() == false) return null;
+            if (skill.IsReadyToStartCast() == false) return null;
             Caster = caster;
             Rx = skill.Data.AIRx;
             Condition = skill.Data.AITarget;

@@ -255,8 +255,12 @@ namespace FrameSyncBattle
         public bool IsPlayEnd { get; private set; }
         
         public Random RandomGen { get; private set; }
+        
+        public FsAutoBattleAI AutoBattleAI { get; private set; }
+        
         public void Init(int fps,int seed,FsBattleStartData startData)
         {
+            AutoBattleAI = new FsAutoBattleAI();
             EntityService = new FsEntityService(this);
             IsReplayMode = false;
             Fps = fps;

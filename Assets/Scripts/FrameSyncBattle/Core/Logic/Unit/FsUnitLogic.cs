@@ -68,9 +68,10 @@ namespace FrameSyncBattle
             MoveService.UpdateMoveSpeed(Property.Get(FsUnitPropertyType.MoveSpeed));
             if (team == FsBattleLogic.EnemyTeam)
             {
-                AI = new FsUnitAI(battle,this);
+                UnitAI = new FsUnitAI(battle,this);
+                GameAI = battle.AutoBattleAI;
             }
-
+            
             SkillHandler = new SkillHandler(this);
             SkillHandler.AddSkill(battle,new TestSkill(),TestSkill.GetTestData());
         }
@@ -91,20 +92,25 @@ namespace FrameSyncBattle
             else
             {
                 //AI SKILL ETC...
-                AI?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
+                UnitAI?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
+                GameAI?.ProcessUnitAI(battle,this);
                 MoveService.OnEntityFrame(battle, this, battle.FrameLength, cmd);
                 NormalAttack?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
                 SkillHandler.OnEntityFrame(battle, this, battle.FrameLength, cmd);
             }
         }
 
-        public FsUnitAI AI { get; private set; }
+        public FsAutoBattleAI GameAI { get; private set; }
+        public FsUnitAI UnitAI { get; private set; }
         public SkillHandler SkillHandler { get; private set; }
         public IAttackHandler NormalAttack{ get; private set; }
         public IMoveService MoveService { get; private set; }
 
         #region GetSomeThing
-        
+        public bool CanCast()
+        {
+            return SkillHandler!=null && StateFlags.HasAnyState(FsUnitStateFlag.Cast);
+        }
         public bool CanAttack()
         {
             return NormalAttack!=null && StateFlags.HasAnyState(FsUnitStateFlag.Attack);

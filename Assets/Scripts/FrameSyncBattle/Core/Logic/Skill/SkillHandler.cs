@@ -7,13 +7,13 @@ namespace FrameSyncBattle
     {
         protected FsLinkedList<SkillBase> SkillList = new();
 
-        public SkillAICastHelper AICastHelper = new SkillAICastHelper();
+        public IAutoCasterAI AutoCasterAI = new SkillAICastHelper();
 
         public SkillCastOrder AIAutoCastCheck(FsBattleLogic battleLogic)
         {
             foreach (var skillBase in SkillList)
             {
-                var order = AICastHelper.TryCast(battleLogic, Owner, skillBase);
+                var order = AutoCasterAI.TryCast(battleLogic, Owner, skillBase);
                 if (order!=null)
                     return order;
             }
