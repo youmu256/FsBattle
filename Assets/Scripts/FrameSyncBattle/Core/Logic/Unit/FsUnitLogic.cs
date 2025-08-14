@@ -87,17 +87,16 @@ namespace FrameSyncBattle
                 {
                     IsRemoved = true;
                     battle.RemoveEntity(this);
+                    return;
                 }
             }
-            else
-            {
-                //AI SKILL ETC...
-                UnitAI?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
-                GameAI?.ProcessUnitAI(battle,this);
-                MoveService.OnEntityFrame(battle, this, battle.FrameLength, cmd);
-                NormalAttack?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
-                SkillHandler.OnEntityFrame(battle, this, battle.FrameLength, cmd);
-            }
+
+            //AI SKILL ETC...
+            UnitAI?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
+            GameAI?.ProcessUnitAI(battle, this);
+            MoveService.OnEntityFrame(battle, this, battle.FrameLength, cmd);
+            NormalAttack?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
+            SkillHandler.OnEntityFrame(battle, this, battle.FrameLength, cmd);
         }
 
         public FsAutoBattleAI GameAI { get; private set; }

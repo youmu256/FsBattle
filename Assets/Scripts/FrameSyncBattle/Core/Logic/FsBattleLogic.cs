@@ -257,11 +257,16 @@ namespace FrameSyncBattle
         public Random RandomGen { get; private set; }
         
         public FsAutoBattleAI AutoBattleAI { get; private set; }
-        
-        public void Init(int fps,int seed,FsBattleStartData startData)
+
+        private void CommonInit()
         {
             AutoBattleAI = new FsAutoBattleAI();
             EntityService = new FsEntityService(this);
+        }
+        
+        public void Init(int fps,int seed,FsBattleStartData startData)
+        {
+            CommonInit();
             IsReplayMode = false;
             Fps = fps;
             RandomGen = new Random(seed);
@@ -273,7 +278,7 @@ namespace FrameSyncBattle
 
         public void InitByReplay(FsBattleReplay replay)
         {
-            EntityService = new FsEntityService(this);
+            CommonInit();
             IsReplayMode = true;
             this.Fps = replay.Fps;
             this.RandomGen = new Random(replay.Seed);

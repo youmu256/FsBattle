@@ -16,7 +16,7 @@ namespace FrameSyncBattle
             data.CoolDown = 5f;
             data.CostMp = 0;
             data.IsPassive = false;
-            data.SubType = SkillSubType.HeroBaseSkill;
+            data.SubType = SkillSubType.HeroAttackSkill;
             data.TargetType = SkillTargetType.Unit;
             data.AIRx = SkillAITargetRx.Enemy;
             data.AITarget = SkillAITarget.HpLow;

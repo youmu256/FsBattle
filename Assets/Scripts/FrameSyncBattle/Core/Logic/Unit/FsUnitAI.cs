@@ -200,7 +200,7 @@ namespace FrameSyncBattle
 
         public override void Update(FsUnitAI content, float deltaTime)
         {
-            if (content.Me.StateFlags.HasAnyState(FsUnitStateFlag.Attack) == false)
+            if (content.Me.CanAttack() == false)
             {
                 content.RequestChangeBase(AIBaseState.Idle);
                 return;
@@ -231,6 +231,12 @@ namespace FrameSyncBattle
         }
         public override void Update(FsUnitAI content, float deltaTime)
         {
+            if (content.Me.CanMove() == false)
+            {
+                content.RequestChangeBase(AIBaseState.Idle);
+                return;
+            }
+            
             var goal = TargetEntity?.Position ?? TargetPosition;
             var goalRadius = TargetEntity?.Radius ?? 0;
             var reachCheck = ReachDistance + goalRadius;
@@ -478,14 +484,11 @@ namespace FrameSyncBattle
             {
                 StartFlag = true;
             }
-            
+            //Any Transition
             if (entity.IsDead)
             {
+                MiddleAIFsm.ChangeState(AIMiddleState.Hold);//不单独搞Death状态了 都是空状态
                 BaseAIFsm.ChangeState(AIBaseState.Death);
-            }
-            else
-            {
-                //Order Process Or GameAI
             }
             MiddleAIFsm.UpdateFsm(battle.FrameLength);
             BaseAIFsm.UpdateFsm(battle.FrameLength);
@@ -505,7 +508,6 @@ namespace FrameSyncBattle
         public float PB_MoveReachDistance { get; set; }
         public FsUnitLogic PB_TargetEntity { get; set; }
         public Vector3 PB_TargetPosition { get; set; }
-
         public string PB_SkillId { get; set; }
         #endregion
 

@@ -8,8 +8,11 @@ namespace FrameSyncBattle
     public enum SkillSubType
     {
         Other,
-        HeroBaseSkill,
+        /**普通攻击*/
+        HeroAttackSkill,
+        /**大招*/
         HeroFinalSkill,
+        /**被动*/
         HeroPassiveSkill,
     }
 
@@ -54,13 +57,6 @@ namespace FrameSyncBattle
         Finish,
     }
 
-    public class SkillCastOrder
-    {
-        public string Id;
-        //public SkillTargetType Type;
-        public Vector3 CastPoint;
-        public FsUnitLogic CastTarget;
-    }
     
     
     public class SkillBase

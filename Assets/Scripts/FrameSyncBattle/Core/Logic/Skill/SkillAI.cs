@@ -1,11 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace FrameSyncBattle
 {
     public interface IAutoCasterAI
     {
         public SkillCastOrder TryCast(FsBattleLogic battleLogic, FsUnitLogic caster, SkillBase skill);
+    }
+    
+    public class SkillCastOrder
+    {
+        public string Id;
+        //public SkillTargetType Type;
+        public Vector3 CastPoint;
+        public FsUnitLogic CastTarget;
+
+        public SkillCastOrder(string id)
+        {
+            this.Id = id;
+        }
+        public SkillCastOrder(string id,Vector3 target)
+        {
+            this.Id = id;
+            this.CastPoint = target;
+        }
+        public SkillCastOrder(string id,FsUnitLogic target)
+        {
+            this.Id = id;
+            this.CastTarget = target;
+        }
     }
     
     public class SkillAICastHelper : IAutoCasterAI
@@ -25,7 +49,7 @@ namespace FrameSyncBattle
             var filteredUnits = new List<FsUnitLogic>();
             if (Rx == SkillAITargetRx.None || Condition == SkillAITarget.None)
             {
-                return new SkillCastOrder();
+                return new SkillCastOrder(skill.Id);
             }
 
             foreach (var unit in units)
@@ -90,11 +114,11 @@ namespace FrameSyncBattle
                 switch (skill.Data.TargetType)
                 {
                     case SkillTargetType.None:
-                        return new SkillCastOrder(){Id = skill.Id};
+                        return new SkillCastOrder(skill.Id);
                     case SkillTargetType.Point:
-                        return new SkillCastOrder(){Id = skill.Id,CastPoint = target.Position};
+                        return new SkillCastOrder(skill.Id,target.Position);
                     case SkillTargetType.Unit:
-                        return new SkillCastOrder(){Id = skill.Id,CastTarget = target};
+                        return new SkillCastOrder(skill.Id,target);
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
