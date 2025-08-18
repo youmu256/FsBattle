@@ -257,7 +257,7 @@ namespace FrameSyncBattle
         public FsUnitLogic Ownner;
         public IBuffSource OtherSource;
         
-        protected virtual bool IsNeedToRemove()
+        public bool IsNeedToRemove()
         {
             if (Timer >= LastTime || Ownner.IsDead) return true;
             return false;

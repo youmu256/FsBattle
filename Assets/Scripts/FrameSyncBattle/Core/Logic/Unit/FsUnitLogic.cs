@@ -71,7 +71,8 @@ namespace FrameSyncBattle
                 UnitAI = new FsUnitAI(battle,this);
                 GameAI = battle.AutoBattleAI;
             }
-            
+
+            BuffHandler = new BuffHandler(this);
             SkillHandler = new SkillHandler(this);
             SkillHandler.AddSkill(battle,new TestSkill(),TestSkill.GetTestData());
         }
@@ -96,12 +97,16 @@ namespace FrameSyncBattle
             GameAI?.ProcessUnitAI(battle, this);
             MoveService.OnEntityFrame(battle, this, battle.FrameLength, cmd);
             NormalAttack?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
+            BuffHandler.OnEntityFrame(battle, this, battle.FrameLength, cmd);
             SkillHandler.OnEntityFrame(battle, this, battle.FrameLength, cmd);
         }
 
         public FsAutoBattleAI GameAI { get; private set; }
         public FsUnitAI UnitAI { get; private set; }
         public SkillHandler SkillHandler { get; private set; }
+        
+        public BuffHandler BuffHandler { get; private set; }
+        
         public IAttackHandler NormalAttack{ get; private set; }
         public IMoveService MoveService { get; private set; }
 

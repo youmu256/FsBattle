@@ -15,7 +15,10 @@ namespace FrameSyncBattle
     {
         public static Buff Create(string templateId)
         {
-            return null;
+            if(templateId == "buff_stun")
+                return new Buff_Stun();
+            FsDebug.LogError($"not find matched template , id : {templateId}");
+            return new Buff();
         }
     }
 
@@ -101,10 +104,14 @@ namespace FrameSyncBattle
         public void OnEntityFrame(FsBattleLogic battle, FsUnitLogic entity, float deltaTime, FsCmd cmd)
         {
             var p = (battle, cmd);
-            BuffList.RefForEach(ref p, (logic, param) =>
+            BuffList.RefForEach(ref p, (buff, param) =>
             {
                 var (fsBattleLogic, fsCmd) = param;
-                logic.LogicFrame(fsBattleLogic, fsCmd);
+                buff.LogicFrame(fsBattleLogic, fsCmd);
+                if (buff.IsNeedToRemove())
+                {
+                    RemoveBuff(fsBattleLogic,buff);
+                }
             });
         }
     }

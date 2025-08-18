@@ -48,6 +48,7 @@ namespace FrameSyncBattle
                                 {
                                     FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(this.Owner,missileLogic.Target,1f);
                                     logic.ProcessDamage(damageInfo);
+                                    missileLogic.Target.BuffHandler.AddBuff(logic,this.Owner,null,missileLogic.Target,Buff_Stun.TestData(),1,1);
                                 }
                             }));
                     }

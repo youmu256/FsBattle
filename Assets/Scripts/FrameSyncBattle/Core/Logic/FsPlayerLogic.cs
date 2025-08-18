@@ -21,7 +21,7 @@ namespace FrameSyncBattle
             if (IsDead) return;
             int xInput = 0;
             int yInput = 0;
-            if (cmd != null)
+            if (cmd != null && this.CanMove())
             {
                 xInput += cmd.ButtonContains(FsButton.A) ? -1 : 0;
                 xInput += cmd.ButtonContains(FsButton.D) ? 1 : 0;
@@ -41,7 +41,7 @@ namespace FrameSyncBattle
             }
             
             //移动后再处理射击 让逻辑中的单位位置和发射位置对上
-            if (cmd != null && cmd.ButtonContains(FsButton.Fire))
+            if (cmd != null && cmd.ButtonContains(FsButton.Fire) && this.CanAttack())
             {
                 //一次逻辑帧时间可能也会发射多次子弹
                 while (battle.LogicTime >= NextFireTime)
