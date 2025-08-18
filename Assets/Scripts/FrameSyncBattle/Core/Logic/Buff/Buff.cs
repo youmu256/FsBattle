@@ -38,8 +38,33 @@ namespace FrameSyncBattle
         UseOldNewSmaller,
     }
     
-    public class DataCoverHelper
+    public struct BuffCoverOperate
     {
+        /// <summary>
+        /// 啥都不做，保留老的
+        /// </summary>
+        public static BuffCoverOperate IGNORE = new BuffCoverOperate() {buffCoverType = BuffCoverType.Ignore};
+        /// <summary>
+        /// 使用新BUFF，累加层数，时间使用新
+        /// </summary>
+        public static BuffCoverOperate New_CountC_TimeN = new BuffCoverOperate() {buffCoverType = BuffCoverType.UseNew,remainTimeCoverType = BuffTimeCoverType.UseNew,countCoverType = BuffCountCoverType.Combine};
+        /// <summary>
+        /// 使用老BUFF，累加层数，累加剩余时间与新时间
+        /// </summary>
+        public static BuffCoverOperate Old_CountC_TimeCRN = new BuffCoverOperate(){buffCoverType = BuffCoverType.UseOld,remainTimeCoverType = BuffTimeCoverType.CombineRemainNew,countCoverType = BuffCountCoverType.Combine};
+        /// <summary>
+        /// 使用老BUFF，累加层数，使用大的时间
+        /// </summary>
+        public static BuffCoverOperate Old_CountC_TimeBigger = new BuffCoverOperate(){buffCoverType = BuffCoverType.UseOld,remainTimeCoverType = BuffTimeCoverType.UseRemainNewBigger,countCoverType = BuffCountCoverType.Combine};
+
+        public BuffCountCoverType countCoverType;
+        public BuffTimeCoverType remainTimeCoverType;
+        public BuffCoverType buffCoverType;
+
+
+        #region Cover
+
+        
         public static int GetCountCoverValue(BuffCountCoverType coverType,int old, int v)
         {
             int ret;
@@ -65,7 +90,8 @@ namespace FrameSyncBattle
             }
             return ret;
         }
-        public static float GetTimeCoverValue(BuffTimeCoverType coverType,float old,float remain, float v)
+
+        private static float GetTimeCoverValue(BuffTimeCoverType coverType,float old,float remain, float v)
         {
             float ret;
             switch (coverType)
@@ -102,37 +128,16 @@ namespace FrameSyncBattle
             }
             return ret;
         }
-    }
-    public struct BuffCoverOperate
-    {
-        /// <summary>
-        /// 啥都不做，保留老的
-        /// </summary>
-        public static BuffCoverOperate IGNORE = new BuffCoverOperate() {buffCoverType = BuffCoverType.Ignore};
-        /// <summary>
-        /// 使用新BUFF，累加层数，时间使用新
-        /// </summary>
-        public static BuffCoverOperate New_CountC_TimeN = new BuffCoverOperate() {buffCoverType = BuffCoverType.UseNew,remainTimeCoverType = BuffTimeCoverType.UseNew,countCoverType = BuffCountCoverType.Combine};
-        /// <summary>
-        /// 使用老BUFF，累加层数，累加剩余时间与新时间
-        /// </summary>
-        public static BuffCoverOperate Old_CountC_TimeCRN = new BuffCoverOperate(){buffCoverType = BuffCoverType.UseOld,remainTimeCoverType = BuffTimeCoverType.CombineRemainNew,countCoverType = BuffCountCoverType.Combine};
-        /// <summary>
-        /// 使用老BUFF，累加层数，使用大的时间
-        /// </summary>
-        public static BuffCoverOperate Old_CountC_TimeBigger = new BuffCoverOperate(){buffCoverType = BuffCoverType.UseOld,remainTimeCoverType = BuffTimeCoverType.UseRemainNewBigger,countCoverType = BuffCountCoverType.Combine};
 
-        public BuffCountCoverType countCoverType;
-        public BuffTimeCoverType remainTimeCoverType;
-        public BuffCoverType buffCoverType;
-
+        #endregion
+        
         public int GetCoverCount(int old, int v)
         {
-            return DataCoverHelper.GetCountCoverValue(countCoverType, old, v);
+            return GetCountCoverValue(countCoverType, old, v);
         }
         public float GetCoverRemainTime(float old, float remain,float v)
         {
-            return DataCoverHelper.GetTimeCoverValue(remainTimeCoverType, old,remain,v );
+            return GetTimeCoverValue(remainTimeCoverType, old,remain,v );
         }
     }
 
@@ -182,8 +187,10 @@ namespace FrameSyncBattle
     
     public class BuffData
     {
-        public string BuffTypeKey = null;//key标记 buff类型 同一个buff代码可以当做多个buff效果，比如加速减速对应一个buff代码但是实际是2个buff。
-        public string TemplateKey = null;//buff模板key
+        /**代码模板Key*/
+        public string TemplateKey = null;
+        /**Buff实例类型Key 一个代码模板可以有多个变体类型实例*/
+        public string BuffTypeKey = null;
         public BuffCoverCheckType CoverCheckType = BuffCoverCheckType.Key;
         public int MaxCount = 1;
         //public int AddCount = 1;
@@ -233,32 +240,23 @@ namespace FrameSyncBattle
     public class Buff
     {
         public const int BuffPropertyLevel = 1;
-        public string TypeKey;//buffKey代表一个buff类型
-        public string RuntimeKey;//代表运行时的key值，用来检查冲突
-        //public string TemplateKey;//模板逻辑Key
-        public BuffCoverCheckType CoverCheckType;
-        public int Count;//层数
-        public int MaxCount;//最大层数
-        public float Timer;//添加时间
-        public float LastTime;//持续时间
-        public string BuffIcon;//buff关联的icon
-        public bool IsBenefit = false;//有益
+        
+        /**Buff实例类型*/
+        public string TypeKey { get; set; }
+        /**运行时身份Key用来检查冲突*/
+        public string RuntimeKey { get; set; }
+        public BuffCoverCheckType CoverCheckType { get; set; }
+        public int Count { get; set; }
+        public int MaxCount { get; set; }
+        public float Timer { get; set; }
+        public float LastTime { get; set; }
+        public string BuffIcon { get; set; }
+        public bool IsBenefit { get; set; }
 
         public FsUnitLogic Source;
         public FsUnitLogic Ownner;
         public IBuffSource OtherSource;
-        private bool toRemoveFlag = false;
-
-        public void MarkToRemove()
-        {
-            toRemoveFlag = true;
-        }
         
-        public bool GetToRemoveFlag()
-        {
-            return toRemoveFlag;
-        }
-
         protected virtual bool IsNeedToRemove()
         {
             if (Timer >= LastTime || Ownner.IsDead) return true;
@@ -272,22 +270,8 @@ namespace FrameSyncBattle
             return remain;
         }
         
-        public void InitData(BuffData data)
-        {
-            this.TypeKey = data.BuffTypeKey;
-            this.CoverCheckType = data.CoverCheckType;
-            this.MaxCount = data.MaxCount;
-            this.BuffIcon = data.BuffIcon;
-            this.IsBenefit = data.IsBenefit;
-            OnInitData(data);
-        }
 
-        protected virtual void OnInitData(BuffData data)
-        {
-            
-        }
-
-        public int GetValidCount(int cnt)
+        private int GetValidCount(int cnt)
         {
             if (cnt > this.MaxCount && MaxCount > 0)
             {
@@ -300,79 +284,109 @@ namespace FrameSyncBattle
             return cnt;
         }
 
-        public void Refresh(BuffData data,int changeCount){
-            this.Timer = 0;
-            int realAddCnt = 0;
-            if(changeCount !=0){
-                int oriCount = Count;
-                Count = GetValidCount(Count+ changeCount);
-                realAddCnt = Count - oriCount;
-            }
-            OnRefresh(data,realAddCnt);
-        }
-        public void OnRemove()
+        protected virtual void OnInitData(FsBattleLogic battle,BuffData data)
         {
-            OnDeAttach();
+            
         }
-
-        protected virtual void OnRefresh(BuffData data,int changeCnt)
+        
+        protected virtual void OnAttach(FsBattleLogic battle)
         {
             
         }
 
-        public virtual void OnAttach()
+        protected virtual void OnRefresh(FsBattleLogic battle,BuffData data,int changeCnt)
         {
             
         }
 
-        public virtual void OnDeAttach()
+        protected virtual void OnDeAttach(FsBattleLogic battle)
         {
             
         }
 
-        protected virtual void OnFrame(float deltaTime)
+        protected virtual void OnFrame(FsBattleLogic battle, float deltaTime)
         {
-            
+
         }
+
         public virtual BuffCoverOperate CoverCheck(FsUnitLogic source,FsUnitLogic target, BuffData data,AddBuffRequest request){
             //data是要用来创建新buff的data 如果要比较来选择返回结果的话，对data进行比较
             return BuffCoverOperate.New_CountC_TimeN;
         }
-        public void Frame(float deltaTime)
+
+        public void LogicFrame(FsBattleLogic battle, FsCmd cmd)
         {
-            OnFrame(deltaTime);
-            if (GetToRemoveFlag() == false && IsNeedToRemove())
-            {
-                MarkToRemove();
-            }
+            var deltaTime = battle.FrameLength;
+            OnFrame(battle, deltaTime);
             Timer += deltaTime;
         }
 
-        public void SetFirstAttach(string buffKey,IBuffSource other,FsUnitLogic source,FsUnitLogic target,BuffData data,int count,float lastTime)
+
+        /// <summary>
+        /// 初始化应用data相关数据
+        /// </summary>
+        /// <param name="battle"></param>
+        /// <param name="data"></param>
+        private void InitData(FsBattleLogic battle,BuffData data)
+        {
+            this.TypeKey = data.BuffTypeKey;
+            this.CoverCheckType = data.CoverCheckType;
+            this.MaxCount = data.MaxCount;
+            this.BuffIcon = data.BuffIcon;
+            this.IsBenefit = data.IsBenefit;
+            OnInitData(battle,data);
+        }
+
+        /// <summary>
+        /// Buff冲突不为忽略切保留旧Buff时 一般关注层数的变化
+        /// Buff计时器会重置
+        /// </summary>
+        /// <param name="battle"></param>
+        /// <param name="data"></param>
+        /// <param name="changeCount"></param>
+        public void Refresh(FsBattleLogic battle, BuffData data, int changeCount)
+        {
+            this.Timer = 0;
+            int realAddCnt = 0;
+            if (changeCount != 0)
+            {
+                int oriCount = Count;
+                Count = GetValidCount(Count + changeCount);
+                realAddCnt = Count - oriCount;
+            }
+
+            OnRefresh(battle, data, realAddCnt);
+        }
+
+        /// <summary>
+        /// Buff对象被附加时
+        /// </summary>
+        /// <param name="battle"></param>
+        /// <param name="buffKey"></param>
+        /// <param name="other"></param>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <param name="data"></param>
+        /// <param name="count"></param>
+        /// <param name="lastTime"></param>
+        public void SetAttach(FsBattleLogic battle,string buffKey,IBuffSource other,FsUnitLogic source,FsUnitLogic target,BuffData data,int count,float lastTime)
         {
             this.RuntimeKey = buffKey;
-            InitData(data);
-            this.OtherSource = other;
-            SetAttach(source,target,data,count,lastTime);
-        }
-        public void SetAttach(FsUnitLogic source,FsUnitLogic target,BuffData data,int count,float lastTime)
-        {
+            InitData(battle,data);
             this.Count = count;
             this.Source = source;
+            this.OtherSource = other;
             this.Ownner = target;
             this.Timer = 0;
             this.LastTime = lastTime;
-            OnAttach();
+            OnAttach(battle);
         }
         
-        public void SetReAttach(FsUnitLogic source,FsUnitLogic target,BuffData data,int count,float lastTime)
-        {
-            SetDeAttach();
-            int cnt = GetValidCount(count);
-            SetAttach(source,target,data,cnt,lastTime);
-        }
-        public void SetDeAttach(){
-            OnDeAttach();
+        /// <summary>
+        /// Buff被去除附加时
+        /// </summary>
+        public void SetDeAttach(FsBattleLogic battle){
+            OnDeAttach(battle);
         }
 
         #region RuntimeKey
@@ -417,7 +431,7 @@ namespace FrameSyncBattle
         {
             string sourceId = source != null ? source.Id.ToString() : "n";
             string otherKey = other != null ? other.GetPartBuffKey() : "n";
-            return BuildRuntimeKey(typeKey, sourceId + "", otherKey);
+            return BuildRuntimeKey(typeKey, sourceId, otherKey);
         }
         private static string BuildRuntimeKey(string typeKey, string sourceKey, string other){
             StringBuilder sb = new StringBuilder();

@@ -40,7 +40,7 @@ namespace FrameSyncBattle
         }
         
         protected FsUnitStateFlag StatesCache = 0;
-        public void Modify(FsUnitStateFlag states, bool addState)
+        public void Modify(FsUnitStateFlag states, bool change)
         {
             int index = 0;
             long it = (long) states;
@@ -49,7 +49,7 @@ namespace FrameSyncBattle
                 if ((it & 1) == 1)
                 {
                     long sub = 1 << index;
-                    ModifySingle((FsUnitStateFlag)sub, addState);
+                    ModifySingle((FsUnitStateFlag)sub, change);
                 }
                 it >>= 1;
                 index++;

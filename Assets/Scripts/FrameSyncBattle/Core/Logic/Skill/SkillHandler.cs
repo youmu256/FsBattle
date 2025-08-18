@@ -68,7 +68,13 @@ namespace FrameSyncBattle
 
         public void OnEntityFrame(FsBattleLogic battle, FsUnitLogic entity, float deltaTime, FsCmd cmd)
         {
-            SkillList.ForEach((skill => { skill.LogicFrame(battle, cmd); }));
+            var p = (battle, cmd);
+            SkillList.RefForEach(ref p, (logic, param) =>
+            {
+                var (fsBattleLogic, fsCmd) = param;
+                logic.LogicFrame(fsBattleLogic,fsCmd);
+            });
+            //SkillList.ForEach((skill => { skill.LogicFrame(battle, cmd); }));
         }
     }
 }

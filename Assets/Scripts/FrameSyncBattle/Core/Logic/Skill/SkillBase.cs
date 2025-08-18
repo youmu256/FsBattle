@@ -177,7 +177,7 @@ namespace FrameSyncBattle
         #endregion
         
         public float StateTimer { get; protected set; }
-        public virtual void LogicFrame(FsBattleLogic battle, FsCmd cmd)
+        public void LogicFrame(FsBattleLogic battle, FsCmd cmd)
         {
             //running cool down
             if (CoolDownTimer > 0)
