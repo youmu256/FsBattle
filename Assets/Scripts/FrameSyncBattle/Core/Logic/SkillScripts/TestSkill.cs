@@ -41,16 +41,7 @@ namespace FrameSyncBattle
                     for (int i = 0; i < 5; i++)
                     {
                         var lockMissile = battle.AddEntity<FsMissileLogic>(this.Owner.Team,"missile",new FsEntityInitData(){Euler = this.Owner.Euler,Position = start});
-                        lockMissile.SetBase("cube", 10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(null, (
-                            (logic, missileLogic, valid) =>
-                            {
-                                if (valid)
-                                {
-                                    FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(this.Owner,missileLogic.Target,1f);
-                                    logic.ProcessDamage(damageInfo);
-                                    missileLogic.Target.BuffHandler.AddBuff(logic,this.Owner,null,missileLogic.Target,Buff_Stun.TestData(),1,1);
-                                }
-                            }));
+                        lockMissile.SetBase("cube", 10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(Owner,null, MissileCallback);
                     }
                     break;
                 case SkillFlow.Affecting:
@@ -63,6 +54,16 @@ namespace FrameSyncBattle
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private static void MissileCallback(FsBattleLogic logic, FsMissileLogic missileLogic, bool valid)
+        {
+            if (valid)
+            {
+                FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(missileLogic.Source,missileLogic.Target,1f);
+                logic.ProcessDamage(damageInfo);
+                missileLogic.Target.BuffHandler.AddBuff(logic,missileLogic.Source,null,missileLogic.Target,Buff_Stun.TestData(),1,1);
             }
         }
 

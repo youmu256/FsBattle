@@ -90,12 +90,12 @@ namespace FrameSyncBattle
             if (targets.Count <= 0) return;
             var target = targets[battle.RandomGen.Next(targets.Count)];
             var lockMissile = battle.AddEntity<FsMissileLogic>(this.Team,"missile",new FsEntityInitData(){Euler = this.Euler,Position = start});
-            lockMissile.SetBase("cube", 10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(null, (
+            lockMissile.SetBase("cube", 10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(this,null, (
                 (logic, missileLogic, valid) =>
                 {
                     if (valid)
                     {
-                        FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(this,missileLogic.Target,1f);
+                        FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(missileLogic.Source,missileLogic.Target,1f);
                         logic.ProcessDamage(damageInfo);
                     }
                 }));

@@ -23,13 +23,11 @@
         {
             base.OnAttach(battle);
             Ownner.StateFlags.Modify(FsUnitStateFlag.Attack|FsUnitStateFlag.Move|FsUnitStateFlag.Cast,false);
-            FsDebug.Log("stun_attach");
         }
         protected override void OnDeAttach(FsBattleLogic battle)
         {
             base.OnDeAttach(battle);
             Ownner.StateFlags.Modify(FsUnitStateFlag.Attack|FsUnitStateFlag.Move|FsUnitStateFlag.Cast,true);
-            FsDebug.Log("stun_de_attach");
         }
     }
 }

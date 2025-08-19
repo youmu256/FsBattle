@@ -10,8 +10,8 @@ namespace FrameSyncBattle
     {
         public Dictionary<Type, Type> ViewMap = new()
         {
-            {typeof(FsPlayerLogic), typeof(FsUnitView)},
-            {typeof(FsUnitLogic), typeof(FsUnitView)},
+            {typeof(FsPlayerLogic), typeof(FsEntityView)},
+            {typeof(FsUnitLogic), typeof(FsEntityView)},
             {typeof(FsBulletLogic), typeof(FsEntityView)},
             {typeof(FsMissileLogic), typeof(FsEntityView)},
         };
@@ -38,6 +38,7 @@ namespace FrameSyncBattle
 
     /// <summary>
     /// Entity显示层基础类
+    /// 包含位置 旋转 动画展示
     /// </summary>
     public class FsEntityView : MonoBehaviour,IFsEntityView
     {

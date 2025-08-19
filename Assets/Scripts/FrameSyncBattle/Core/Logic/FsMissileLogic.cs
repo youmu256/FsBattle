@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace FrameSyncBattle
 {
+    /// <summary>
+    /// 弹道对象 实现跟踪目标打击
+    /// </summary>
     public class FsMissileLogic : FsEntityLogic
     {
 
@@ -14,14 +17,16 @@ namespace FrameSyncBattle
 
 
         public string MissileModel;
+
+        public FsUnitLogic Source;//来源 可能为空
         
-        public FsUnitLogic Target;
+        public FsUnitLogic Target;//目标 可能为空
 
-        public Vector3 StartPosition;
+        public Vector3 StartPosition;//起点
 
-        public Vector3 TargetPosition;
+        public Vector3 TargetPosition;//目标位置
 
-        public bool LockTarget;
+        public bool LockTarget;//是否锁定
         
         public float LockAngle;//超过锁定角度会导致锁定无效
 
@@ -29,11 +34,11 @@ namespace FrameSyncBattle
 
         public float UnLockKeepTime;//锁定失败后剩余时间
         
-        public float Speed;
+        public float Speed;//飞行速度
 
-        public float Arc;
+        public float Arc;//高度比率决定曲线
         
-        public float SideSpin;
+        public float SideSpin;//侧旋角度
         
         //runtime var
         public float ArcHeight { get; private set; }
@@ -56,6 +61,12 @@ namespace FrameSyncBattle
             return this;
         }
         
+        public FsMissileLogic Fire(FsUnitLogic source,object bindData,Action<FsBattleLogic,FsMissileLogic,bool> callback)
+        {
+            Source = source;
+            return Fire(bindData,callback);
+        }
+
         public FsMissileLogic Fire(object bindData,Action<FsBattleLogic,FsMissileLogic,bool> callback)
         {
             BindData = bindData;

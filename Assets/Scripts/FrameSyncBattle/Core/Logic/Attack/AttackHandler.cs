@@ -159,8 +159,7 @@ namespace FrameSyncBattle
         {
             var target = missileObject.Target;
             var position = missileObject.MissileResultPosition;
-            var data = missileObject.BindData as AttackTempData;
-            if (data == null) return;
+            if (!(missileObject.BindData is AttackTempData data)) return;
             DoAttackDamage(battle,0,data,position,target);
         }
         
@@ -293,7 +292,7 @@ namespace FrameSyncBattle
                         var missile = battle.AddEntity<FsMissileLogic>(Owner.Team,"missile",new FsEntityInitData(){Euler = Owner.Euler,Position = start});
                         missile.SetBase(attack.AttackModel,attack.AttackFlySpeed,attack.AttackFlyArc, attack.AttackFlySideSpin)
                             .AimTarget(start,CurrentTarget,attack.LockTarget)
-                            .Fire(bindData,OnAttackObjectEnd);
+                            .Fire(Owner,bindData,OnAttackObjectEnd);
                         
                     }
                 }
