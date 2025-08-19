@@ -258,8 +258,12 @@ namespace FrameSyncBattle
         
         public FsAutoBattleAI AutoBattleAI { get; private set; }
 
+        public FsBattleDataTypeFactory DataTypeFactory { get; private set; }
+        
         private void CommonInit()
         {
+            DataTypeFactory = new FsBattleDataTypeFactory();
+            DataTypeFactory.Init(this);
             AutoBattleAI = new FsAutoBattleAI();
             EntityService = new FsEntityService(this);
         }

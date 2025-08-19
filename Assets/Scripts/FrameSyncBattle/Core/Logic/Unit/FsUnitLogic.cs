@@ -74,7 +74,7 @@ namespace FrameSyncBattle
 
             BuffHandler = new BuffHandler(this);
             SkillHandler = new SkillHandler(this);
-            SkillHandler.AddSkill(battle,new TestSkill(),TestSkill.GetTestData());
+            SkillHandler.AddSkill(battle,"test1");
         }
 
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)

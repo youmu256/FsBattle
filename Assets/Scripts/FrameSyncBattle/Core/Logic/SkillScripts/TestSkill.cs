@@ -5,7 +5,7 @@ namespace FrameSyncBattle
     public class TestSkill : SkillBase
     {
 
-        public static SkillData GetTestData()
+        public static SkillData TestData()
         {
             var data =  new SkillData();
             data.Id = "test1";
@@ -63,7 +63,7 @@ namespace FrameSyncBattle
             {
                 FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(missileLogic.Source,missileLogic.Target,1f);
                 logic.ProcessDamage(damageInfo);
-                missileLogic.Target.BuffHandler.AddBuff(logic,missileLogic.Source,null,missileLogic.Target,Buff_Stun.TestData(),1,1);
+                missileLogic.Target.BuffHandler.AddBuff(logic,missileLogic.Source,null,missileLogic.Target,"stun",1,1);
             }
         }
 

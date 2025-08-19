@@ -185,64 +185,12 @@ namespace FrameSyncBattle
     }
 
     
-    public class BuffData
-    {
-        /**代码模板Key*/
-        public string TemplateKey = null;
-        /**Buff实例类型Key 一个代码模板可以有多个变体类型实例*/
-        public string BuffTypeKey = null;
-        public BuffCoverCheckType CoverCheckType = BuffCoverCheckType.Key;
-        public int MaxCount = 1;
-        //public int AddCount = 1;
-        public string BuffIcon;//关联的icon
-        public bool IsBenefit = false;//是否有益
-        protected Dictionary<string,string> CustomParamMap = new Dictionary<string,string>();//额外数据
-        
-        
-        public BuffData SetValue(string k, int v){
-            CustomParamMap.Add(k,""+v);
-            return this;
-        }
-        public BuffData SetValue(string k, float v){
-            CustomParamMap.Add(k,""+v);
-            return this;
-        }
-        public BuffData SetValue(string k, bool v){
-            CustomParamMap.Add(k,""+v);
-            return this;
-        }
-        public BuffData SetValue(string k, string v){
-            CustomParamMap.Add(k,v);
-            return this;
-        }
-        public int GetInt(string k){
-            if(!CustomParamMap.ContainsKey(k))return 0;
-            string v = CustomParamMap[k];
-            return int.Parse(v);
-        }
-        public float GetFloat(string k){
-            if(!CustomParamMap.ContainsKey(k))return 0;
-            string v = CustomParamMap[k];
-            return float.Parse(v);
-        }
-        public bool GetBoolean(string k){
-            if(!CustomParamMap.ContainsKey(k))return false;
-            string v = CustomParamMap[k];
-            return bool.Parse(v);
-        }
-        public string GetString(string k){
-            if(!CustomParamMap.ContainsKey(k))return null;
-            string v = CustomParamMap[k];
-            return v;
-        }
-    }
-    
-    public class Buff
+    public class BuffBase
     {
         public const int BuffPropertyLevel = 1;
         
         /**Buff实例类型*/
-        public string TypeKey { get; set; }
+        public string Id { get; set; }
         /**运行时身份Key用来检查冲突*/
         public string RuntimeKey { get; set; }
         public BuffCoverCheckType CoverCheckType { get; set; }
@@ -251,7 +199,7 @@ namespace FrameSyncBattle
         public float Timer { get; set; }
         public float LastTime { get; set; }
         public string BuffIcon { get; set; }
-        public bool IsBenefit { get; set; }
+        public BuffFlagTags FlagTags { get; set; }
 
         public FsUnitLogic Source;
         public FsUnitLogic Ownner;
@@ -329,11 +277,11 @@ namespace FrameSyncBattle
         /// <param name="data"></param>
         private void InitData(FsBattleLogic battle,BuffData data)
         {
-            this.TypeKey = data.BuffTypeKey;
+            this.Id = data.Id;
             this.CoverCheckType = data.CoverCheckType;
             this.MaxCount = data.MaxCount;
             this.BuffIcon = data.BuffIcon;
-            this.IsBenefit = data.IsBenefit;
+            this.FlagTags = data.FlagTags;
             OnInitData(battle,data);
         }
 
@@ -394,25 +342,25 @@ namespace FrameSyncBattle
         public static string GetBuffRuntimeKey(AddBuffRequest request){
             switch (request.Data.CoverCheckType){
                 case BuffCoverCheckType.Key:
-                    return GetBuffRuntimeKey(request.Data.BuffTypeKey,null,null);
+                    return GetBuffRuntimeKey(request.Data.Id,null,null);
                 case BuffCoverCheckType.Key_Source:
-                    return GetBuffRuntimeKey(request.Data.BuffTypeKey, request.Source, null);
+                    return GetBuffRuntimeKey(request.Data.Id, request.Source, null);
                 case BuffCoverCheckType.Key_Source_Other:
-                    return GetBuffRuntimeKey(request.Data.BuffTypeKey, request.Source, request.OtherSource);
+                    return GetBuffRuntimeKey(request.Data.Id, request.Source, request.OtherSource);
                 case BuffCoverCheckType.Independent:
                     break;
             }
             return null;
         }
         
-        public static string GetBuffRuntimeKey(Buff buff){
-            switch (buff.CoverCheckType){
+        public static string GetBuffRuntimeKey(BuffBase buffBase){
+            switch (buffBase.CoverCheckType){
                 case BuffCoverCheckType.Key:
-                    return GetBuffRuntimeKey(buff.TypeKey,null,null);
+                    return GetBuffRuntimeKey(buffBase.Id,null,null);
                 case BuffCoverCheckType.Key_Source:
-                    return GetBuffRuntimeKey(buff.TypeKey, buff.Source, null);
+                    return GetBuffRuntimeKey(buffBase.Id, buffBase.Source, null);
                 case BuffCoverCheckType.Key_Source_Other:
-                    return GetBuffRuntimeKey(buff.TypeKey, buff.Source, buff.OtherSource);
+                    return GetBuffRuntimeKey(buffBase.Id, buffBase.Source, buffBase.OtherSource);
                 case BuffCoverCheckType.Independent:
                     break;
             }

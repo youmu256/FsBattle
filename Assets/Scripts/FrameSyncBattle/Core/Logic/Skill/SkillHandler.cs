@@ -21,11 +21,13 @@ namespace FrameSyncBattle
         }
         
 
-        public void AddSkill(FsBattleLogic battleLogic, SkillBase skill,SkillData data)
+        public void AddSkill(FsBattleLogic battle, string key)
         {
+            var data = battle.DataTypeFactory.GetSkillData(key);
+            var skill = battle.DataTypeFactory.CreateSkill(data);
             SkillList.Add(skill);
-            skill.OnInit(battleLogic,this,data);
-            skill.OnAdd(battleLogic);
+            skill.OnInit(battle,this,data);
+            skill.OnAdd(battle);
         }
 
         public void RemoveSkill(FsBattleLogic battleLogic, SkillBase skill)

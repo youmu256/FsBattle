@@ -1,13 +1,13 @@
 ﻿namespace FrameSyncBattle
 {
-    public class Buff_Stun : Buff
+    public class Buff_Stun : BuffBase
     {
         public static BuffData TestData()
         {
             var data = new BuffData();
-            data.IsBenefit = false;
+            data.FlagTags = BuffFlagTags.IsBad;
             data.TemplateKey = "buff_stun";
-            data.BuffTypeKey = "common_stun";
+            data.Id = "stun";
             data.MaxCount = 1;
             data.BuffIcon = "stun_icon";
             data.CoverCheckType = BuffCoverCheckType.Key;

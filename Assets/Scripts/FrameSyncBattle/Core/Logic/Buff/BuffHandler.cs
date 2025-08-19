@@ -4,28 +4,10 @@ using System.Collections.Generic;
 namespace FrameSyncBattle
 {
 
-    public struct BuffAddData
-    {
-        public string TemplateId;
-        public int AddCount;
-        public float Duration;
-    }
-
-    public class BuffFactory
-    {
-        public static Buff Create(string templateId)
-        {
-            if(templateId == "buff_stun")
-                return new Buff_Stun();
-            FsDebug.LogError($"not find matched template , id : {templateId}");
-            return new Buff();
-        }
-    }
-
     public class BuffHandler : IFsEntityFrame
     {
-        protected FsLinkedList<Buff> BuffList = new();
-        protected Dictionary<string, Buff> BuffCacheMap = new();
+        protected FsLinkedList<BuffBase> BuffList = new();
+        protected Dictionary<string, BuffBase> BuffCacheMap = new();
         public FsUnitLogic Owner { get; private set; }
 
         public BuffHandler(FsUnitLogic owner)
@@ -38,23 +20,23 @@ namespace FrameSyncBattle
             FsUnitLogic source = request.Source;
             FsUnitLogic target = request.Target;
             BuffData data = request.Data;
-            string buffRuntimeKey = Buff.GetBuffRuntimeKey(request);
+            string buffRuntimeKey = BuffBase.GetBuffRuntimeKey(request);
             if (BuffCacheMap.ContainsKey(buffRuntimeKey))
             {
-                Buff buff = BuffCacheMap[buffRuntimeKey];
-                BuffCoverOperate operate = buff.CoverCheck(source, target, data, request);
+                BuffBase buffBase = BuffCacheMap[buffRuntimeKey];
+                BuffCoverOperate operate = buffBase.CoverCheck(source, target, data, request);
                 if (operate.buffCoverType == BuffCoverType.Ignore)
                     return;
-                int count = operate.GetCoverCount(buff.Count, request.AddCount);
-                var lastTime = operate.GetCoverRemainTime(buff.LastTime, buff.GetRemainTime(), request.LastTime);
+                int count = operate.GetCoverCount(buffBase.Count, request.AddCount);
+                var lastTime = operate.GetCoverRemainTime(buffBase.LastTime, buffBase.GetRemainTime(), request.LastTime);
                 switch (operate.buffCoverType)
                 {
                     case BuffCoverType.UseOld:
-                        buff.LastTime = lastTime;
-                        buff.Refresh(battle, data, count - buff.Count);
+                        buffBase.LastTime = lastTime;
+                        buffBase.Refresh(battle, data, count - buffBase.Count);
                         break;
                     case BuffCoverType.UseNew:
-                        RemoveBuff(battle,buff);
+                        RemoveBuff(battle,buffBase);
                         RealAddBuff(battle, buffRuntimeKey, request.OtherSource, source, target, data, count, lastTime);
                         break;
                     default:
@@ -69,24 +51,28 @@ namespace FrameSyncBattle
             }
         }
 
-        public void RemoveBuff(FsBattleLogic battle,Buff buff)
+        public void RemoveBuff(FsBattleLogic battle,BuffBase buffBase)
         {
-            var r = BuffList.Remove(buff);
+            var r = BuffList.Remove(buffBase);
             if (!r) return;
-            BuffCacheMap.Remove(buff.RuntimeKey);
-            buff.SetDeAttach(battle);
+            BuffCacheMap.Remove(buffBase.RuntimeKey);
+            buffBase.SetDeAttach(battle);
         }
 
-        protected Buff RealAddBuff(FsBattleLogic battle, string buffRuntimeKey,
+        protected BuffBase RealAddBuff(FsBattleLogic battle, string buffRuntimeKey,
             IBuffSource other, FsUnitLogic source, FsUnitLogic target, BuffData data, int count, float lastTime)
         {
-            var buff = BuffFactory.Create(data.TemplateKey);
+            var buff = battle.DataTypeFactory.CreateBuff(data);
             buff.SetAttach(battle, buffRuntimeKey, other, source, target, data, count, lastTime);
             BuffCacheMap.Add(buffRuntimeKey, buff);
             BuffList.Add(buff);
             return buff;
         }
-
+        public void AddBuff(FsBattleLogic battle, FsUnitLogic source, IBuffSource other, FsUnitLogic target,
+            string id, int count, float lastTime)
+        {
+            AddBuff(battle,source,other,target,battle.DataTypeFactory.GetBuffData(id),count,lastTime);
+        }
         public void AddBuff(FsBattleLogic battle, FsUnitLogic source, IBuffSource other, FsUnitLogic target,
             BuffData data, int count, float lastTime)
         {
