@@ -155,10 +155,12 @@ namespace FrameSyncBattle
         public void PlayAnimation(PlayAnimParam animParam)
         {
             if (Model == null) return;
+            /*
             if (Logic.Team == FsBattleLogic.EnemyTeam)
             {
                 Debug.Log($"{this.name} : play {animParam.Animation} with speed {animParam.Speed}");
             }
+            */
             Model.PlayAnimation(animParam);
         }
 

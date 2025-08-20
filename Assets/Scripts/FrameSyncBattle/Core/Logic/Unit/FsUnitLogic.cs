@@ -39,30 +39,12 @@ namespace FrameSyncBattle
             base.Init(battle, team, entityTypeId, initData);
             InitStatus(Data.PropertyInitData);
             //--attack
-            NormalAttack = new NormalAttackHandler(this, Data.PropertyInitData.BaseAttackInterval,new AttackConfig[]
+            if (Data.AttackDataId != null)
             {
-                new AttackConfig()
-                {
-                    Anim = AnimationConstant.Attack,
-                    AnimSuffix = null,
-                    AnimTime = 1f,
-                    NoFade = false,
-                    HitDatas = new []{new AttackHitData()
-                    {
-                        HitTime = 0.1f,
-                        AttackFireOffset = Vector3.up,
-                        AttackFlyArc = 0.5f,
-                        AttackFlySideSpin = 0,
-                        AttackFlySpeed = 10,
-                        AttackModel = "cube",
-                        DamagePct = 1f,
-                        DamageRange = 10f,
-                        IsMelee = false,
-                        LockTarget = true,
-                        MeleeHitFx = null,
-                    }},
-                }
-            });
+                var unitAttackData = battle.DataTypeFactory.GetAttackData(Data.AttackDataId);
+                if(unitAttackData!=null)
+                    NormalAttack = new NormalAttackHandler(this, Data.PropertyInitData.AttackInterval,unitAttackData);
+            }
             //--move
             MoveService = new FsSimpleMoveService(this);
             MoveService.UpdateMoveSpeed(Property.Get(FsUnitPropertyType.MoveSpeed));
@@ -74,7 +56,15 @@ namespace FrameSyncBattle
 
             BuffHandler = new BuffHandler(this);
             SkillHandler = new SkillHandler(this);
-            SkillHandler.AddSkill(battle,"test1");
+
+            //添加初始技能
+            if (Data.InitSkills != null)
+            {
+                foreach (var skillId in Data.InitSkills)
+                {
+                    SkillHandler.AddSkill(battle,skillId);
+                }
+            }
         }
 
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)

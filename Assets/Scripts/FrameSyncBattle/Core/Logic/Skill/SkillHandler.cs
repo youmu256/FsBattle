@@ -7,7 +7,7 @@ namespace FrameSyncBattle
     {
         protected FsLinkedList<SkillBase> SkillList = new();
 
-        public IAutoCasterAI AutoCasterAI = new SkillAICastHelper();
+        public IAutoCasterAI AutoCasterAI = new SkillAutoCastAI();
 
         public SkillCastOrder AIAutoCastCheck(FsBattleLogic battleLogic)
         {

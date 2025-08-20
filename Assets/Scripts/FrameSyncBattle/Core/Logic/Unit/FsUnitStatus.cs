@@ -18,6 +18,8 @@ namespace FrameSyncBattle
             Property.SetPropertyBase(FsUnitPropertyType.HpMax,basic.HpMax);
             Property.SetPropertyBase(FsUnitPropertyType.MpMax,basic.MpMax);
             Property.SetPropertyBase(FsUnitPropertyType.Attack,basic.Attack);
+            Property.SetPropertyBase(FsUnitPropertyType.CriticalPct,basic.CriticalPct);
+            Property.SetPropertyBase(FsUnitPropertyType.CriticalBonus,basic.CriticalBonus);
             Property.SetPropertyBase(FsUnitPropertyType.AttackSpdPct,100);
             Property.SetPropertyBase(FsUnitPropertyType.AttackRange,basic.AttackRange);
             Property.SetPropertyBase(FsUnitPropertyType.Defend,basic.Defend);

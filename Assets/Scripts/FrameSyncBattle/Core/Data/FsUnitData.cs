@@ -17,6 +17,8 @@ namespace FrameSyncBattle
     
     public class FsUnitInitData : FsEntityInitData
     {
+        public string AttackDataId;
+        public string[] InitSkills;
         public FsUnitPropertyInitData PropertyInitData;
     }
     

@@ -91,8 +91,10 @@ namespace FrameSyncBattle
             HpMax = 100,
             MpMax = 100,
             Attack = 1,
+            CriticalPct = 15,
+            CriticalBonus = 150,
             AttackRange = 10,
-            BaseAttackInterval = 0.1f,
+            AttackInterval = 0.1f,
             Defend = 0,
             MoveSpeed = 5,
         };
@@ -101,8 +103,10 @@ namespace FrameSyncBattle
             HpMax = 10,
             MpMax = 10,
             Attack = 1,
+            CriticalPct = 15,
+            CriticalBonus = 150,
             AttackRange = 5,
-            BaseAttackInterval = 1f,
+            AttackInterval = 1f,
             Defend = 0,
             MoveSpeed = 2,
         };
@@ -117,13 +121,13 @@ namespace FrameSyncBattle
             {
                 TypeId = "player",
                 UnitInitData = new FsUnitInitData()
-                    {PropertyInitData = TestPlayerData, Euler = Vector3.zero, Position = Vector3.zero}
+                    {PropertyInitData = TestPlayerData, Euler = Vector3.zero, Position = Vector3.zero,AttackDataId = "test_attack"}
             });
             startData.EnemyTeamUnits.Add(new FsBattleStartUnitData()
             {
                 TypeId = "enemy",
                 UnitInitData = new FsUnitInitData()
-                    {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward}
+                    {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new []{"test1"},AttackDataId = "test_attack"}
             });
             Battle.Init(LogicFps, 0, startData);
         }

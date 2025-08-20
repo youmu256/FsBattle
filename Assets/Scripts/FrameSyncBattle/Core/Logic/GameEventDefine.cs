@@ -11,7 +11,7 @@
     {
         public FsUnitLogic Source;
         public FsUnitLogic Target;
-        public AttackConfig OriginAttack;
+        public AttackData OriginAttack;
         public override void Reset()
         {
             Source = null;

@@ -202,22 +202,6 @@ namespace FrameSyncBattle
             return sb.ToString();
         }
     }
-    public partial class FsBattleLogic
-    {
-        /// <summary>
-        /// 处理伤害
-        /// </summary>
-        /// <param name="info"></param>
-        public void ProcessDamage(FsDamageInfo info)
-        {
-            if (info.Target == null || info.Target.IsDead) return;
-            //角色身上的技能&Buff需要响应受伤事件
-            
-            //按照游戏公式等修正伤害
-            info.Target.HpCurrent -= info.Damage;
-            info.Target.OnDamagedPost(this,info);
-        }
-    }
     
     public partial class FsBattleLogic
     {

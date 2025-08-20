@@ -19,7 +19,7 @@ namespace FrameSyncBattle
 
     public class AttackTempData
     {
-        public AttackConfig Attack;
+        public AttackData AttackData;
         public int AttackHitIndex;
         public int AttackId;
     }
@@ -28,7 +28,7 @@ namespace FrameSyncBattle
         float GetAttackRangeBuffer();
         AttackFlowState GetCurrentState();
         bool AttackReady(bool ignoreBackSwing);
-        int CommitOverrideAttack(AttackConfig attackConfig, int priority);
+        int CommitOverrideAttack(AttackData attackData, int priority);
         void AttackTarget(FsUnitLogic target);
         /// <summary>
         /// 打断攻击流程
@@ -43,7 +43,7 @@ namespace FrameSyncBattle
     {
         //攻击速度归一到统一攻击间隔 如果动画时间大于攻击间隔，则要带默认速度修正
         public const float ExtraAttackRangeBuffer = 1.5f;
-        public AttackConfig[] NormalAttack { get; private set; }
+        public AttackData[] NormalAttack { get; private set; }
 
         public float GetAttackRangeBuffer()
         {
@@ -61,12 +61,12 @@ namespace FrameSyncBattle
 
         public float CoolDown { get; private set; }
         
-        public NormalAttackHandler(FsUnitLogic owner,float cooldown,AttackConfig[] attackConfigs)
+        public NormalAttackHandler(FsUnitLogic owner,float cooldown,UnitAttackData data)
         {
             Owner = owner;
             CoolDown = cooldown;
             AttackId = 0;
-            NormalAttack = attackConfigs;
+            NormalAttack = data.AttackDatas;
         }
         
         //--攻击相关--
@@ -79,17 +79,17 @@ namespace FrameSyncBattle
         /// </summary>
         protected float CurrentAttackCoolDown{ get; private set; }
         protected AttackFlowState FlowState { get; private set; }
-        protected AttackConfig CurrentAttack { get; private set; }
+        protected AttackData CurrentAttack { get; private set; }
         protected int AttackId { get; private set; }
         protected int CurrentAttackHitIndex { get; private set; }
         protected float CurrentAttackTimer { get; private set; }
         protected FsUnitLogic CurrentTarget { get; private set; }
         protected bool AttackActive { get; private set; }
-        protected AttackConfig GetOneAttack(FsUnitLogic target)
+        protected AttackData GetOneAttack(FsBattleLogic battle,FsUnitLogic target)
         {
             //按照目标类型 距离等情况 可以考虑取出不同的攻击行为去攻击目标
             var length = NormalAttack.Length;
-            var atk =  NormalAttack[UnityEngine.Random.Range(0,length)];
+            var atk =  NormalAttack[battle.RandomGen.Next(length)];
             
             //--发起事件--
             var evt = GameEvent.New<GE_AnyUnitPrepareAttack>();
@@ -111,18 +111,18 @@ namespace FrameSyncBattle
         /// <summary>
         /// 下一次攻击
         /// </summary>
-        protected AttackConfig CommittedAttack { get; private set; }
+        protected AttackData CommittedAttack { get; private set; }
         protected int CommittedPriority { get; private set; }
         void ResetCommittedAttack()
         {
             CommittedAttack = null;
             CommittedPriority = 0;
         }
-        public int CommitOverrideAttack(AttackConfig attackConfig,int priority)
+        public int CommitOverrideAttack(AttackData attackData,int priority)
         {
             if (CommittedAttack == null || priority >= CommittedPriority)
             {
-                CommittedAttack = attackConfig;
+                CommittedAttack = attackData;
                 CommittedPriority = priority;
                 AttackId++;
                 return AttackId;
@@ -184,7 +184,7 @@ namespace FrameSyncBattle
         private bool DoAttackDamage(FsBattleLogic battle,float baseRange,AttackTempData data,Vector3 position,FsUnitLogic target)
         {
             var hit = false;
-            var attackHitData = data.Attack.HitDatas[data.AttackHitIndex];
+            var attackHitData = data.AttackData.HitDatas[data.AttackHitIndex];
             var damageRange = attackHitData.DamageRange;
             if (damageRange <= 0)
             {
@@ -260,7 +260,7 @@ namespace FrameSyncBattle
                 //真正开始攻击流程 
                 AttackId++;
                 CurrentAttackTimeScale = Owner.Property.CurrentAttackTimeScaler;
-                CurrentAttack = GetOneAttack(CurrentTarget);
+                CurrentAttack = GetOneAttack(battle,CurrentTarget);
                 
                 CurrentAttackHitIndex = 0;
                 Owner.PlayAnimation(new PlayAnimParam(){Animation = CurrentAttack.Anim,IgnoreRepeat = false,Speed = CurrentAttackTimeScale,});
@@ -277,14 +277,14 @@ namespace FrameSyncBattle
                     if (attack.IsMelee)
                     {
                         AttackTempData bindData = new AttackTempData();
-                        bindData.Attack = CurrentAttack;
+                        bindData.AttackData = CurrentAttack;
                         bindData.AttackHitIndex = CurrentAttackHitIndex;
                         bindData.AttackId = AttackId;
                         MeleeHitEnd(battle,bindData);
                     } else
                     {
                         AttackTempData bindData = new AttackTempData();
-                        bindData.Attack = CurrentAttack;
+                        bindData.AttackData = CurrentAttack;
                         bindData.AttackHitIndex = CurrentAttackHitIndex;
                         bindData.AttackId = AttackId;
                         Vector3 start = Owner.Position + Quaternion.Euler(Owner.Euler) * attack.AttackFireOffset;

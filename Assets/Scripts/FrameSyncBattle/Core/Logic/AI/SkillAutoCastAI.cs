@@ -32,7 +32,7 @@ namespace FrameSyncBattle
         }
     }
     
-    public class SkillAICastHelper : IAutoCasterAI
+    public class SkillAutoCastAI : IAutoCasterAI
     {
         protected SkillAITargetRx Rx { get; private set; }
         protected SkillAITarget Condition { get; private set; }
@@ -145,7 +145,6 @@ namespace FrameSyncBattle
                 return -1;
             return 0;
         }
-        
         private int AtkComparison(FsUnitLogic x, FsUnitLogic y)
         {
             var dd = x.Property.Get(FsUnitPropertyType.Attack) - y.Property.Get(FsUnitPropertyType.Attack);

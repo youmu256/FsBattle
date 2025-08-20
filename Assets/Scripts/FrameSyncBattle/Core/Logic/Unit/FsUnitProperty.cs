@@ -12,6 +12,8 @@ namespace FrameSyncBattle
         /**攻速加成 默认100*/
         AttackSpdPct,
         AttackRange,
+        CriticalPct,
+        CriticalBonus,
         Defend,
         MoveSpeed,
     }
@@ -27,8 +29,10 @@ namespace FrameSyncBattle
         public int HpMax;
         public int MpMax;
         public int Attack;
-        public float BaseAttackInterval;
+        public float AttackInterval;
         public int AttackRange;
+        public int CriticalPct;
+        public int CriticalBonus;
         public int Defend;
         /**cm/s*/
         public int MoveSpeed;

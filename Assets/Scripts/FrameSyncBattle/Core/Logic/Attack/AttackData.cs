@@ -33,7 +33,7 @@ namespace FrameSyncBattle
         public Vector3 AttackFireOffset;
     }
     
-    public class AttackConfig
+    public class AttackData
     {
         /**攻击动画名*/
         public string Anim;
@@ -64,5 +64,11 @@ namespace FrameSyncBattle
         }
     }
 
+    public class UnitAttackData
+    {
+        public string Id;
+        public AttackData[] AttackDatas;
+    }
+    
     #endregion
 }

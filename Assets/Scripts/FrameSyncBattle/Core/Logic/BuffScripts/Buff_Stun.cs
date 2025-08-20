@@ -2,12 +2,14 @@
 {
     public class Buff_Stun : BuffBase
     {
-        public static BuffData TestData()
+        public static readonly string CommonId = "stun";
+        
+        public static BuffData CommonData()
         {
             var data = new BuffData();
             data.FlagTags = BuffFlagTags.IsBad;
             data.TemplateKey = "buff_stun";
-            data.Id = "stun";
+            data.Id = CommonId;
             data.MaxCount = 1;
             data.BuffIcon = "stun_icon";
             data.CoverCheckType = BuffCoverCheckType.Key;
