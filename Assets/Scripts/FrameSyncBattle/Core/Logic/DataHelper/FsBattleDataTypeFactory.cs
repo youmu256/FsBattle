@@ -133,6 +133,57 @@ namespace FrameSyncBattle
 
         #endregion
 
+        #region 配置
+        
+        public void RecordTeamIndexPoint(int team, int index, Vector3 position, Vector3 euler,bool cover = false)
+        {
+            string key = team + "_" + index;
+            var map = _datas;
+            if (map.ContainsKey(key))
+            {
+                if(cover)
+                    map[key] = new FsAnglePoint(position,euler);
+            }
+            else
+            {
+                map.Add(key,new FsAnglePoint(position,euler));
+            }
+        }
+        private readonly Dictionary<string, FsAnglePoint> _datas = new();
+
+        public FsAnglePoint GetTeamIndexPoint(int team,int index)
+        {
+            string key = team + "_" + index;
+            if (!_datas.TryGetValue(key, out var data))
+            {
+                FsDebug.LogError($"Not Find Match AnglePoint Data {key}");
+            }
+            return data;
+        }
+
+        private void InitTeamIndexPoints(FsBattleLogic battle)
+        {
+            Vector3 team1Euler = new Vector3(0, 90, 0);
+            Vector3 team2Euler = new Vector3(0, -90, 0);
+            //两边都是9个格子可放置初始单位
+            var index = 0;
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    index++;
+                    Vector3 localPos = new Vector3(j * 1, 0, i * 1);
+                    Vector3 world1Pos = localPos + Vector3.left * 2;
+                    RecordTeamIndexPoint(FsBattleLogic.PlayerTeam,index,world1Pos,team1Euler);
+                    Vector3 world2Pos = localPos + Vector3.right * 2;
+                    RecordTeamIndexPoint(FsBattleLogic.EnemyTeam,index,world2Pos,team2Euler);
+                }
+            }
+        }
+
+        #endregion
+        
+        
         private AttackData[] TestAttack = new[]
         {
             new AttackData()
@@ -163,6 +214,7 @@ namespace FrameSyncBattle
         
         public void Init(FsBattleLogic battle)
         {
+            InitTeamIndexPoints(battle);
             RecordSkillData(TestSkill.TestData());
             RecordBuffData(Buff_Stun.CommonData());
             RecordAttackData(new UnitAttackData(){Id = "test_attack",AttackDatas = TestAttack});

@@ -120,12 +120,21 @@ namespace FrameSyncBattle
             startData.PlayerTeamUnits.Add(new FsBattleStartUnitData()
             {
                 TypeId = "player",
+                InitPosId = 5,
                 UnitInitData = new FsUnitInitData()
                     {PropertyInitData = TestPlayerData, Euler = Vector3.zero, Position = Vector3.zero,AttackDataId = "test_attack"}
             });
             startData.EnemyTeamUnits.Add(new FsBattleStartUnitData()
             {
                 TypeId = "enemy",
+                InitPosId = 4,
+                UnitInitData = new FsUnitInitData()
+                    {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new []{"test1"},AttackDataId = "test_attack"}
+            });
+            startData.EnemyTeamUnits.Add(new FsBattleStartUnitData()
+            {
+                TypeId = "enemy",
+                InitPosId = 6,
                 UnitInitData = new FsUnitInitData()
                     {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new []{"test1"},AttackDataId = "test_attack"}
             });

@@ -1,13 +1,24 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace FrameSyncBattle
 {
-    /// <summary>
-    /// 根据这个数据来创建一个具体的单位对象
-    /// </summary>
+    public class FsAnglePoint
+    {
+        public Vector3 Position;
+        public Vector3 Euler;
+
+        public FsAnglePoint(Vector3 position, Vector3 euler)
+        {
+            this.Position = position;
+            this.Euler = euler;
+        }
+    }
+    
     public class FsBattleStartUnitData
     {
         public string TypeId;
+        public int InitPosId;
         public FsUnitInitData UnitInitData;
     }
     

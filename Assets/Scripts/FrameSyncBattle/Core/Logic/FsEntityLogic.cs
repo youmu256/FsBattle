@@ -116,6 +116,13 @@ namespace FrameSyncBattle
             return this;
         }
 
+        public FsEntityLogic SetToAnglePoint(FsAnglePoint anglePoint)
+        {
+            if (anglePoint == null) return this;
+            SetPosition(anglePoint.Position).SetEuler(anglePoint.Euler);
+            return this;
+        }
+
         public FsEntityLogic SetPosition(Vector3 position)
         {
             Position = position;
