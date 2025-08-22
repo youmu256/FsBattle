@@ -280,7 +280,7 @@ namespace FrameSyncBattle
             //battle unitss init
             foreach (var startUnitData in startData.PlayerTeamUnits)
             {
-                var entity = this.AddEntity<FsPlayerLogic>(PlayerTeam, startUnitData.TypeId, startUnitData.UnitInitData);
+                var entity = this.AddEntity<FsUnitLogic>(PlayerTeam, startUnitData.TypeId, startUnitData.UnitInitData);
                 entity.SetToAnglePoint(this.DataTypeFactory.GetTeamIndexPoint(PlayerTeam, startUnitData.InitPosId));
             }
             foreach (var startUnitData in startData.EnemyTeamUnits)

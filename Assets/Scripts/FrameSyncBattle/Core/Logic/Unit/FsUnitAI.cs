@@ -376,7 +376,7 @@ namespace FrameSyncBattle
         {
             float attackRange = content.Me.GetAttackRange();
             float chaseStopDistance = attackRange - content.AttackRangeAdjust;
-            //-0.5 保证处于攻击范围内，防止在攻击范围边缘反复鬼畜
+            //要追击的时候额外多靠近Adjust的距离 保证处于攻击范围内，防止在攻击范围边缘反复鬼畜
             if (content.Battle.EntityService.IsEntityValidTobeTargeted(content.Me, TargetEntity) == false || content.Me.CanAttack() == false)
             {
                 TargetEntity = null;
@@ -402,8 +402,13 @@ namespace FrameSyncBattle
                 {
                     var inAttacking = content.Me.NormalAttack.GetCurrentState() != AttackFlowState.None;
                     //FsDebug.Log($"ATTACK CHASE  attacking:{inAttacking} {content.Me.NormalAttack.GetCurrentState()}");
-                    if(inAttacking == false)
-                        ChaseTarget(content,chaseStopDistance);
+                    if (inAttacking == false)
+                    {
+                        //不再攻击的时候 超出攻击范围才追击
+                        var dis = DistanceUtils.DistanceBetween2D(content.Me, TargetEntity, true);
+                        if(dis>attackRange)
+                            ChaseTarget(content,chaseStopDistance);
+                    }
                 }
             }
             else
@@ -411,6 +416,8 @@ namespace FrameSyncBattle
                 content.RequestChangeMiddle(AIMiddleState.Hold);
             }
         }
+
+        
         public override void Exit(FsUnitAI content)
         {
             TargetEntity = null;

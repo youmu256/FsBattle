@@ -172,10 +172,14 @@ namespace FrameSyncBattle
                 for (int j = -1; j <= 1; j++)
                 {
                     index++;
-                    Vector3 localPos = new Vector3(j * 1, 0, i * 1);
-                    Vector3 world1Pos = localPos + Vector3.left * 2;
+                    //都保证index369是前排 147是后排
+                    
+                    Vector3 local1Pos = new Vector3(j * 1, 0, i * 1);
+                    Vector3 world1Pos = local1Pos + Vector3.left * 2;
                     RecordTeamIndexPoint(FsBattleLogic.PlayerTeam,index,world1Pos,team1Euler);
-                    Vector3 world2Pos = localPos + Vector3.right * 2;
+                    
+                    Vector3 local2Pos = new Vector3(-j * 1, 0, i * 1);
+                    Vector3 world2Pos = local2Pos + Vector3.right * 2;
                     RecordTeamIndexPoint(FsBattleLogic.EnemyTeam,index,world2Pos,team2Euler);
                 }
             }
@@ -203,7 +207,7 @@ namespace FrameSyncBattle
                         AttackFlySpeed = 10,
                         AttackModel = "cube",
                         DamagePct = 1f,
-                        DamageRange = 10f,
+                        DamageRange = 0f,
                         IsMelee = false,
                         LockTarget = true,
                         MeleeHitFx = null,
@@ -214,6 +218,7 @@ namespace FrameSyncBattle
         
         public void Init(FsBattleLogic battle)
         {
+            //TODO 后面应该改成读配置的形式
             InitTeamIndexPoints(battle);
             RecordSkillData(TestSkill.TestData());
             RecordBuffData(Buff_Stun.CommonData());

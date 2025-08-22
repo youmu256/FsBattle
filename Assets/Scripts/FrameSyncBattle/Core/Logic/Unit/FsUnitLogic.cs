@@ -48,11 +48,9 @@ namespace FrameSyncBattle
             //--move
             MoveService = new FsSimpleMoveService(this);
             MoveService.UpdateMoveSpeed(Property.Get(FsUnitPropertyType.MoveSpeed));
-            if (team == FsBattleLogic.EnemyTeam)
-            {
-                UnitAI = new FsUnitAI(battle,this);
-                GameAI = battle.AutoBattleAI;
-            }
+            
+            UnitAI = new FsUnitAI(battle,this);
+            GameAI = battle.AutoBattleAI;
 
             BuffHandler = new BuffHandler(this);
             SkillHandler = new SkillHandler(this);
@@ -91,14 +89,12 @@ namespace FrameSyncBattle
             SkillHandler.OnEntityFrame(battle, this, battle.FrameLength, cmd);
         }
 
-        public FsAutoBattleAI GameAI { get; private set; }
-        public FsUnitAI UnitAI { get; private set; }
-        public SkillHandler SkillHandler { get; private set; }
-        
-        public BuffHandler BuffHandler { get; private set; }
-        
-        public IAttackHandler NormalAttack{ get; private set; }
-        public IMoveService MoveService { get; private set; }
+        public FsAutoBattleAI GameAI { get; protected set; }
+        public FsUnitAI UnitAI { get; protected set; }
+        public SkillHandler SkillHandler { get; protected set; }
+        public BuffHandler BuffHandler { get; protected set; }
+        public IAttackHandler NormalAttack{ get; protected set; }
+        public IMoveService MoveService { get; protected set; }
 
         #region GetSomeThing
         public bool CanCast()

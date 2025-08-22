@@ -10,7 +10,7 @@ namespace FrameSyncBattle
     {
         public Dictionary<Type, Type> ViewMap = new()
         {
-            {typeof(FsPlayerLogic), typeof(FsEntityView)},
+            {typeof(FsPlayerControlUnitLogic), typeof(FsEntityView)},
             {typeof(FsUnitLogic), typeof(FsEntityView)},
             {typeof(FsBulletLogic), typeof(FsEntityView)},
             {typeof(FsMissileLogic), typeof(FsEntityView)},

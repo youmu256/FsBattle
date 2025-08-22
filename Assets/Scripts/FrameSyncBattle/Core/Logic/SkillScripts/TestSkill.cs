@@ -19,7 +19,7 @@ namespace FrameSyncBattle
             data.SubType = SkillSubType.HeroAttackSkill;
             data.TargetType = SkillTargetType.Unit;
             data.AIRx = SkillAITargetRx.Enemy;
-            data.AITarget = SkillAITarget.HpLow;
+            data.AITarget = SkillAITarget.Near;
             return data;
         }
 

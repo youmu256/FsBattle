@@ -98,9 +98,23 @@ namespace FrameSyncBattle
             Defend = 0,
             MoveSpeed = 5,
         };
+        
+        public static FsUnitPropertyInitData TestMeleeUnitData = new FsUnitPropertyInitData()
+        {
+            HpMax = 100,
+            MpMax = 10,
+            Attack = 1,
+            CriticalPct = 15,
+            CriticalBonus = 150,
+            AttackRange = 1,
+            AttackInterval = 1f,
+            Defend = 0,
+            MoveSpeed = 2,
+        };
+        
         public static FsUnitPropertyInitData TestEnemyData = new FsUnitPropertyInitData()
         {
-            HpMax = 10,
+            HpMax = 100,
             MpMax = 10,
             Attack = 1,
             CriticalPct = 15,
@@ -117,6 +131,7 @@ namespace FrameSyncBattle
             Battle = new FsBattleGame();
             var startData = new FsBattleStartData();
             //TODO 统一Entity类+逻辑组件化 
+            /*
             startData.PlayerTeamUnits.Add(new FsBattleStartUnitData()
             {
                 TypeId = "player",
@@ -124,20 +139,54 @@ namespace FrameSyncBattle
                 UnitInitData = new FsUnitInitData()
                     {PropertyInitData = TestPlayerData, Euler = Vector3.zero, Position = Vector3.zero,AttackDataId = "test_attack"}
             });
+            */
+            startData.PlayerTeamUnits.Add(new FsBattleStartUnitData()
+            {
+                TypeId = "enemy",
+                InitPosId = 4,
+                UnitInitData = new FsUnitInitData()
+                    {PropertyInitData = TestMeleeUnitData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new string[]{},AttackDataId = "test_attack"}
+            });
+            
+            //纯挨打靶子
             startData.EnemyTeamUnits.Add(new FsBattleStartUnitData()
             {
                 TypeId = "enemy",
                 InitPosId = 4,
                 UnitInitData = new FsUnitInitData()
+                    {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new string[]{},AttackDataId = null}
+            });
+            /*
+            startData.PlayerTeamUnits.Add(new FsBattleStartUnitData()
+            {
+                TypeId = "enemy",
+                InitPosId = 1,
+                UnitInitData = new FsUnitInitData()
+                    {PropertyInitData = TestMeleeUnitData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new []{"test1"},AttackDataId = "test_attack"}
+            });
+            startData.PlayerTeamUnits.Add(new FsBattleStartUnitData()
+            {
+                TypeId = "enemy",
+                InitPosId = 7,
+                UnitInitData = new FsUnitInitData()
+                    {PropertyInitData = TestMeleeUnitData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new []{"test1"},AttackDataId = "test_attack"}
+            });
+            
+            startData.EnemyTeamUnits.Add(new FsBattleStartUnitData()
+            {
+                TypeId = "enemy",
+                InitPosId = 1,
+                UnitInitData = new FsUnitInitData()
                     {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new []{"test1"},AttackDataId = "test_attack"}
             });
             startData.EnemyTeamUnits.Add(new FsBattleStartUnitData()
             {
                 TypeId = "enemy",
-                InitPosId = 6,
+                InitPosId = 7,
                 UnitInitData = new FsUnitInitData()
                     {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new []{"test1"},AttackDataId = "test_attack"}
             });
+            */
             Battle.Init(LogicFps, 0, startData);
         }
 
@@ -149,8 +198,8 @@ namespace FrameSyncBattle
         
         public void StartGame()
         {
-            FsDebug.Log("TestLogReDiction");
-            Debug.Log("TestLogNormal");
+            //FsDebug.Log("TestLogReDiction");
+            //Debug.Log("TestLogNormal");
             Battle.StartBattle();
             var list = new List<FsUnitLogic>();
             Battle.EntityService.CollectUnits(list);

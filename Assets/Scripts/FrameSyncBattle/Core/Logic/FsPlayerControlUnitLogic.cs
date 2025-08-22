@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace FrameSyncBattle
 {
-    public class FsPlayerLogic : FsUnitLogic
+    public class FsPlayerControlUnitLogic : FsUnitLogic
     {
         public float FireInterval = 0.1f;
 
@@ -13,6 +13,8 @@ namespace FrameSyncBattle
         public override void Init(FsBattleLogic battle, int team, string entityTypeId, object initData)
         {
             base.Init(battle, team, entityTypeId, initData);
+            GameAI = null;
+            UnitAI = null;
         }
 
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
