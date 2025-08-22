@@ -6,6 +6,8 @@ namespace FrameSyncBattle
     {
         private FsUnitInitData Data => InitData as FsUnitInitData;
 
+        public FsUnitTypeData TypeData { get; protected set; }
+
         #region Property
 
         public float GetAttackRange()
@@ -37,13 +39,13 @@ namespace FrameSyncBattle
         public override void Init(FsBattleLogic battle, int team, string entityTypeId, object initData)
         {
             base.Init(battle, team, entityTypeId, initData);
-            InitStatus(Data.PropertyInitData);
+            InitStatus(Data.PropertyData);
             //--attack
             if (Data.AttackDataId != null)
             {
                 var unitAttackData = battle.DataTypeFactory.GetAttackData(Data.AttackDataId);
                 if(unitAttackData!=null)
-                    NormalAttack = new NormalAttackHandler(this, Data.PropertyInitData.AttackInterval,unitAttackData);
+                    NormalAttack = new NormalAttackHandler(this, Data.PropertyData.AttackInterval,unitAttackData);
             }
             //--move
             MoveService = new FsSimpleMoveService(this);

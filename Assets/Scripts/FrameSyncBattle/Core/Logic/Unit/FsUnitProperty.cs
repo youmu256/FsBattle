@@ -24,20 +24,6 @@ namespace FrameSyncBattle
         Lv2,
     }
 
-    public class FsUnitPropertyInitData
-    {
-        public int HpMax;
-        public int MpMax;
-        public int Attack;
-        public float AttackInterval;
-        public int AttackRange;
-        public int CriticalPct;
-        public int CriticalBonus;
-        public int Defend;
-        /**cm/s*/
-        public int MoveSpeed;
-    }
-
     public delegate void OnPropertyChangeEvent(FsUnitPropertyType propertyType, int last, int value);
 
     public class FsUnitProperty : INumericPropertiesLimiter

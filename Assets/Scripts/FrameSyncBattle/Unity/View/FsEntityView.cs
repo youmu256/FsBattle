@@ -62,12 +62,16 @@ namespace FrameSyncBattle
             this.Id = entityLogic.Id;
             CachedTransform = this.transform;
             Logic = entityLogic;
-            StartPosition = entityLogic.Position;
-            StartEuler = entityLogic.Euler;
-            StartAnimation = Logic.AnimationReq;
+            LastLogicPosition = entityLogic.Position;
+            LastLogicEuler = entityLogic.Euler;
+            LastLogicAnimationReq = Logic.AnimationReq;
             //Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
+            //生成模型节点
             ModelRoot = new GameObject("model").transform;
             ModelRoot.SetParent(CachedTransform,false);
+            TestData.Init(this);
+            //TODO 模型应该按照模型路径更新
+            Debug.Log($"{entityLogic.Id} view model init : {Logic.ViewModel}");
             switch (entityLogic.TypeId)
             {
                 case "player":
@@ -88,27 +92,36 @@ namespace FrameSyncBattle
 
 
         //记录上一逻辑帧数据 用来插值 考虑用一个简单克隆对象来记录Logic对象?
-        public Vector3 StartPosition;
-        public Vector3 StartEuler;
-        public PlayAnimParam StartAnimation;
+        public Vector3 LastLogicPosition;
+        public Vector3 LastLogicEuler;
+        public PlayAnimParam LastLogicAnimationReq;
+        public NoInterpolationData TestData;
+        
         
         public virtual void ViewInterpolation(float lerp)
         {
-            var position = Vector3.Lerp(StartPosition, Logic.Position, lerp);
+            var position = Vector3.Lerp(LastLogicPosition, Logic.Position, lerp);
             CachedTransform.position = position;
-            var euler = Vector3.Lerp(StartEuler, Logic.Euler, lerp);
+            var euler = Vector3.Lerp(LastLogicEuler, Logic.Euler, lerp);
             CachedTransform.eulerAngles = euler;
         }
 
+        /// <summary>
+        /// 执行逻辑帧之前 也是上一个逻辑帧插值的结束时间
+        /// 上一个逻辑帧的一些非插值变化 应该在这里表现
+        /// </summary>
+        /// <param name="battleGame"></param>
+        /// <param name="lerp"></param>
         public virtual void BeforeLogicFrame(FsBattleGame battleGame, float lerp)
         {
             //在逻辑帧执行之前 设置旧的逻辑状态作为插值起点
-            StartPosition = Logic.Position;
-            StartEuler = Logic.Euler;
+            LastLogicPosition = Logic.Position;
+            LastLogicEuler = Logic.Euler;
             //此时该播放上一次逻辑帧的动画
-            if(StartAnimation.Animation!=null)
-                PlayAnimation(StartAnimation);
-            StartAnimation = Logic.AnimationReq;
+            if(LastLogicAnimationReq.Animation!=null)
+                PlayAnimation(LastLogicAnimationReq);
+            LastLogicAnimationReq = Logic.AnimationReq;
+            TestData.BeforeLogicFrame(battleGame,this);
         }
 
         public virtual void OnCreate(FsBattleGame battleGame)
@@ -132,6 +145,11 @@ namespace FrameSyncBattle
         
         public AnimModel Model { get; private set; }
 
+        public void SetModelByPath(string model)
+        {
+            //TODO 实际应该用路径找到模型
+        }
+        
         public void SetModel(GameObject prefab,float scale = 1f)
         {
             if (Model != null)
@@ -165,5 +183,31 @@ namespace FrameSyncBattle
         }
 
         #endregion
+    }
+
+    public class NoInterpolationData
+    {
+        public string Model;
+        public string ModelReq;
+
+        public void Init(FsEntityView view)
+        {
+            Model = view.Logic.ViewModel;
+        }
+        
+        public void BeforeLogicFrame(FsBattleLogic battle,FsEntityView view)
+        {
+            if (ModelReq != null)
+            {
+                //Do ModelReq
+                FsDebug.Log($"Do Model Req {ModelReq}");
+                ModelReq = null;
+            }
+            if (Model != view.Logic.ViewModel)
+            {
+                ModelReq = Model;
+            }
+            Model = view.Logic.ViewModel;
+        }
     }
 }

@@ -10,7 +10,7 @@ namespace FrameSyncBattle
         public FsUnitProperty Property { get; private set; }
         
 
-        public void InitStatus(FsUnitPropertyInitData basic)
+        public void InitStatus(FsUnitPropertyData basic)
         {
             StateFlags = new FsUnitStateFlags();
             
@@ -20,10 +20,11 @@ namespace FrameSyncBattle
             Property.SetPropertyBase(FsUnitPropertyType.Attack,basic.Attack);
             Property.SetPropertyBase(FsUnitPropertyType.CriticalPct,basic.CriticalPct);
             Property.SetPropertyBase(FsUnitPropertyType.CriticalBonus,basic.CriticalBonus);
-            Property.SetPropertyBase(FsUnitPropertyType.AttackSpdPct,100);
             Property.SetPropertyBase(FsUnitPropertyType.AttackRange,basic.AttackRange);
             Property.SetPropertyBase(FsUnitPropertyType.Defend,basic.Defend);
             Property.SetPropertyBase(FsUnitPropertyType.MoveSpeed,basic.MoveSpeed);
+            
+            Property.SetPropertyBase(FsUnitPropertyType.AttackSpdPct,100);
             HpPercent = 1f;
             MpPercent = 0f;
         }

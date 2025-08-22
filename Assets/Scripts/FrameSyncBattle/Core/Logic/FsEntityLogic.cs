@@ -33,10 +33,9 @@ namespace FrameSyncBattle
         //euler存在万向锁问题 考虑换成四元数?
         public Vector3 Euler { get; private set; }
         public int Team { get; protected set; }
-        
+        public string ViewModel { get; protected set; }
         public PlayAnimParam AnimationReq { get; protected set; }
         private FsEntityInitData Data => InitData as FsEntityInitData;
-
         public FsEntityLogic()
         {
         }
@@ -54,8 +53,7 @@ namespace FrameSyncBattle
             this.Team = team;
             this.InitData = initData;
             this.TypeId = entityTypeId;
-            this.Position = Data.Position;
-            this.Euler = Data.Euler;
+            this.ViewModel = Data.Model;
         }
 
         public virtual void OnCreate(FsBattleLogic battle)

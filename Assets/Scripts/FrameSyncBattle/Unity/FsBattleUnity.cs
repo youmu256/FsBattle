@@ -86,7 +86,7 @@ namespace FrameSyncBattle
         }
 
         #region TestData
-        public static FsUnitPropertyInitData TestPlayerData = new FsUnitPropertyInitData()
+        public static FsUnitPropertyData TestPlayerData = new FsUnitPropertyData()
         {
             HpMax = 100,
             MpMax = 100,
@@ -99,7 +99,7 @@ namespace FrameSyncBattle
             MoveSpeed = 5,
         };
         
-        public static FsUnitPropertyInitData TestMeleeUnitData = new FsUnitPropertyInitData()
+        public static FsUnitPropertyData TestMeleeUnitData = new FsUnitPropertyData()
         {
             HpMax = 100,
             MpMax = 10,
@@ -112,7 +112,7 @@ namespace FrameSyncBattle
             MoveSpeed = 2,
         };
         
-        public static FsUnitPropertyInitData TestEnemyData = new FsUnitPropertyInitData()
+        public static FsUnitPropertyData TestEnemyData = new FsUnitPropertyData()
         {
             HpMax = 100,
             MpMax = 10,
@@ -145,7 +145,7 @@ namespace FrameSyncBattle
                 TypeId = "enemy",
                 InitPosId = 4,
                 UnitInitData = new FsUnitInitData()
-                    {PropertyInitData = TestMeleeUnitData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new string[]{},AttackDataId = "test_attack"}
+                    {PropertyData = TestMeleeUnitData,InitSkills = new string[]{},AttackDataId = "test_attack",Model = "cube"}
             });
             
             //纯挨打靶子
@@ -154,7 +154,7 @@ namespace FrameSyncBattle
                 TypeId = "enemy",
                 InitPosId = 4,
                 UnitInitData = new FsUnitInitData()
-                    {PropertyInitData = TestEnemyData, Euler = Vector3.zero, Position = Vector3.forward,InitSkills = new string[]{},AttackDataId = null}
+                    {PropertyData = TestEnemyData,InitSkills = new string[]{},AttackDataId = null,Model = "cube"}
             });
             /*
             startData.PlayerTeamUnits.Add(new FsBattleStartUnitData()

@@ -210,10 +210,11 @@ namespace FrameSyncBattle
         public int EntityIdGenerator { get; private set; }
         
         //public GameEventHandler EventHandler { get; private set; } = new GameEventHandler();
-        public virtual T AddEntity<T>(int team,string entityTypeId, object initData) where T : FsEntityLogic, new()
+        public virtual T AddEntity<T>(int team,string entityTypeId,Vector3 pos,Vector3 euler, object initData) where T : FsEntityLogic, new()
         {
             EntityIdGenerator++;//ID增长
             var entity = new T();
+            entity.SetPosition(pos).SetEuler(euler);
             entity.Init(this, team,entityTypeId, initData);
             entity.OnCreate(this);
             Entities.Add(entity);
@@ -280,13 +281,14 @@ namespace FrameSyncBattle
             //battle unitss init
             foreach (var startUnitData in startData.PlayerTeamUnits)
             {
-                var entity = this.AddEntity<FsUnitLogic>(PlayerTeam, startUnitData.TypeId, startUnitData.UnitInitData);
+                var ap = this.DataTypeFactory.GetTeamIndexPoint(PlayerTeam, startUnitData.InitPosId);
+                var entity = this.AddEntity<FsUnitLogic>(PlayerTeam, startUnitData.TypeId,ap.Position,ap.Euler, startUnitData.UnitInitData);
                 entity.SetToAnglePoint(this.DataTypeFactory.GetTeamIndexPoint(PlayerTeam, startUnitData.InitPosId));
             }
             foreach (var startUnitData in startData.EnemyTeamUnits)
             {
-                var entity = this.AddEntity<FsUnitLogic>(EnemyTeam, startUnitData.TypeId, startUnitData.UnitInitData);
-                entity.SetToAnglePoint(this.DataTypeFactory.GetTeamIndexPoint(EnemyTeam, startUnitData.InitPosId));
+                var ap = this.DataTypeFactory.GetTeamIndexPoint(EnemyTeam, startUnitData.InitPosId);
+                var entity = this.AddEntity<FsUnitLogic>(EnemyTeam, startUnitData.TypeId,ap.Position,ap.Euler, startUnitData.UnitInitData);
             }
         }
         

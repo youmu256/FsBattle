@@ -72,8 +72,8 @@ namespace FrameSyncBattle
             Vector3 euler = new Vector3(0, cmd.FireYaw, 0);
             Vector3 firePosition = this.Position;
             battle.AddEntity<FsBulletLogic>(this.Team, "bullet",
-                new FsBulletInitData()
-                    {Owner = this,Euler = euler, Position = firePosition, FlySpeed = 50, LifeTime = 1f});
+                firePosition,euler,new FsBulletInitData()
+                    {Owner = this,Model = "cube", FlySpeed = 50, LifeTime = 1f});
 
         }
         
@@ -91,7 +91,7 @@ namespace FrameSyncBattle
             battle.EntityService.CollectUnits(targets, TargetFilter);
             if (targets.Count <= 0) return;
             var target = targets[battle.RandomGen.Next(targets.Count)];
-            var lockMissile = battle.AddEntity<FsMissileLogic>(this.Team,"missile",new FsEntityInitData(){Euler = this.Euler,Position = start});
+            var lockMissile = battle.AddEntity<FsMissileLogic>(this.Team,"missile",start,Euler,new FsEntityInitData(){Model = "cube"});
             lockMissile.SetBase("cube", 10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(this,null, (
                 (logic, missileLogic, valid) =>
                 {

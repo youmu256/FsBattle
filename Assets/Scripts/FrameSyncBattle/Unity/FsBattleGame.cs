@@ -80,8 +80,6 @@ namespace FrameSyncBattle
             {
                 view.BeforeLogicFrame(param,param.ViewLerp);
             }));
-
-            
             //所有逻辑对象更新
             base.GameLogicFrame(cmd);
         }

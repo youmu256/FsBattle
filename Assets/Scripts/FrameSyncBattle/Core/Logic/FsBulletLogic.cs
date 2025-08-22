@@ -30,7 +30,7 @@ namespace FrameSyncBattle
             }
 
             //move
-            Vector3 vel = Quaternion.Euler(Data.Euler) * Vector3.forward * (Data.FlySpeed * battle.FrameLength);
+            Vector3 vel = Quaternion.Euler(Data.MoveEuler) * Vector3.forward * (Data.FlySpeed * battle.FrameLength);
             
             //check hit
             Vector3 start = this.Position;
