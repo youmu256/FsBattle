@@ -36,15 +36,15 @@ namespace FrameSyncBattle
         
         public float DeadRemoveTime { get; private set; }
         
-        public override void Init(FsBattleLogic battle, int team, string entityTypeId, object initData)
+        public override void Init(FsBattleLogic battle, int team, FsEntityType entityType, object initData)
         {
-            base.Init(battle, team, entityTypeId, initData);
+            base.Init(battle, team, entityType, initData);
             SetModel(Data.Model, Data.ModelScale);
             InitStatus(Data.PropertyData);
             //--attack
             if (Data.AttackDataId != null)
             {
-                var unitAttackData = battle.DataTypeFactory.GetAttackData(Data.AttackDataId);
+                var unitAttackData = battle.DataService.GetAttackData(Data.AttackDataId);
                 if(unitAttackData!=null)
                     NormalAttack = new NormalAttackHandler(this, Data.PropertyData.AttackInterval,unitAttackData);
             }

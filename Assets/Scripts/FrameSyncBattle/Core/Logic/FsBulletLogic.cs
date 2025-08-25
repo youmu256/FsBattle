@@ -11,9 +11,9 @@ namespace FrameSyncBattle
 
         public FsUnitLogic Owner;
         
-        public override void Init(FsBattleLogic battle, int team, string entityTypeId, object initData)
+        public override void Init(FsBattleLogic battle, int team, FsEntityType entityType, object initData)
         {
-            base.Init(battle, team, entityTypeId, initData);
+            base.Init(battle, team, entityType, initData);
             this.Owner = Data.Owner;
         }
 

@@ -28,7 +28,8 @@ namespace FrameSyncBattle
         public object InitData { get; private set; }
         public bool HasStarted { get; private set; }
         public int Id { get; private set; }
-        public string TypeId { get; private set; }
+        /**EntityType 记录Entity的类别 用于区分*/
+        public FsEntityType EntityType { get; private set; }
         public Vector3 Position { get; private set; }
         //euler存在万向锁问题 考虑换成四元数?
         public Vector3 Euler { get; private set; }
@@ -51,17 +52,18 @@ namespace FrameSyncBattle
 
         /// <summary>
         /// 创建时初始化
+        /// initData好像有点多余啊 每个具体子类型自己去额外设置会比较好?
         /// </summary>
         /// <param name="battle"></param>
         /// <param name="team"></param>
-        /// <param name="entityTypeId"></param>
+        /// <param name="entityType"></param>
         /// <param name="initData"></param>
-        public virtual void Init(FsBattleLogic battle,int team, string entityTypeId, object initData)
+        public virtual void Init(FsBattleLogic battle,int team, FsEntityType entityType, object initData)
         {
             this.Id = battle.EntityIdGenerator;
             this.Team = team;
             this.InitData = initData;
-            this.TypeId = entityTypeId;
+            this.EntityType = entityType;
         }
 
         public virtual void OnCreate(FsBattleLogic battle)
@@ -145,5 +147,24 @@ namespace FrameSyncBattle
         {
             return $"id:{this.Id},pos:{this.Position},euler:{this.Euler}";
         }
+    }
+
+    public class FsViewEventEntityLogic : FsEntityLogic
+    {
+        /*
+         * 主要用来负责记录需要在表现层展示的事件类型需求
+         * 比如
+         *      创建/删除特效到单位骨骼
+         *      在指定位置播放不需要控制的音效or特效
+         */
+
+        public string EventType;
+        public object EventParam;
+        public void SetEventParam(string type,object param)
+        {
+            this.EventType = type;
+            this.EventParam = param;
+        }
+        
     }
 }

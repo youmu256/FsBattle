@@ -289,7 +289,7 @@ namespace FrameSyncBattle
                         bindData.AttackId = AttackId;
                         Vector3 start = Owner.Position + Quaternion.Euler(Owner.Euler) * attack.AttackFireOffset;
                         
-                        var missile = battle.AddEntity<FsMissileLogic>(Owner.Team,"missile",start,Owner.Euler,new FsEntityInitData());
+                        var missile = battle.AddEntity<FsMissileLogic>(Owner.Team,FsEntityType.Missile,start,Owner.Euler,new FsEntityInitData());
                         missile.SetModel(attack.AttackModel, attack.AttackModelScale);
                         missile.SetBase(attack.AttackFlySpeed,attack.AttackFlyArc, attack.AttackFlySideSpin)
                             .AimTarget(start,CurrentTarget,attack.LockTarget)

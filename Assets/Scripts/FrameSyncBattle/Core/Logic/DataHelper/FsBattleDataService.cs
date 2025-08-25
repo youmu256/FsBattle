@@ -6,7 +6,7 @@ using Object = System.Object;
 namespace FrameSyncBattle
 {
     
-    public class FsBattleDataTypeFactory
+    public class FsBattleDataService
     {
         #region Data Process
         protected Dictionary<string, UnitAttackData> AttackDataMap = new();

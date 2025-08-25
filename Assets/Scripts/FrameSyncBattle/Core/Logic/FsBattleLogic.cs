@@ -216,21 +216,27 @@ namespace FrameSyncBattle
         public FsEntityService EntityService { get; private set; }
 
         public int EntityIdGenerator { get; private set; }
-        
         //public GameEventHandler EventHandler { get; private set; } = new GameEventHandler();
-        public virtual T AddEntity<T>(int team,string entityTypeId,Vector3 pos,Vector3 euler, object initData) where T : FsEntityLogic, new()
+
+        public FsEntityLogic CreateFxEntity(Vector3 pos,Vector3 euler)
+        {
+            var entity = AddEntity<FsEntityLogic>(0,FsEntityType.Fx,pos,euler,null);
+            return entity;
+        }
+        
+        public T AddEntity<T>(int team,FsEntityType entityType,Vector3 pos,Vector3 euler, object initData) where T : FsEntityLogic, new()
         {
             EntityIdGenerator++;//ID增长
             var entity = new T();
             entity.SetPosition(pos).SetEuler(euler);
-            entity.Init(this, team,entityTypeId, initData);
+            entity.Init(this, team,entityType, initData);
             entity.OnCreate(this);
             Entities.Add(entity);
             EntityService.UpdateEntityCache(entity,true);
             return entity;
         }
 
-        public virtual void RemoveEntity(FsEntityLogic entity)
+        public void RemoveEntity(FsEntityLogic entity)
         {
             entity.OnRemove(this);
             Entities.Remove(entity);
@@ -246,15 +252,15 @@ namespace FrameSyncBattle
         public bool IsReplayMode { get; private set; } = false;
         public Random RandomGen { get; private set; }
         public FsAutoBattleAI AutoBattleAI { get; private set; }
-        public FsBattleDataTypeFactory DataTypeFactory { get; private set; }
+        public FsBattleDataService DataService { get; private set; }
         public FsBattlePlayState PlayState { get; private set; }
         
         private void CommonInit()
         {
             WinTeam = 0;
             PlayState = FsBattlePlayState.WaitStart;
-            DataTypeFactory = new FsBattleDataTypeFactory();
-            DataTypeFactory.Init(this);
+            DataService = new FsBattleDataService();
+            DataService.Init(this);
             AutoBattleAI = new FsAutoBattleAI();
             EntityService = new FsEntityService(this);
         }
@@ -287,14 +293,14 @@ namespace FrameSyncBattle
             //battle unitss init
             foreach (var startUnitData in startData.PlayerTeamUnits)
             {
-                var ap = this.DataTypeFactory.GetTeamIndexPoint(PlayerTeam, startUnitData.InitPosId);
-                var entity = this.AddEntity<FsUnitLogic>(PlayerTeam, startUnitData.TypeId,ap.Position,ap.Euler, startUnitData.UnitInitData);
-                entity.SetToAnglePoint(this.DataTypeFactory.GetTeamIndexPoint(PlayerTeam, startUnitData.InitPosId));
+                var ap = this.DataService.GetTeamIndexPoint(PlayerTeam, startUnitData.InitPosId);
+                var entity = this.AddEntity<FsUnitLogic>(PlayerTeam, FsEntityType.Unit,ap.Position,ap.Euler, startUnitData.UnitInitData);
+                entity.SetToAnglePoint(this.DataService.GetTeamIndexPoint(PlayerTeam, startUnitData.InitPosId));
             }
             foreach (var startUnitData in startData.EnemyTeamUnits)
             {
-                var ap = this.DataTypeFactory.GetTeamIndexPoint(EnemyTeam, startUnitData.InitPosId);
-                var entity = this.AddEntity<FsUnitLogic>(EnemyTeam, startUnitData.TypeId,ap.Position,ap.Euler, startUnitData.UnitInitData);
+                var ap = this.DataService.GetTeamIndexPoint(EnemyTeam, startUnitData.InitPosId);
+                var entity = this.AddEntity<FsUnitLogic>(EnemyTeam, FsEntityType.Unit,ap.Position,ap.Euler, startUnitData.UnitInitData);
             }
         }
         

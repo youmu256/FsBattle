@@ -40,7 +40,7 @@ namespace FrameSyncBattle
                     var start = Owner.Position;
                     for (int i = 0; i < 5; i++)
                     {
-                        var lockMissile = battle.AddEntity<FsMissileLogic>(this.Owner.Team,"missile",start,Owner.Euler,new FsEntityInitData());
+                        var lockMissile = battle.AddEntity<FsMissileLogic>(this.Owner.Team,FsEntityType.Missile,start,Owner.Euler,new FsEntityInitData());
                         lockMissile.SetModel("test_missile", 1f);
                         lockMissile.SetBase(10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(Owner,null, MissileCallback);
                     }

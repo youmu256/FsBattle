@@ -38,14 +38,10 @@ namespace FrameSyncBattle
         public int MoveSpeed;
     }
 
-    public class FsEntityTypeData
+    public class FsUnitTypeData
     {
         public string Id;
         public string Model;
-    }
-    
-    public class FsUnitTypeData : FsEntityTypeData
-    {
         public string Name;
         public string Icon;
         //默认数据

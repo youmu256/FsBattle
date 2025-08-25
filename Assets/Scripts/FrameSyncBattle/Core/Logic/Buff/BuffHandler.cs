@@ -62,7 +62,7 @@ namespace FrameSyncBattle
         protected BuffBase RealAddBuff(FsBattleLogic battle, string buffRuntimeKey,
             IBuffSource other, FsUnitLogic source, FsUnitLogic target, BuffData data, int count, float lastTime)
         {
-            var buff = battle.DataTypeFactory.CreateBuff(data);
+            var buff = battle.DataService.CreateBuff(data);
             buff.SetAttach(battle, buffRuntimeKey, other, source, target, data, count, lastTime);
             BuffCacheMap.Add(buffRuntimeKey, buff);
             BuffList.Add(buff);
@@ -71,7 +71,7 @@ namespace FrameSyncBattle
         public void AddBuff(FsBattleLogic battle, FsUnitLogic source, IBuffSource other, FsUnitLogic target,
             string id, int count, float lastTime)
         {
-            AddBuff(battle,source,other,target,battle.DataTypeFactory.GetBuffData(id),count,lastTime);
+            AddBuff(battle,source,other,target,battle.DataService.GetBuffData(id),count,lastTime);
         }
         public void AddBuff(FsBattleLogic battle, FsUnitLogic source, IBuffSource other, FsUnitLogic target,
             BuffData data, int count, float lastTime)

@@ -17,6 +17,7 @@ namespace FrameSyncBattle
     
     public class FsBattleStartUnitData
     {
+        /**TypeId指向一个单位的默认配置 如美术方面*/
         public string TypeId;
         public int InitPosId;
         public FsUnitInitData UnitInitData;

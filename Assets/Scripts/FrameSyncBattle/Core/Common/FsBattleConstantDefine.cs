@@ -14,4 +14,16 @@
         public const string Stand = "Stand";
 
     }
+    public enum FsEntityType
+    {
+        /**辅助体*/
+        Dummy,
+        /**投射物*/
+        Missile,
+        /**单位*/
+        Unit,
+        /**特效*/
+        Fx,
+    }
+    
 }
