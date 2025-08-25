@@ -56,29 +56,40 @@ namespace FrameSyncBattle
         {
             if (GUILayout.Button("StartGame"))
             {
-                EndGame();
+                QuitBattle();
                 InitTestBattle();
                 StartGame();
             }
-            if (GUILayout.Button("EndGame&Replay"))
+            if (GUILayout.Button("QuitBattle&Replay"))
             {
                 var save = Battle?.ReplaySave;
-                EndGame();
+                QuitBattle();
                 if (save == null) return;
                 //replay
                 InitReplayBattle(save);
                 StartGame();
             }
+
+            if (GUILayout.Button("Pause/Resume"))
+            {
+                if (this.Battle.PlayState == FsBattlePlayState.Play)
+                {
+                    Battle.Pause();
+                }else if (this.Battle.PlayState == FsBattlePlayState.Pause)
+                {
+                    Battle.Resume();
+                }
+            }
+            
             GUILayout.Button($"Lerp : {Battle?.ViewLerp}");
         }
 
-        public void EndGame()
+        public void QuitBattle()
         {
             if (Battle != null)
             {
-                FsDebug.Log("PLAY END!");
-                FsDebug.Log(Battle.GetGameStateMsg());
                 Battle.EndBattle();
+                Battle.Dispose();
             }
             Battle = null;
             Player = null;
@@ -113,7 +124,7 @@ namespace FrameSyncBattle
         
         public static FsUnitPropertyData TestEnemyData = new FsUnitPropertyData()
         {
-            HpMax = 100,
+            HpMax = 3,
             MpMax = 10,
             Attack = 1,
             CriticalPct = 15,
@@ -123,8 +134,8 @@ namespace FrameSyncBattle
             Defend = 0,
             MoveSpeed = 2,
         };
-        #endregion
-
+        
+        
         public void InitTestBattle()
         {
             Battle = new FsBattleGame();
@@ -188,6 +199,7 @@ namespace FrameSyncBattle
             */
             Battle.Init(LogicFps, 0, startData);
         }
+        #endregion
 
         public void InitReplayBattle(FsBattleReplay replay)
         {
@@ -220,7 +232,7 @@ namespace FrameSyncBattle
         private void Update()
         {
             if (Battle == null) return;
-            if (Battle.IsPlayEnd) return;
+            if (Battle.PlayState != FsBattlePlayState.Play) return;
             FsCmd cmd = null;
             if (Battle.IsReplayMode == false)
                 cmd = GetInputCmd();

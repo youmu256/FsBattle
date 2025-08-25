@@ -32,9 +32,7 @@ namespace FrameSyncBattle
         }
         */
         #endregion
-        
         public float ViewLerp { get; private set; }
-        
         public int ViewLerpStartFrame { get; private set; }
         
         public FsLinkedList<FsEntityView> EntityViews = new();
@@ -105,17 +103,21 @@ namespace FrameSyncBattle
                 if (valid == false)
                 {
                     var view = FsEntityView.Create(logic);
-                    view.OnCreate(this);
+                    view.OnCreate(this,logic);
                     EntityViews.Add(view);
                     EntityViewsMap.Add(view.Id, view);
                 }
             });
         }
 
-        public override void EndBattle()
+        public void Dispose()
         {
-            base.EndBattle();
-            SyncViewToLogic();
+            EntityViews.ForEach(view =>
+            {
+                view.OnRemove(this);
+            });
+            EntityViews.Clear();
+            EntityViewsMap.Clear();
         }
     }
 }

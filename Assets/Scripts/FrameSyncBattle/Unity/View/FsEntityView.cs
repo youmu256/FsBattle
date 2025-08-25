@@ -52,35 +52,13 @@ namespace FrameSyncBattle
         
         public static FsEntityView Create<T>(T entityLogic) where T : FsEntityLogic, new()
         {
-            var view = Creator.Create(entityLogic);
-            view.Init(entityLogic);
-            return view;
+            return Creator.Create(entityLogic);
         }
-
-        protected virtual void Init(FsEntityLogic entityLogic)
-        {
-            this.Id = entityLogic.Id;
-            CachedTransform = this.transform;
-            Logic = entityLogic;
-            LastLogicPosition = entityLogic.Position;
-            LastLogicEuler = entityLogic.Euler;
-            LastLogicAnimationReq = Logic.AnimationReq;
-            //Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
-            //生成模型节点
-            ModelRoot = new GameObject("model").transform;
-            ModelRoot.SetParent(CachedTransform,false);
-            TestStringData = new NoInterpolationStringData();
-            TestStringData.Init(this);
-            SetModelByPath(Logic.ViewModel,Logic.ViewModelScale);
-            ViewInterpolation(0);
-        }
-
 
         //记录上一逻辑帧数据 用来插值 考虑用一个简单克隆对象来记录Logic对象?
         public Vector3 LastLogicPosition;
         public Vector3 LastLogicEuler;
         public PlayAnimParam LastLogicAnimationReq;
-        public NoInterpolationStringData TestStringData;
         
         
         public virtual void ViewInterpolation(float lerp)
@@ -106,12 +84,22 @@ namespace FrameSyncBattle
             if(LastLogicAnimationReq.IsValid())
                 PlayAnimation(LastLogicAnimationReq);
             LastLogicAnimationReq = Logic.AnimationReq;
-            TestStringData.BeforeLogicFrame(battleGame,this);
         }
 
-        public virtual void OnCreate(FsBattleGame battleGame)
+        public virtual void OnCreate(FsBattleGame battleGame,FsEntityLogic logic)
         {
-            
+            this.Logic = logic;
+            this.Id = Logic.Id;
+            CachedTransform = this.transform;
+            LastLogicPosition = Logic.Position;
+            LastLogicEuler = Logic.Euler;
+            LastLogicAnimationReq = Logic.AnimationReq;
+            //Debug.Log($"view init {entityLogic.Id} - {entityLogic.TypeId}");
+            //生成模型节点
+            ModelRoot = new GameObject("model").transform;
+            ModelRoot.SetParent(CachedTransform,false);
+            SetModelByPath(Logic.ViewModel,Logic.ViewModelScale);
+            ViewInterpolation(0);
         }
         
         /// <summary>
@@ -179,31 +167,5 @@ namespace FrameSyncBattle
         }
 
         #endregion
-    }
-
-    public class NoInterpolationStringData
-    {
-        public string Model;
-        public string ModelReq;
-
-        public void Init(FsEntityView view)
-        {
-            Model = view.Logic.ViewModel;
-        }
-        
-        public void BeforeLogicFrame(FsBattleLogic battle,FsEntityView view)
-        {
-            if (ModelReq != null)
-            {
-                //Do ModelReq
-                FsDebug.Log($"Do Model Req {ModelReq}");
-                ModelReq = null;
-            }
-            if (Model != view.Logic.ViewModel)
-            {
-                ModelReq = Model;
-            }
-            Model = view.Logic.ViewModel;
-        }
     }
 }

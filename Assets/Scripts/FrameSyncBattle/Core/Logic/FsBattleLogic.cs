@@ -186,6 +186,14 @@ namespace FrameSyncBattle
 
     }
 
+    public enum FsBattlePlayState
+    {
+        WaitStart,
+        Play,
+        Pause,
+        End,
+    }
+
 
     public partial class FsBattleLogic
     {
@@ -236,17 +244,15 @@ namespace FrameSyncBattle
         public const int PlayerTeam = 1;
         public const int EnemyTeam = 2;
         public bool IsReplayMode { get; private set; } = false;
-
-        public bool IsPlayEnd { get; private set; }
-        
         public Random RandomGen { get; private set; }
-        
         public FsAutoBattleAI AutoBattleAI { get; private set; }
-
         public FsBattleDataTypeFactory DataTypeFactory { get; private set; }
+        public FsBattlePlayState PlayState { get; private set; }
         
         private void CommonInit()
         {
+            WinTeam = 0;
+            PlayState = FsBattlePlayState.WaitStart;
             DataTypeFactory = new FsBattleDataTypeFactory();
             DataTypeFactory.Init(this);
             AutoBattleAI = new FsAutoBattleAI();
@@ -295,14 +301,26 @@ namespace FrameSyncBattle
 
         public void StartBattle()
         {
-            IsPlayEnd = false;
+            PlayState = FsBattlePlayState.Play;
         }
 
-        public virtual void EndBattle()
+        public void Pause()
         {
-            IsPlayEnd = true;
-            var p = (this);
-            Entities.RefForEach(ref p, ((logic, param) => { param.RemoveEntity(logic); }));
+            if (PlayState == FsBattlePlayState.Play)
+                PlayState = FsBattlePlayState.Pause;
+        }
+
+        public void Resume()
+        {
+            if (PlayState == FsBattlePlayState.Pause)
+                PlayState = FsBattlePlayState.Play;
+        }
+        
+        public void EndBattle()
+        {
+            if (PlayState == FsBattlePlayState.End) return;
+            PlayState = FsBattlePlayState.End;
+            FsDebug.Log(this.GetGameStateMsg());
         }
 
         protected FsLinkedList<FsEntityLogic> Entities = new();
@@ -408,7 +426,6 @@ namespace FrameSyncBattle
                 if (isReplayEnd)
                 {
                     FsDebug.Log("REPLAY END!");
-                    FsDebug.Log(GetGameStateMsg());
                     EndBattle();
                     break;
                 }
@@ -425,6 +442,8 @@ namespace FrameSyncBattle
 
         /**胜负裁判 后续考虑抽象OOP*/
         public FsBattleWinLostJudge WinLostJudge { get; set; } = new FsBattleWinLostJudge();
+
+        public int WinTeam { get; private set; }
         
         protected virtual void GameLogicFrame(FsCmd cmd)
         {
@@ -436,10 +455,10 @@ namespace FrameSyncBattle
 
             if (WinLostJudge != null)
             {
-                int winTeam = WinLostJudge.GameLogicFrame(this);
-                if (winTeam > 0)
+                WinTeam = WinLostJudge.GameLogicFrame(this);
+                if (WinTeam > 0)
                 {
-                    IsPlayEnd = true;
+                    EndBattle();
                 }
             }
         }
