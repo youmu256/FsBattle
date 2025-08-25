@@ -15,9 +15,6 @@ namespace FrameSyncBattle
             this.MissileFrame(battle, battle.FrameLength);
         }
 
-
-        public string MissileModel;
-
         public FsUnitLogic Source;//来源 可能为空
         
         public FsUnitLogic Target;//目标 可能为空
@@ -52,9 +49,8 @@ namespace FrameSyncBattle
         public Action<FsBattleLogic,FsMissileLogic,bool> FlyEndCallBack { get; private set; }
         public object BindData { get; private set; }
         
-        public FsMissileLogic SetBase(string model,float speed,float arc, float sideSpin)
+        public FsMissileLogic SetBase(float speed,float arc, float sideSpin)
         {
-            this.MissileModel = model;
             this.Speed = speed;
             this.Arc = arc;
             this.SideSpin = sideSpin;

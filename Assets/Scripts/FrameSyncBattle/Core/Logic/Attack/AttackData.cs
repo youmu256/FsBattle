@@ -23,6 +23,8 @@ namespace FrameSyncBattle
         public bool LockTarget;
         /**攻击弹道模型*/
         public string AttackModel;
+        /**攻击弹道模型缩放*/
+        public float AttackModelScale = 1f;
         /**攻击弹道速度*/
         public float AttackFlySpeed;
         /**攻击弹道曲率*/

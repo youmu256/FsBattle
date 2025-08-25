@@ -69,24 +69,9 @@ namespace FrameSyncBattle
             //生成模型节点
             ModelRoot = new GameObject("model").transform;
             ModelRoot.SetParent(CachedTransform,false);
-            TestData.Init(this);
-            //TODO 模型应该按照模型路径更新
-            Debug.Log($"{entityLogic.Id} view model init : {Logic.ViewModel}");
-            switch (entityLogic.TypeId)
-            {
-                case "player":
-                    SetModel(FsBattleUnity.Instance.PlayerModel);
-                    break;
-                case "enemy":
-                    SetModel(FsBattleUnity.Instance.PlayerModel);
-                    break;
-                case "bullet":
-                    SetModel(FsBattleUnity.Instance.BulletModel,0.2f);
-                    break;
-                case "missile":
-                    SetModel(FsBattleUnity.Instance.BulletModel,0.2f);
-                    break;
-            }
+            TestStringData = new NoInterpolationStringData();
+            TestStringData.Init(this);
+            SetModelByPath(Logic.ViewModel,Logic.ViewModelScale);
             ViewInterpolation(0);
         }
 
@@ -95,7 +80,7 @@ namespace FrameSyncBattle
         public Vector3 LastLogicPosition;
         public Vector3 LastLogicEuler;
         public PlayAnimParam LastLogicAnimationReq;
-        public NoInterpolationData TestData;
+        public NoInterpolationStringData TestStringData;
         
         
         public virtual void ViewInterpolation(float lerp)
@@ -118,10 +103,10 @@ namespace FrameSyncBattle
             LastLogicPosition = Logic.Position;
             LastLogicEuler = Logic.Euler;
             //此时该播放上一次逻辑帧的动画
-            if(LastLogicAnimationReq.Animation!=null)
+            if(LastLogicAnimationReq.IsValid())
                 PlayAnimation(LastLogicAnimationReq);
             LastLogicAnimationReq = Logic.AnimationReq;
-            TestData.BeforeLogicFrame(battleGame,this);
+            TestStringData.BeforeLogicFrame(battleGame,this);
         }
 
         public virtual void OnCreate(FsBattleGame battleGame)
@@ -145,24 +130,41 @@ namespace FrameSyncBattle
         
         public AnimModel Model { get; private set; }
 
-        public void SetModelByPath(string model)
+        public void SetModelByPath(string model,float scale)
         {
-            //TODO 实际应该用路径找到模型
+            Debug.Log($"{this.Logic.Id} view model init : {Logic.ViewModel}");
+            //TODO 后续要通过资源系统来找到对应的模型
+            switch (model)
+            {
+                case "test_unit":
+                    SetModelByPrefab(FsBattleUnity.Instance.PlayerModel,scale);
+                    break;
+                case "test_missile":
+                    SetModelByPrefab(FsBattleUnity.Instance.CubeModel,scale);
+                    break;
+            }
         }
         
-        public void SetModel(GameObject prefab,float scale = 1f)
+        public void SetModelByPrefab(GameObject prefab,float scale = 1f)
+        {
+            var inst = GameObject.Instantiate(prefab);
+            SetModel(inst,scale);
+        }
+
+
+        public void SetModel(GameObject model,float scale)
         {
             if (Model != null)
             {
                 GameObject.Destroy(Model.gameObject);
                 Model = null;
             }
-            var inst = GameObject.Instantiate(prefab, this.ModelRoot, false);
-            inst.transform.localScale = Vector3.one;
-            inst.transform.localEulerAngles = Vector3.zero;
-            inst.transform.localPosition = Vector3.zero;
-            inst.gameObject.SetActive(true);
-            Model = inst.GetComponent<AnimModel>();
+            model.transform.SetParent(ModelRoot,false);
+            model.transform.localScale = Vector3.one;
+            model.transform.localEulerAngles = Vector3.zero;
+            model.transform.localPosition = Vector3.zero;
+            model.gameObject.SetActive(true);
+            Model = model.GetComponent<AnimModel>();
             ModelRoot.localScale = Vector3.one * scale;
         }
 
@@ -173,19 +175,13 @@ namespace FrameSyncBattle
         public void PlayAnimation(PlayAnimParam animParam)
         {
             if (Model == null) return;
-            /*
-            if (Logic.Team == FsBattleLogic.EnemyTeam)
-            {
-                Debug.Log($"{this.name} : play {animParam.Animation} with speed {animParam.Speed}");
-            }
-            */
             Model.PlayAnimation(animParam);
         }
 
         #endregion
     }
 
-    public class NoInterpolationData
+    public class NoInterpolationStringData
     {
         public string Model;
         public string ModelReq;

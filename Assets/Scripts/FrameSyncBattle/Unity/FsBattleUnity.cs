@@ -28,8 +28,7 @@ namespace FrameSyncBattle
 
         public GameObject PlayerModel;
 
-        public GameObject BulletModel;
-
+        public GameObject CubeModel;
         #endregion
         
         public Camera GameCamera { get; private set; }
@@ -145,7 +144,7 @@ namespace FrameSyncBattle
                 TypeId = "enemy",
                 InitPosId = 4,
                 UnitInitData = new FsUnitInitData()
-                    {PropertyData = TestMeleeUnitData,InitSkills = new string[]{},AttackDataId = "test_attack",Model = "cube"}
+                    {PropertyData = TestPlayerData,InitSkills = new string[]{},AttackDataId = "test_attack",Model = "test_unit"}
             });
             
             //纯挨打靶子
@@ -154,7 +153,7 @@ namespace FrameSyncBattle
                 TypeId = "enemy",
                 InitPosId = 4,
                 UnitInitData = new FsUnitInitData()
-                    {PropertyData = TestEnemyData,InitSkills = new string[]{},AttackDataId = null,Model = "cube"}
+                    {PropertyData = TestEnemyData,InitSkills = new string[]{},AttackDataId = null,Model = "test_unit"}
             });
             /*
             startData.PlayerTeamUnits.Add(new FsBattleStartUnitData()

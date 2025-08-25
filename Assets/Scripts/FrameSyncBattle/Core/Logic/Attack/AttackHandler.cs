@@ -261,7 +261,7 @@ namespace FrameSyncBattle
                 AttackId++;
                 CurrentAttackTimeScale = Owner.Property.CurrentAttackTimeScaler;
                 CurrentAttack = GetOneAttack(battle,CurrentTarget);
-                
+                Owner.ViewModel = AttackId.ToString();
                 CurrentAttackHitIndex = 0;
                 Owner.PlayAnimation(new PlayAnimParam(){Animation = CurrentAttack.Anim,IgnoreRepeat = false,Speed = CurrentAttackTimeScale,});
                 //Owner.PlayAnimation(CurrentAttack.Anim,CurrentAttack.AnimSuffix,CurrentAttackTimeScale,CurrentAttack.NoFade?0f:0.15f);
@@ -289,8 +289,9 @@ namespace FrameSyncBattle
                         bindData.AttackId = AttackId;
                         Vector3 start = Owner.Position + Quaternion.Euler(Owner.Euler) * attack.AttackFireOffset;
                         
-                        var missile = battle.AddEntity<FsMissileLogic>(Owner.Team,"missile",start,Owner.Euler,new FsEntityInitData(){Model = "cube"});
-                        missile.SetBase(attack.AttackModel,attack.AttackFlySpeed,attack.AttackFlyArc, attack.AttackFlySideSpin)
+                        var missile = battle.AddEntity<FsMissileLogic>(Owner.Team,"missile",start,Owner.Euler,new FsEntityInitData());
+                        missile.SetModel(attack.AttackModel, attack.AttackModelScale);
+                        missile.SetBase(attack.AttackFlySpeed,attack.AttackFlyArc, attack.AttackFlySideSpin)
                             .AimTarget(start,CurrentTarget,attack.LockTarget)
                             .Fire(Owner,bindData,OnAttackObjectEnd);
                         

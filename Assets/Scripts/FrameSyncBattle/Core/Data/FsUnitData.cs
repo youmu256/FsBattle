@@ -5,7 +5,6 @@ namespace FrameSyncBattle
 {
     public class FsEntityInitData
     {
-        public string Model;
     }
 
     public class FsBulletInitData: FsEntityInitData
@@ -18,6 +17,8 @@ namespace FrameSyncBattle
     
     public class FsUnitInitData : FsEntityInitData
     {
+        public string Model;
+        public float ModelScale = 1f;
         public string AttackDataId;
         public string[] InitSkills;
         public FsUnitPropertyData PropertyData;

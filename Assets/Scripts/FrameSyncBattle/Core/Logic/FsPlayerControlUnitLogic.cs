@@ -71,10 +71,10 @@ namespace FrameSyncBattle
             //显示上会对不上 因为view层是落后一逻辑帧的...而且新增的逻辑对象 在下一帧才会执行到逻辑看起来会停在原地一会
             Vector3 euler = new Vector3(0, cmd.FireYaw, 0);
             Vector3 firePosition = this.Position;
-            battle.AddEntity<FsBulletLogic>(this.Team, "bullet",
+            var bullet = battle.AddEntity<FsBulletLogic>(this.Team, "bullet",
                 firePosition,euler,new FsBulletInitData()
-                    {Owner = this,Model = "cube", FlySpeed = 50, LifeTime = 1f});
-
+                    {Owner = this, FlySpeed = 50, LifeTime = 1f});
+            bullet.SetModel("test_missile", 1f);
         }
         
         private void TestMissile(FsBattleLogic battle,FsCmd cmd)
@@ -91,8 +91,9 @@ namespace FrameSyncBattle
             battle.EntityService.CollectUnits(targets, TargetFilter);
             if (targets.Count <= 0) return;
             var target = targets[battle.RandomGen.Next(targets.Count)];
-            var lockMissile = battle.AddEntity<FsMissileLogic>(this.Team,"missile",start,Euler,new FsEntityInitData(){Model = "cube"});
-            lockMissile.SetBase("cube", 10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(this,null, (
+            var lockMissile = battle.AddEntity<FsMissileLogic>(this.Team,"missile",start,Euler,new FsEntityInitData());
+            lockMissile.SetModel("test_missile", 1f);
+            lockMissile.SetBase(10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(this,null, (
                 (logic, missileLogic, valid) =>
                 {
                     if (valid)

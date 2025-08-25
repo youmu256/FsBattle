@@ -1,4 +1,6 @@
-﻿namespace FrameSyncBattle
+﻿using System;
+
+namespace FrameSyncBattle
 {
     //这个大类用来定义逻辑层对引擎渲染层的一些操作接口 纯逻辑运行时这些接口应该都是空实现的版本
 
@@ -21,9 +23,13 @@
             NormalizedTime = normalizedTime;
             IgnoreRepeat = ignoreRepeat;
         }
-
         public static PlayAnimParam Null = new PlayAnimParam();
 
+        public bool IsValid()
+        {
+            return !string.IsNullOrEmpty(Animation);
+        }
+        
     }
 
     

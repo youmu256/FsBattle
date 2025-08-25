@@ -39,6 +39,7 @@ namespace FrameSyncBattle
         public override void Init(FsBattleLogic battle, int team, string entityTypeId, object initData)
         {
             base.Init(battle, team, entityTypeId, initData);
+            SetModel(Data.Model, Data.ModelScale);
             InitStatus(Data.PropertyData);
             //--attack
             if (Data.AttackDataId != null)
