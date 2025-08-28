@@ -218,9 +218,10 @@ namespace FrameSyncBattle
         public int EntityIdGenerator { get; private set; }
         //public GameEventHandler EventHandler { get; private set; } = new GameEventHandler();
 
-        public FsEntityLogic CreateFxEntity(Vector3 pos,Vector3 euler)
+        public FsFxEntityLogic CreateFxEntity(string fx,float scale,Vector3 pos,Vector3 euler)
         {
-            var entity = AddEntity<FsEntityLogic>(0,FsEntityType.Fx,pos,euler,null);
+            var entity = AddEntity<FsFxEntityLogic>(0,FsEntityType.Fx,pos,euler,null);
+            entity.SetModel(fx, scale);
             return entity;
         }
         

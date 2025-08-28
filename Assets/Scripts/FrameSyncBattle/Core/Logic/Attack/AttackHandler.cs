@@ -160,6 +160,7 @@ namespace FrameSyncBattle
             var target = missileObject.Target;
             var position = missileObject.MissileResultPosition;
             if (!(missileObject.BindData is AttackTempData data)) return;
+            battle.CreateFxEntity("test_fx",5,missileObject.Position,Vector3.zero).Destroy(1f);
             DoAttackDamage(battle,0,data,position,target);
         }
         

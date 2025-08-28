@@ -43,6 +43,20 @@ namespace FrameSyncBattle
         {
             //TODO 防止被外部随便创建 后续走对象池控制
         }
+
+        public FsDamageInfo GetCopy()
+        {
+            FsDamageInfo info = new FsDamageInfo();
+            info.Source = this.Source;
+            info.Target = this.Target;
+            info.DamageType = this.DamageType;
+            info.Damage = this.Damage;
+            info.CriticalPct = this.CriticalPct;
+            info.CriticalBonus = this.CriticalBonus;
+            info.Tags = this.Tags;
+            info.SourceAttackIndex = this.SourceAttackIndex;
+            return info;
+        }
         
         /// <summary>
         /// 创建基础攻击伤害

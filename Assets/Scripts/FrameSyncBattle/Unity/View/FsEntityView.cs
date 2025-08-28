@@ -12,6 +12,7 @@ namespace FrameSyncBattle
         {
             {typeof(FsPlayerControlUnitLogic), typeof(FsEntityView)},
             {typeof(FsEntityLogic), typeof(FsEntityView)},
+            {typeof(FsFxEntityLogic), typeof(FsEntityView)},
             {typeof(FsUnitLogic), typeof(FsEntityView)},
             {typeof(FsBulletLogic), typeof(FsEntityView)},
             {typeof(FsMissileLogic), typeof(FsEntityView)},

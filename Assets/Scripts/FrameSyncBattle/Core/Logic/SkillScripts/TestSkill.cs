@@ -66,7 +66,7 @@ namespace FrameSyncBattle
                 FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(missileLogic.Source,missileLogic.Target,1f);
                 battle.ProcessDamage(damageInfo);
                 missileLogic.Target.BuffHandler.AddBuff(battle,missileLogic.Source,null,missileLogic.Target,Buff_Stun.CommonId,1,1);
-                battle.CreateFxEntity(missileLogic.Position,Vector3.zero).SetModel("test_fx",5).SetLiveTime(1).PlayAnimation(AnimationConstant.Death);
+                battle.CreateFxEntity("test_fx",5,missileLogic.Position,Vector3.zero).Destroy(1f);
             }
         }
 

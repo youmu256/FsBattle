@@ -211,7 +211,7 @@ namespace FrameSyncBattle
                         DamageRange = 0f,
                         IsMelee = false,
                         LockTarget = true,
-                        MeleeHitFx = null,
+                        HitFx = null,
                     }
                 },
             }

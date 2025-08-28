@@ -126,13 +126,13 @@ namespace FrameSyncBattle
         
         public static FsUnitPropertyData TestEnemyData = new FsUnitPropertyData()
         {
-            HpMax = 3,
+            HpMax = 100,
             MpMax = 10,
             Attack = 1,
             CriticalPct = 15,
             CriticalBonus = 150,
             AttackRange = 5,
-            AttackInterval = 1f,
+            AttackInterval = 3f,
             Defend = 0,
             MoveSpeed = 2,
         };

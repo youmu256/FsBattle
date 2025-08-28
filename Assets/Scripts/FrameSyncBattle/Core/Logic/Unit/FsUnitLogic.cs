@@ -30,16 +30,12 @@ namespace FrameSyncBattle
         
         #endregion
         
-        public bool IsRemoved { get; private set; }
-        
-        public float DeadTimer { get; private set; }
-        
-        public float DeadRemoveTime { get; private set; }
         
         public override void Init(FsBattleLogic battle, int team, FsEntityType entityType, object initData)
         {
             base.Init(battle, team, entityType, initData);
             SetModel(Data.Model, Data.ModelScale);
+            DeadRemoveTime = 3f;//单位统一3s死亡移除时间 后续可能考虑不同单位时间不同
             InitStatus(Data.PropertyData);
             //--attack
             if (Data.AttackDataId != null)
@@ -71,18 +67,7 @@ namespace FrameSyncBattle
         protected override void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
         {
             base.LogicUpdate(battle, cmd);
-            if (IsDead)
-            {
-                DeadTimer += battle.FrameLength;
-                //2s后移除单位
-                if (DeadTimer >= DeadRemoveTime && DeadRemoveTime > 0)
-                {
-                    IsRemoved = true;
-                    battle.RemoveEntity(this);
-                    return;
-                }
-            }
-
+            if (IsTotalDead()) return;
             //AI SKILL ETC...
             UnitAI?.OnEntityFrame(battle, this, battle.FrameLength, cmd);
             GameAI?.ProcessUnitAI(battle, this);
@@ -129,14 +114,7 @@ namespace FrameSyncBattle
             }
         }
 
-        protected override void OnLiveTimeEnd(FsBattleLogic battle)
-        {
-            SetKilled(battle);
-        }
-
         #region Death Relive
-
-        public bool IsDead { get; private set; }
 
         /// <summary>
         /// 彻底死亡无法复活了
@@ -148,31 +126,34 @@ namespace FrameSyncBattle
         }
         
         /// <summary>
-        /// 设置复活
+        /// 设置复活 如果已经被移除了则无法复活
+        /// 只有单位能复活
         /// </summary>
         /// <param name="battleLogic"></param>
         public void SetRelive(FsBattleLogic battleLogic)
         {
-            if (IsDead == false || IsRemoved) return;
+            if (IsDead == false || IsTotalDead()) return;
             IsDead = false;
             HpCurrent = 1;
-            DeadRemoveTime = 0;
             PlayAnimation(new PlayAnimParam(){Animation = AnimationConstant.Idle,IgnoreRepeat = true});
+        }
+
+        public override void SetDead()
+        {
+            base.SetDead();
+            HpCurrent = 0;
         }
         
         /// <summary>
         /// 设置为被击杀
+        /// 只有单位才能被击杀
         /// </summary>
-        /// <param name="battleLogic"></param>
+        /// <param name="battle"></param>
         /// <param name="damageInfo"></param>
-        public void SetKilled(FsBattleLogic battleLogic,FsDamageInfo damageInfo = null)
+        public void SetKilled(FsBattleLogic battle,FsDamageInfo damageInfo = null)
         {
-            if (IsDead) return;
-            IsDead = true;
-            HpCurrent = 0;
-            DeadRemoveTime = 2f;//移除延迟时间
-            //Death View
-            PlayAnimation(new PlayAnimParam(AnimationConstant.Death,0,1f,true));
+            //可以记录最后完成击杀的DamageInfo对象
+            SetDead();
         }
         #endregion
         

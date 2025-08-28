@@ -18,7 +18,7 @@ namespace FrameSyncBattle
         /**是否为近战攻击*/
         public bool IsMelee;
         /**近战攻击命中特效*/
-        public string MeleeHitFx;
+        public string HitFx;
         /**是否锁定目标*/
         public bool LockTarget;
         /**攻击弹道模型*/

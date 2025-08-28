@@ -37,7 +37,24 @@ namespace FrameSyncBattle
         public string ViewModel { get; set; }
         public float ViewModelScale { get; set; }
         public float RemainLiveTime { get; private set; }
+
+        public FsBattleLogic Battle { get; private set; }
         
+        #region 死亡和移除 对所有Entity都应该存在
+
+        public bool IsDead { get; protected set; }
+
+        public bool IsRemoved { get; protected set; }
+        
+        public float DeadTimer { get; protected set; }
+        
+        /// <summary>
+        /// 死亡后移除时间
+        /// 一般无表现的对象 死亡就立刻移除
+        /// </summary>
+        public float DeadRemoveTime { get; protected set; }
+
+        #endregion
         public FsEntityLogic SetModel(string model, float scale)
         {
             ViewModel = model;
@@ -61,6 +78,8 @@ namespace FrameSyncBattle
         /// <param name="initData"></param>
         public virtual void Init(FsBattleLogic battle,int team, FsEntityType entityType, object initData)
         {
+            Battle = battle;
+            this.DeadRemoveTime = OneFrameLiveTime;
             this.Id = battle.EntityIdGenerator;
             this.Team = team;
             this.InitData = initData;
@@ -88,10 +107,30 @@ namespace FrameSyncBattle
             return this;
         }
 
+        /// <summary>
+        /// 存活时间到
+        /// </summary>
+        /// <param name="battle"></param>
         protected virtual void OnLiveTimeEnd(FsBattleLogic battle)
         {
-            RemainLiveTime = 0;
-            battle.RemoveEntity(this);
+            SetDead();
+        }
+
+        /// <summary>
+        /// 设置死亡
+        /// </summary>
+        public virtual void SetDead()
+        {
+            if (IsDead) return;
+            IsDead = true;
+            PlayAnimation(new PlayAnimParam(AnimationConstant.Death,0,1f,true));
+        }
+        
+        public void Remove()
+        {
+            IsRemoved = true;
+            Battle.RemoveEntity(this);
+            Battle = null;
         }
         
         /// <summary>
@@ -109,7 +148,20 @@ namespace FrameSyncBattle
                 {
                     RemainLiveTime-=battle.FrameLength;
                     if (RemainLiveTime <= 0)
+                    {
+                        RemainLiveTime = 0;
                         OnLiveTimeEnd(battle);
+                    }
+                }
+                
+                if (IsDead)
+                {
+                    DeadTimer += battle.FrameLength;
+                    if (DeadTimer >= DeadRemoveTime && DeadRemoveTime > 0)
+                    {
+                        Remove();
+                        return;
+                    }
                 }
             }
             else
@@ -126,7 +178,7 @@ namespace FrameSyncBattle
 
         protected virtual void LogicUpdate(FsBattleLogic battle, FsCmd cmd)
         {
-            
+
         }
 
         protected void OnLogicFrameStart()
