@@ -129,6 +129,11 @@ namespace FrameSyncBattle
             }
         }
 
+        protected override void OnLiveTimeEnd(FsBattleLogic battle)
+        {
+            SetKilled(battle);
+        }
+
         #region Death Relive
 
         public bool IsDead { get; private set; }

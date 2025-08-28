@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace FrameSyncBattle
 {
@@ -49,4 +50,25 @@ namespace FrameSyncBattle
         
     }
 
+    
+    
+    /// <summary>
+    /// 逻辑层对表现层的请求
+    /// 表现层做的一些行为 需要用Request包装起来 做到逻辑时间点的统一
+    /// </summary>
+    public abstract class FsBattleViewRequest
+    {
+        public abstract void Execute(FsBattleUnity viewScene);
+    }
+
+    public class FsPlaySoundRequest : FsBattleViewRequest
+    {
+        public Vector3 Position;
+        public string SoundId;
+        public override void Execute(FsBattleUnity viewScene)
+        {
+            
+        }
+    }
+    
 }

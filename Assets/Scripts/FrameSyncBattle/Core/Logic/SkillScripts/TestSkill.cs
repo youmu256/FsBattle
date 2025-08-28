@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace FrameSyncBattle
 {
@@ -42,7 +43,7 @@ namespace FrameSyncBattle
                     {
                         var lockMissile = battle.AddEntity<FsMissileLogic>(this.Owner.Team,FsEntityType.Missile,start,Owner.Euler,new FsEntityInitData());
                         lockMissile.SetModel("test_missile", 1f);
-                        lockMissile.SetBase(10, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(Owner,null, MissileCallback);
+                        lockMissile.SetBase((i+1f)*2, 0.5f, battle.RandomGen.Next(-90, 90)).AimTarget(start,target,true).Fire(Owner,null, MissileCallback);
                     }
                     break;
                 case SkillFlow.Affecting:
@@ -58,13 +59,14 @@ namespace FrameSyncBattle
             }
         }
 
-        private static void MissileCallback(FsBattleLogic logic, FsMissileLogic missileLogic, bool valid)
+        private static void MissileCallback(FsBattleLogic battle, FsMissileLogic missileLogic, bool valid)
         {
             if (valid)
             {
                 FsDamageInfo damageInfo = FsDamageInfo.CreateAttackDamage(missileLogic.Source,missileLogic.Target,1f);
-                logic.ProcessDamage(damageInfo);
-                missileLogic.Target.BuffHandler.AddBuff(logic,missileLogic.Source,null,missileLogic.Target,Buff_Stun.CommonId,1,1);
+                battle.ProcessDamage(damageInfo);
+                missileLogic.Target.BuffHandler.AddBuff(battle,missileLogic.Source,null,missileLogic.Target,Buff_Stun.CommonId,1,1);
+                battle.CreateFxEntity(missileLogic.Position,Vector3.zero).SetModel("test_fx",5).SetLiveTime(1).PlayAnimation(AnimationConstant.Death);
             }
         }
 

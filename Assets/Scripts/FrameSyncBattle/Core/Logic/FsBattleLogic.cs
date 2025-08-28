@@ -238,8 +238,8 @@ namespace FrameSyncBattle
 
         public void RemoveEntity(FsEntityLogic entity)
         {
+            if (!Entities.Remove(entity)) return;
             entity.OnRemove(this);
-            Entities.Remove(entity);
             EntityService.UpdateEntityCache(entity,false);
         }
 

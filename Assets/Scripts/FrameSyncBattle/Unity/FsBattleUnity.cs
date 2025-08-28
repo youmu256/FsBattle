@@ -29,6 +29,8 @@ namespace FrameSyncBattle
         public GameObject PlayerModel;
 
         public GameObject CubeModel;
+        
+        public GameObject SphereModel;
         #endregion
         
         public Camera GameCamera { get; private set; }
@@ -155,7 +157,7 @@ namespace FrameSyncBattle
                 TypeId = "enemy",
                 InitPosId = 4,
                 UnitInitData = new FsUnitInitData()
-                    {PropertyData = TestPlayerData,InitSkills = new string[]{},AttackDataId = "test_attack",Model = "test_unit"}
+                    {PropertyData = TestPlayerData,InitSkills = new string[]{"test1"},AttackDataId = "test_attack",Model = "test_unit"}
             });
             
             //纯挨打靶子

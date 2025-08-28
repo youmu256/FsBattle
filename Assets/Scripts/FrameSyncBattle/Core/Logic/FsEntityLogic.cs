@@ -18,7 +18,7 @@ namespace FrameSyncBattle
         void Update();
         void Remove();
     }
-    
+
     /// <summary>
     /// 基础的逻辑对象
     /// 拥有模型和动画播放
@@ -36,7 +36,8 @@ namespace FrameSyncBattle
         public int Team { get; protected set; }
         public string ViewModel { get; set; }
         public float ViewModelScale { get; set; }
-
+        public float RemainLiveTime { get; private set; }
+        
         public FsEntityLogic SetModel(string model, float scale)
         {
             ViewModel = model;
@@ -75,6 +76,23 @@ namespace FrameSyncBattle
         {
             
         }
+
+        private const float OneFrameLiveTime = 0.01f;
+        /// <summary>
+        /// 设置剩余存活时间
+        /// </summary>
+        /// <param name="time">不填则下一帧就会移除</param>
+        public FsEntityLogic SetLiveTime(float time = OneFrameLiveTime)
+        {
+            RemainLiveTime = time;
+            return this;
+        }
+
+        protected virtual void OnLiveTimeEnd(FsBattleLogic battle)
+        {
+            RemainLiveTime = 0;
+            battle.RemoveEntity(this);
+        }
         
         /// <summary>
         /// 逻辑帧驱动 对象创建出来后也会立刻执行一次
@@ -87,6 +105,12 @@ namespace FrameSyncBattle
             if (HasStarted)
             {
                 LogicUpdate(battle,cmd);
+                if (RemainLiveTime > 0)
+                {
+                    RemainLiveTime-=battle.FrameLength;
+                    if (RemainLiveTime <= 0)
+                        OnLiveTimeEnd(battle);
+                }
             }
             else
             {
@@ -149,22 +173,4 @@ namespace FrameSyncBattle
         }
     }
 
-    public class FsViewEventEntityLogic : FsEntityLogic
-    {
-        /*
-         * 主要用来负责记录需要在表现层展示的事件类型需求
-         * 比如
-         *      创建/删除特效到单位骨骼
-         *      在指定位置播放不需要控制的音效or特效
-         */
-
-        public string EventType;
-        public object EventParam;
-        public void SetEventParam(string type,object param)
-        {
-            this.EventType = type;
-            this.EventParam = param;
-        }
-        
-    }
 }

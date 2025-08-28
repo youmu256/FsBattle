@@ -11,6 +11,7 @@ namespace FrameSyncBattle
         public Dictionary<Type, Type> ViewMap = new()
         {
             {typeof(FsPlayerControlUnitLogic), typeof(FsEntityView)},
+            {typeof(FsEntityLogic), typeof(FsEntityView)},
             {typeof(FsUnitLogic), typeof(FsEntityView)},
             {typeof(FsBulletLogic), typeof(FsEntityView)},
             {typeof(FsMissileLogic), typeof(FsEntityView)},
@@ -129,6 +130,9 @@ namespace FrameSyncBattle
                     break;
                 case "test_missile":
                     SetModelByPrefab(FsBattleUnity.Instance.CubeModel,scale);
+                    break;
+                case "test_fx":
+                    SetModelByPrefab(FsBattleUnity.Instance.SphereModel,scale);
                     break;
             }
         }
