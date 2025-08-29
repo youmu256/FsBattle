@@ -8,30 +8,6 @@ namespace FrameSyncBattle
     /// </summary>
     public class FsBattleGame : FsBattleLogic
     {
-        #region 渲染相关
-
-        /*
-        public override T AddEntity<T>(int team,string entityTypeId, object initData)
-        {
-            var logic = base.AddEntity<T>(team,entityTypeId, initData);
-            var view = FsEntityView.Create(logic);
-            logic.BindView(view);
-            EntityViews.Add(view);
-            return logic;
-        }
-
-        public override void RemoveEntity(FsEntityLogic entity)
-        {
-            if (entity.View is FsEntityView view)
-            {
-                entity.BindView(null);
-                view.OnRemove(this);
-                EntityViews.Remove(view);
-            }
-            base.RemoveEntity(entity);
-        }
-        */
-        #endregion
         public float ViewLerp { get; private set; }
         public int ViewLerpStartFrame { get; private set; }
         

@@ -3,6 +3,47 @@ using UnityEngine;
 
 namespace FrameSyncBattle
 {
+    public class AnimModelService : MonoBehaviour
+    {
+        public Dictionary<string, ComponentObjectPool<AnimModel>> Pools = new();
+
+        public AnimModel Allocate(string key)
+        {
+            if (!Pools.TryGetValue(key, out var pool))
+            {
+                AnimModel ins = null;//TODO 加载资源
+                pool = new ComponentObjectPool<AnimModel>(ins,key,(AllocateMethod), ResetMethod);
+            }
+            return pool.Allocate();
+        }
+
+        public void Recycle(AnimModel model)
+        {
+            string key = model.name;
+            if (Pools.TryGetValue(key, out var pool))
+            {
+                pool.Recycle(model);
+                model.transform.SetParent(this.transform);
+            }
+            else
+            {
+                GameObject.Destroy(model.gameObject);
+            }
+        }
+        
+
+        private static void ResetMethod(AnimModel model)
+        {
+            model.gameObject.SetActive(false);
+        }
+
+        private static void AllocateMethod(AnimModel model)
+        {
+            model.gameObject.SetActive(true);
+        }
+    }
+    
+    
     public class FsBattleAssets
     {
         /*
@@ -17,7 +58,7 @@ namespace FrameSyncBattle
          */
         
         protected Dictionary<string, AnimModel> AnimModelsCache = new();
-
+        
 
         public void Init()
         {
